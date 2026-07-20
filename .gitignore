@@ -82,3 +82,6 @@ DerivedDataCache/*
 # CUSTOM
 # ------------------------
 /DesignDoc.md
+/.vscode/
+*.code-workspace
+/Makefile
