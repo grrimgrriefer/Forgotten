@@ -12,7 +12,8 @@
 class UStateTree;
 
 /**
- * Holds the main StateTree and controls the high-level flow of the game.
+ * Holds the main (persistent) StateTree and controls the high-level flow of the game.
+ * Should not contain pointers to objects that are destroyed when leaving a Level.
  */
 UCLASS(Abstract, Blueprintable)
 class FORGOTTEN_API UMainStateTreeSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
@@ -36,7 +37,7 @@ public:
 	#pragma endregion FTickableGameObject
 
 	UFUNCTION(BlueprintCallable, Category = "GameFlow")
-	void SendFlowEvent(const FGameplayTag tag);
+	bool TrySendFlowEvent(const FGameplayTag tag);
 	 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings")

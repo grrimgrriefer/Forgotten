@@ -31,6 +31,18 @@ void UMainStateTreeSubsystem::Deinitialize()
 #pragma region FTickableGameObject
 void UMainStateTreeSubsystem::Tick(const float deltaTime)
 {
+	if (m_lastFrameNumberWeTicked == GFrameCounter)
+	{
+		return;
+	}
+	m_lastFrameNumberWeTicked = GFrameCounter;
+
+	UWorld* world = GetWorld();
+    if (!world || world->IsPreparingMapChange())
+    {
+        return;
+    }
+
 	if (m_isRunning && IsValid(m_stateTreeAsset))
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
@@ -55,17 +67,28 @@ bool UMainStateTreeSubsystem::IsTickableInEditor() const
 }
 bool UMainStateTreeSubsystem::IsTickable() const
 {
-	return m_isRunning && IsValid(m_stateTreeAsset);
+    return !HasAnyFlags(RF_ClassDefaultObject) && m_isRunning && IsValid(m_stateTreeAsset);
 }
 #pragma endregion FTickableGameObject
 
 
-void UMainStateTreeSubsystem::SendFlowEvent(const FGameplayTag tag)
+bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 {
+	UWorld* world = GetWorld();
+    if (!world || world->IsPreparingMapChange())
+    {
+        return false;
+    }
+
 	if (m_isRunning && IsValid(m_stateTreeAsset))
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
 		context.SendEvent(tag);
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 void UMainStateTreeSubsystem::OnPostWorldInitialization(UWorld* world, const UWorld::InitializationValues iValues)
