@@ -85,3 +85,4 @@ DerivedDataCache/*
 /.vscode/
 *.code-workspace
 /Makefile
+/.idea/
