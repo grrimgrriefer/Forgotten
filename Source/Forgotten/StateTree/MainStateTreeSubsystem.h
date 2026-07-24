@@ -6,10 +6,13 @@
 #include "Tickable.h"
 #include "StateTreeInstanceData.h"
 #include "Engine/World.h"
+#include "GameplayTagContainer.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "MainStateTreeSubsystem.generated.h"
 
 class UStateTree;
+class UObject;
+class FSubsystemCollectionBase;
 
 /**
  * Holds the main (persistent) StateTree and controls the high-level flow of the game.

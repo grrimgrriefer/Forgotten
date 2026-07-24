@@ -27,6 +27,9 @@ stateDiagram-v2
         state Menu {
             Main_Menu --> Settings
             Main_Menu --> Load_GameSave
+            Settings --> Main_Menu
+            Load_GameSave --> Main_Menu
+            Main_Menu --> [*] : Exit Game
         }
 
         Menu --> Gameplay_State : Continue
