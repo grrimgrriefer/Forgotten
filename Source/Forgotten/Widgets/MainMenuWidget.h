@@ -11,12 +11,11 @@ class UButton;
 UENUM(BlueprintType)
 enum class EMainMenuAction : uint8
 {
-	NewGame,
+	Continue,
 	Quit
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMenuActionRequested, EMainMenuAction, Action);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMenuLoadSaveRequested, FString, Save);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnMenuActionRequested, EMainMenuAction, Action);
 
 /**
  * Manages the UI for the Main Menu, forwards the results back to the StateTree.
@@ -27,11 +26,8 @@ class FORGOTTEN_API UMainMenuWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(Category = "Events")
 	FOnMenuActionRequested OnActionRequested;
-	
-	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnMenuLoadSaveRequested OnLoadSaveRequested;
 	
 protected:
 	UPROPERTY(meta = (BindWidget))

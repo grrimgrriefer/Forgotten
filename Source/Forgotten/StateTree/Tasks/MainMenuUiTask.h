@@ -19,6 +19,8 @@ struct FMainMenuUiTaskInstanceData
 
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UMainMenuWidget> m_WidgetPtr = nullptr;
+	
+	FDelegateHandle m_ActionDelegateHandle;
 };
 
 /**

@@ -32,15 +32,18 @@ void UMainMenuWidget::NativeDestruct()
 
 void UMainMenuWidget::OnContinueClicked() const
 {
-	OnLoadSaveRequested.Broadcast(TEXT("TODO: LAST SAVE OR SOMETHING"));
+	// TODO
+	OnActionRequested.Broadcast(EMainMenuAction::Continue);
 }
 void UMainMenuWidget::OnNewGameClicked() const
 {
-	OnActionRequested.Broadcast(EMainMenuAction::NewGame);
+	// TODO
+	OnActionRequested.Broadcast(EMainMenuAction::Continue);
 }
 void UMainMenuWidget::OnLoadSaveClicked() const
 {
-	OnLoadSaveRequested.Broadcast(TEXT("TODO: CUSTOM SAVE?"));
+	// TODO
+	OnActionRequested.Broadcast(EMainMenuAction::Continue);
 }
 void UMainMenuWidget::OnQuitClicked() const
 {

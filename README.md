@@ -32,9 +32,7 @@ stateDiagram-v2
             Main_Menu --> [*] : Exit Game
         }
 
-        Menu --> Gameplay_State : Continue
-        Menu --> Gameplay_State : New_Game
-        Menu --> Gameplay_State : Load_Save
+        Menu --> Gameplay_State : Continue || New_Game || Load_Save
 
         Intro --> Menu
 
