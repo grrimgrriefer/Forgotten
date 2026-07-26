@@ -22,8 +22,8 @@ UCLASS(Abstract, Blueprintable)
 class FORGOTTEN_API UMainStateTreeSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	#pragma region UGameInstanceSubsystem
 		virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 		virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -41,17 +41,17 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "GameFlow")
 	bool TrySendFlowEvent(const FGameplayTag tag);
-	 
+
 protected:
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings", meta=(RequiredAssetDataTags="Schema=UMainStateTreeSchema"))
 	TObjectPtr<UStateTree> m_stateTreeAsset;
-	 
+
 private:
 	void OnPostWorldInitialization(UWorld* world, const UWorld::InitializationValues iValues);
 
 	UPROPERTY()
 	FStateTreeInstanceData m_instanceData;
-	
+
 	uint32 m_lastFrameNumberWeTicked = INDEX_NONE;
 	bool m_isRunning = false;
 };

@@ -7,7 +7,7 @@
 bool UMainStateTreeSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
 	return GetClass() != StaticClass();
-}	 
+}
 void UMainStateTreeSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -99,7 +99,7 @@ void UMainStateTreeSubsystem::OnPostWorldInitialization(UWorld* world, const UWo
 		{
 			return;
 		}
-    
+
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
 		if (context.Start() == EStateTreeRunStatus::Running)
 		{

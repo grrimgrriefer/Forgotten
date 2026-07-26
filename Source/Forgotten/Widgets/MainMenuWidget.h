@@ -15,7 +15,7 @@ enum class EMainMenuAction : uint8
 	Quit
 };
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnMenuActionRequested, EMainMenuAction, Action);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnMenuActionRequested, EMainMenuAction);
 
 /**
  * Manages the UI for the Main Menu, forwards the results back to the StateTree.
@@ -26,53 +26,52 @@ class FORGOTTEN_API UMainMenuWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(Category = "Events")
 	FOnMenuActionRequested OnActionRequested;
-	
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> ContinueButton;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> LoadSaveButton;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> NewGameButton;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> QuitButton;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> OpenSavesMenuButton;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> OpenSettingsButton;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> BackButton;
 
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-	
+
 private:
 	UFUNCTION()
 	void OnContinueClicked() const;
 
 	UFUNCTION()
 	void OnNewGameClicked() const;
-	
+
 	UFUNCTION()
 	void OnLoadSaveClicked() const;
-	
+
 	UFUNCTION()
 	void OnQuitClicked() const;
-	
+
 	UFUNCTION()
 	void OnOpenSavesMenuClicked();
-	
+
 	UFUNCTION()
 	void OnOpenSettingsClicked();
-	
+
 	UFUNCTION()
 	void OnBackClicked();
 };
