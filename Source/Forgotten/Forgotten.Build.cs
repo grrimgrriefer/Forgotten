@@ -7,7 +7,7 @@ public class Forgotten : ModuleRules
 	public Forgotten(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
+
 		PublicDependencyModuleNames.AddRange([
 			"Core",
 			"CoreUObject",
@@ -16,7 +16,8 @@ public class Forgotten : ModuleRules
 			"EnhancedInput",
 			"StateTreeModule",
 			"GameplayStateTreeModule",
-			"GameplayTags"
+			"GameplayTags",
+			"UMG"
 		]);
 
 		PrivateDependencyModuleNames.AddRange([]);

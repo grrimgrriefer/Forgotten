@@ -7,6 +7,18 @@ Full design doc: https://docs.google.com/document/d/1v4YIVGK3a4jeyPQwxP9kBmlifpG
 Trello board: https://trello.com/b/xFdesJSx/forgotten  
 Voxta Plugin: https://github.com/grrimgrriefer/UnrealVoxta / https://dev.azure.com/grrimgrriefer/UnrealVoxta
 
+# Coding conventions
+
+Mostly follows UE's condings standards with the following exceptions:
+
+Member variables, always start with `m_` 
+Private & protected ones are camelCase, public ones are Pascal.
+Local variables & parameters always are camelCase.
+
+When using multiple inheritance, overrides must be grouped in #pragma region blocks, clarifying which base is being overriden.
+
+Header files cannot contain function definitions.
+
 # Context
 
 The user plays as a psychologist that's talking with a woman named Rain.
@@ -27,11 +39,12 @@ stateDiagram-v2
         state Menu {
             Main_Menu --> Settings
             Main_Menu --> Load_GameSave
+            Settings --> Main_Menu
+            Load_GameSave --> Main_Menu
+            Main_Menu --> [*] : Exit Game
         }
 
-        Menu --> Gameplay_State : Continue
-        Menu --> Gameplay_State : New_Game
-        Menu --> Gameplay_State : Load_Save
+        Menu --> Gameplay_State : Continue || New_Game || Load_Save
 
         Intro --> Menu
 

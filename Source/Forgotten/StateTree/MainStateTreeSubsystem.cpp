@@ -4,13 +4,13 @@
 #include "StateTreeExecutionContext.h"
 
 #pragma region UGameInstanceSubsystem
-bool UMainStateTreeSubsystem::ShouldCreateSubsystem(UObject* Outer) const
+bool UMainStateTreeSubsystem::ShouldCreateSubsystem(UObject* outer) const
 {
 	return GetClass() != StaticClass();
-}	 
-void UMainStateTreeSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+}
+void UMainStateTreeSubsystem::Initialize(FSubsystemCollectionBase& collection)
 {
-	Super::Initialize(Collection);
+	Super::Initialize(collection);
 	FWorldDelegates::OnPostWorldInitialization.AddUObject(this, &UMainStateTreeSubsystem::OnPostWorldInitialization);
 }
 void UMainStateTreeSubsystem::Deinitialize()
@@ -25,7 +25,7 @@ void UMainStateTreeSubsystem::Deinitialize()
 	}
 	Super::Deinitialize();
 }
-#pragma endregion UGameInstanceSubsystem
+#pragma endregion FTickableGameObject
 
 
 #pragma region FTickableGameObject
@@ -37,7 +37,7 @@ void UMainStateTreeSubsystem::Tick(const float deltaTime)
 	}
 	m_lastFrameNumberWeTicked = GFrameCounter;
 
-	UWorld* world = GetWorld();
+	const UWorld* world = GetWorld();
     if (!world || world->IsPreparingMapChange())
     {
         return;
@@ -74,7 +74,7 @@ bool UMainStateTreeSubsystem::IsTickable() const
 
 bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 {
-	UWorld* world = GetWorld();
+	const UWorld* world = GetWorld();
     if (!world || world->IsPreparingMapChange())
     {
         return false;
@@ -91,7 +91,7 @@ bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 		return false;
 	}
 }
-void UMainStateTreeSubsystem::OnPostWorldInitialization(UWorld* world, const UWorld::InitializationValues iValues)
+void UMainStateTreeSubsystem::OnPostWorldInitialization(UWorld* world, const UWorld::InitializationValues initValues)
 {
 	if (world && world->IsGameWorld())
 	{
@@ -99,7 +99,7 @@ void UMainStateTreeSubsystem::OnPostWorldInitialization(UWorld* world, const UWo
 		{
 			return;
 		}
-    
+
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
 		if (context.Start() == EStateTreeRunStatus::Running)
 		{
