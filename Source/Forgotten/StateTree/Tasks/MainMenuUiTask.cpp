@@ -15,7 +15,7 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 	const FStateTreeTransitionResult& transitions) const
 {
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
-	UWorld* world = context.GetWorld();
+	const UWorld* world = context.GetWorld();
 
 	if (!world || !world->IsGameWorld() || !m_MenuWidgetClass)
 	{
@@ -33,14 +33,14 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 		instanceData.m_WidgetPtr = mainMenuWidget;
 		instanceData.m_PlayerControllerPtr = playerController;
 
-		FInputModeUIOnly InputMode;
-		InputMode.SetWidgetToFocus(mainMenuWidget->TakeWidget());
-		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		FInputModeUIOnly inputMode;
+		inputMode.SetWidgetToFocus(mainMenuWidget->TakeWidget());
+		inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 
-		instanceData.m_PlayerControllerPtr->SetInputMode(InputMode);
+		instanceData.m_PlayerControllerPtr->SetInputMode(inputMode);
 		instanceData.m_PlayerControllerPtr->SetShowMouseCursor(true);
 
-		instanceData.m_ActionDelegateHandle = mainMenuWidget->OnActionRequested.AddLambda(
+		instanceData.m_ActionDelegateHandle = mainMenuWidget->m_OnActionRequested.AddLambda(
 			[weakContext = context.MakeWeakExecutionContext()](const EMainMenuAction action) mutable
 			{
 				const FStateTreeStrongExecutionContext strongContext = weakContext.MakeStrongExecutionContext();
@@ -73,16 +73,16 @@ void FMainMenuUiTask::ExitState(
 {
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
 
-	if (APlayerController* PC = instanceData.m_PlayerControllerPtr.Get())
+	if (APlayerController* playerController = instanceData.m_PlayerControllerPtr.Get())
 	{
-		FInputModeGameOnly gameMode;
-		PC->SetInputMode(gameMode);
-		PC->SetShowMouseCursor(false);
+		const FInputModeGameOnly gameMode;
+		playerController->SetInputMode(gameMode);
+		playerController->SetShowMouseCursor(false);
 	}
 
 	if (UMainMenuWidget* Widget = instanceData.m_WidgetPtr.Get())
 	{
-		Widget->OnActionRequested.Remove(instanceData.m_ActionDelegateHandle);
+		Widget->m_OnActionRequested.Remove(instanceData.m_ActionDelegateHandle);
 		Widget->RemoveFromParent();
 	}
 	instanceData.m_WidgetPtr = nullptr;

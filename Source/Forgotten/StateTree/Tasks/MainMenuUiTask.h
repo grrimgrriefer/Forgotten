@@ -29,11 +29,12 @@ struct FMainMenuUiTaskInstanceData
 /**
  * Manages the lifespan of the Main Menu and forwards the user's desires to the main StateTree
  */
-USTRUCT(meta = (DisplayName = "Manage Main Menu UI", Category = "UI"))
+USTRUCT(meta = (DisplayName = "Manage Main Menu UI", Category = "Main Flow"))
 struct FORGOTTEN_API FMainMenuUiTask : public FStateTreeTaskBase
 {
 	GENERATED_BODY()
 
+public:
 	using FInstanceDataType = FMainMenuUiTaskInstanceData;
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;

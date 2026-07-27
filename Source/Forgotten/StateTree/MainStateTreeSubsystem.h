@@ -25,8 +25,8 @@ class FORGOTTEN_API UMainStateTreeSubsystem : public UGameInstanceSubsystem, pub
 
 public:
 	#pragma region UGameInstanceSubsystem
-		virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
-		virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+		virtual bool ShouldCreateSubsystem(UObject* outer) const override;
+		virtual void Initialize(FSubsystemCollectionBase& collection) override;
 		virtual void Deinitialize() override;
 	#pragma endregion UGameInstanceSubsystem
 
@@ -47,7 +47,7 @@ protected:
 	TObjectPtr<UStateTree> m_stateTreeAsset;
 
 private:
-	void OnPostWorldInitialization(UWorld* world, const UWorld::InitializationValues iValues);
+	void OnPostWorldInitialization(UWorld* world, const UWorld::InitializationValues initValues);
 
 	UPROPERTY()
 	FStateTreeInstanceData m_instanceData;

@@ -10,7 +10,7 @@
 class UMainStateTreeSubsystem;
 
 /**
- * Custom schema for the statetree being on the subsystem
+ * Custom schema for the StateTree being on the subsystem
  */
 UCLASS()
 class FORGOTTEN_API UMainStateTreeSchema : public UStateTreeSchema
@@ -21,9 +21,9 @@ public:
 	UMainStateTreeSchema();
 
 	virtual TConstArrayView<FStateTreeExternalDataDesc> GetContextDataDescs() const override;
-	virtual bool IsStructAllowed(const UScriptStruct* InScriptStruct) const override;
+	virtual bool IsStructAllowed(const UScriptStruct* inScriptStruct) const override;
 
 protected:
 	UPROPERTY()
-	FStateTreeExternalDataDesc m_SubsystemData;
+	FStateTreeExternalDataDesc m_subsystemData;
 };

@@ -26,29 +26,29 @@ class FORGOTTEN_API UMainMenuWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	FOnMenuActionRequested OnActionRequested;
+	FOnMenuActionRequested m_OnActionRequested;
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> ContinueButton;
+	TObjectPtr<UButton> m_continueButton;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> LoadSaveButton;
+	TObjectPtr<UButton> m_loadSaveButton;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> NewGameButton;
+	TObjectPtr<UButton> m_newGameButton;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> QuitButton;
+	TObjectPtr<UButton> m_quitButton;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> OpenSavesMenuButton;
+	TObjectPtr<UButton> m_openSavesMenuButton;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> OpenSettingsButton;
+	TObjectPtr<UButton> m_openSettingsButton;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> BackButton;
+	TObjectPtr<UButton> m_backButton;
 
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;

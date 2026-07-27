@@ -7,25 +7,25 @@ void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	ContinueButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnContinueClicked);
-	LoadSaveButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnLoadSaveClicked);
-	NewGameButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnNewGameClicked);
-	QuitButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnQuitClicked);
+	m_continueButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnContinueClicked);
+	m_loadSaveButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnLoadSaveClicked);
+	m_newGameButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnNewGameClicked);
+	m_quitButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnQuitClicked);
 
-	OpenSavesMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnOpenSavesMenuClicked);
-	OpenSettingsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnOpenSettingsClicked);
-	BackButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnBackClicked);
+	m_openSavesMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnOpenSavesMenuClicked);
+	m_openSettingsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnOpenSettingsClicked);
+	m_backButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnBackClicked);
 }
 
 void UMainMenuWidget::NativeDestruct()
 {
-	ContinueButton->OnClicked.RemoveAll(this);
-	NewGameButton->OnClicked.RemoveAll(this);
-	OpenSavesMenuButton->OnClicked.RemoveAll(this);
-	LoadSaveButton->OnClicked.RemoveAll(this);
-	OpenSettingsButton->OnClicked.RemoveAll(this);
-	QuitButton->OnClicked.RemoveAll(this);
-	BackButton->OnClicked.RemoveAll(this);
+	m_continueButton->OnClicked.RemoveAll(this);
+	m_loadSaveButton->OnClicked.RemoveAll(this);
+	m_newGameButton->OnClicked.RemoveAll(this);
+	m_quitButton->OnClicked.RemoveAll(this);
+	m_openSavesMenuButton->OnClicked.RemoveAll(this);
+	m_openSettingsButton->OnClicked.RemoveAll(this);
+	m_backButton->OnClicked.RemoveAll(this);
 
 	Super::NativeDestruct();
 }
@@ -33,21 +33,21 @@ void UMainMenuWidget::NativeDestruct()
 void UMainMenuWidget::OnContinueClicked() const
 {
 	// TODO
-	OnActionRequested.Broadcast(EMainMenuAction::Continue);
+	m_OnActionRequested.Broadcast(EMainMenuAction::Continue);
 }
 void UMainMenuWidget::OnNewGameClicked() const
 {
 	// TODO
-	OnActionRequested.Broadcast(EMainMenuAction::Continue);
+	m_OnActionRequested.Broadcast(EMainMenuAction::Continue);
 }
 void UMainMenuWidget::OnLoadSaveClicked() const
 {
 	// TODO
-	OnActionRequested.Broadcast(EMainMenuAction::Continue);
+	m_OnActionRequested.Broadcast(EMainMenuAction::Continue);
 }
 void UMainMenuWidget::OnQuitClicked() const
 {
-	OnActionRequested.Broadcast(EMainMenuAction::Quit);
+	m_OnActionRequested.Broadcast(EMainMenuAction::Quit);
 }
 void UMainMenuWidget::OnOpenSavesMenuClicked()
 {

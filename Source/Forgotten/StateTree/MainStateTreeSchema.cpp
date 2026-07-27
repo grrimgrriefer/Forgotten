@@ -8,19 +8,19 @@
 #include "StateTreeTaskBase.h"
 
 UMainStateTreeSchema::UMainStateTreeSchema()
-	: m_SubsystemData(
-		TEXT("Subsystem"), 
-		UMainStateTreeSubsystem::StaticClass(), 
+	: m_subsystemData(
+		TEXT("Subsystem"),
+		UMainStateTreeSubsystem::StaticClass(),
 		FGuid::NewGuid())
 {
 }
 TConstArrayView<FStateTreeExternalDataDesc> UMainStateTreeSchema::GetContextDataDescs() const
 {
-	return TConstArrayView<FStateTreeExternalDataDesc>(&m_SubsystemData, 1);
+	return TConstArrayView(&m_subsystemData, 1);
 }
-bool UMainStateTreeSchema::IsStructAllowed(const UScriptStruct* InScriptStruct) const
+bool UMainStateTreeSchema::IsStructAllowed(const UScriptStruct* inScriptStruct) const
 {
-    return InScriptStruct->IsChildOf(FStateTreeTaskBase::StaticStruct())
-        || InScriptStruct->IsChildOf(FStateTreeEvaluatorBase::StaticStruct())
-        || InScriptStruct->IsChildOf(FStateTreeConditionBase::StaticStruct());
+    return inScriptStruct->IsChildOf(FStateTreeTaskBase::StaticStruct())
+        || inScriptStruct->IsChildOf(FStateTreeEvaluatorBase::StaticStruct())
+        || inScriptStruct->IsChildOf(FStateTreeConditionBase::StaticStruct());
 }
