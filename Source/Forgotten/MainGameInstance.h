@@ -7,7 +7,7 @@
 #include "MainGameInstance.generated.h"
 
 /**
- * Holds refernces to the subsystems to avoid lazyload issues
+ * Holds references to the subsystems to avoid lazyload issues
  */
 UCLASS()
 class FORGOTTEN_API UMainGameInstance : public UGameInstance

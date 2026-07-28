@@ -86,3 +86,4 @@ DerivedDataCache/*
 *.code-workspace
 /Makefile
 /.idea/
+*.DotSettings.user
