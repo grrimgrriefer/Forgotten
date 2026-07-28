@@ -37,6 +37,8 @@ struct FORGOTTEN_API FMainMenuUiTask : public FStateTreeTaskBase
 public:
 	using FInstanceDataType = FMainMenuUiTaskInstanceData;
 
+	FMainMenuUiTask();
+
 	virtual const UScriptStruct* GetInstanceDataType() const override;
 	virtual EStateTreeRunStatus EnterState(
 		FStateTreeExecutionContext& context,

@@ -6,6 +6,10 @@
 #include "Forgotten/Widgets/MainMenuWidget.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+FMainMenuUiTask::FMainMenuUiTask()
+{
+	bShouldCallTick = false;
+}
 const UScriptStruct* FMainMenuUiTask::GetInstanceDataType() const
 {
 	return FInstanceDataType::StaticStruct();
@@ -16,56 +20,48 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 {
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
 	const UWorld* world = context.GetWorld();
-
-	if (!world || !world->IsGameWorld() || !m_MenuWidgetClass)
-	{
-		return EStateTreeRunStatus::Failed;
-	}
-
 	APlayerController* playerController = world->GetFirstPlayerController();
-	if (!playerController)
-	{
-		return EStateTreeRunStatus::Failed;
-	}
-	if (UMainMenuWidget* mainMenuWidget = CreateWidget<UMainMenuWidget>(playerController, m_MenuWidgetClass))
-	{
-		mainMenuWidget->AddToViewport();
-		instanceData.m_WidgetPtr = mainMenuWidget;
-		instanceData.m_PlayerControllerPtr = playerController;
 
-		FInputModeUIOnly inputMode;
-		inputMode.SetWidgetToFocus(mainMenuWidget->TakeWidget());
-		inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	ensure(playerController);
+	ensureMsgf(m_MenuWidgetClass, TEXT("MainMenuUiTask: m_MenuWidgetClass is null, check the StateTree."));
+	UMainMenuWidget* mainMenuWidget = CreateWidget<UMainMenuWidget>(playerController, m_MenuWidgetClass);
 
-		instanceData.m_PlayerControllerPtr->SetInputMode(inputMode);
-		instanceData.m_PlayerControllerPtr->SetShowMouseCursor(true);
+	ensure(mainMenuWidget);
+	mainMenuWidget->AddToViewport();
+	instanceData.m_WidgetPtr = mainMenuWidget;
+	instanceData.m_PlayerControllerPtr = playerController;
 
-		instanceData.m_ActionDelegateHandle = mainMenuWidget->m_OnActionRequested.AddLambda(
-			[weakContext = context.MakeWeakExecutionContext()](const EMainMenuAction action) mutable
+	FInputModeUIOnly inputMode;
+	inputMode.SetWidgetToFocus(mainMenuWidget->TakeWidget());
+	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+	instanceData.m_PlayerControllerPtr->SetInputMode(inputMode);
+	instanceData.m_PlayerControllerPtr->SetShowMouseCursor(true);
+
+	instanceData.m_ActionDelegateHandle = mainMenuWidget->m_OnActionRequested.AddLambda(
+		[weakContext = context.MakeWeakExecutionContext()](const EMainMenuAction action) mutable
+		{
+			const FStateTreeStrongExecutionContext strongContext = weakContext.MakeStrongExecutionContext();
+			if (!strongContext.IsValid())
 			{
-				const FStateTreeStrongExecutionContext strongContext = weakContext.MakeStrongExecutionContext();
-				if (!strongContext.IsValid())
-				{
-					return;
-				}
+				return;
+			}
 
-				if (action == EMainMenuAction::Quit)
-				{
-					const UObject* owner = strongContext.GetOwner().Get();
-					UKismetSystemLibrary::QuitGame(
-						owner ? owner->GetWorld() : nullptr,
-						nullptr,
-						EQuitPreference::Quit,
-						false);
-				}
-				else if (action == EMainMenuAction::Continue)
-				{
-					strongContext.FinishTask(EStateTreeFinishTaskType::Succeeded);
-				}
-			});
-		return EStateTreeRunStatus::Running;
-	}
-	return EStateTreeRunStatus::Failed;
+			if (action == EMainMenuAction::Quit)
+			{
+				const UObject* owner = strongContext.GetOwner().Get();
+				UKismetSystemLibrary::QuitGame(
+					owner ? owner->GetWorld() : nullptr,
+					nullptr,
+					EQuitPreference::Quit,
+					false);
+			}
+			else if (action == EMainMenuAction::Continue)
+			{
+				strongContext.FinishTask(EStateTreeFinishTaskType::Succeeded);
+			}
+		});
+	return EStateTreeRunStatus::Running;
 }
 void FMainMenuUiTask::ExitState(
 	FStateTreeExecutionContext& context,
