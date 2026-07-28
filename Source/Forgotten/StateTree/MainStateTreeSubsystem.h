@@ -47,7 +47,7 @@ protected:
 	TObjectPtr<UStateTree> m_stateTreeAsset;
 
 private:
-	void OnPostWorldInitialization(UWorld* world, const UWorld::InitializationValues initValues);
+	void OnGameModePostLoginEvent(AGameModeBase* GameMode, APlayerController* NewPlayer);
 
 	UPROPERTY()
 	FStateTreeInstanceData m_instanceData;

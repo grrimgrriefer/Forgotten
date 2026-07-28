@@ -2,6 +2,7 @@
 
 #include "MainStateTreeSubsystem.h"
 #include "StateTreeExecutionContext.h"
+#include "GameFramework/GameModeBase.h"
 
 #pragma region UGameInstanceSubsystem
 bool UMainStateTreeSubsystem::ShouldCreateSubsystem(UObject* outer) const
@@ -11,11 +12,11 @@ bool UMainStateTreeSubsystem::ShouldCreateSubsystem(UObject* outer) const
 void UMainStateTreeSubsystem::Initialize(FSubsystemCollectionBase& collection)
 {
 	Super::Initialize(collection);
-	FWorldDelegates::OnPostWorldInitialization.AddUObject(this, &UMainStateTreeSubsystem::OnPostWorldInitialization);
+	FGameModeEvents::GameModePostLoginEvent.AddUObject(this, &UMainStateTreeSubsystem::OnGameModePostLoginEvent);
 }
 void UMainStateTreeSubsystem::Deinitialize()
 {
-	FWorldDelegates::OnPostWorldInitialization.RemoveAll(this);
+	FGameModeEvents::GameModePostLoginEvent.RemoveAll(this);
 	if (m_isRunning && IsValid(m_stateTreeAsset))
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
@@ -91,20 +92,17 @@ bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 		return false;
 	}
 }
-void UMainStateTreeSubsystem::OnPostWorldInitialization(UWorld* world, const UWorld::InitializationValues initValues)
+void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* GameMode, APlayerController* NewPlayer)
 {
-	if (world && world->IsGameWorld())
+	if (m_isRunning || !IsValid(m_stateTreeAsset))
 	{
-		if (m_isRunning || !IsValid(m_stateTreeAsset))
-		{
-			return;
-		}
+		return;
+	}
 
-		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
-		if (context.Start() == EStateTreeRunStatus::Running)
-		{
-			m_isRunning = true;
-			UE_LOG(LogTemp, Log, TEXT("%s: StateTree started."), *GetNameSafe(this));
-		}
+	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
+	if (context.Start() == EStateTreeRunStatus::Running)
+	{
+		m_isRunning = true;
+		UE_LOG(LogTemp, Log, TEXT("%s: StateTree started."), *GetNameSafe(this));
 	}
 }
