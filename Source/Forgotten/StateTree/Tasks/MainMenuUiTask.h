@@ -47,6 +47,6 @@ public:
 		FStateTreeExecutionContext& context,
 		const FStateTreeTransitionResult& transitions) const override;
 
-	UPROPERTY(EditAnywhere, Category = "Man Menu UI")
+	UPROPERTY(EditAnywhere, Category = "Main Menu UI")
 	TSubclassOf<UMainMenuWidget> m_MenuWidgetClass;
 };

@@ -26,7 +26,7 @@ void UMainStateTreeSubsystem::Deinitialize()
 	}
 	Super::Deinitialize();
 }
-#pragma endregion FTickableGameObject
+#pragma endregion UGameInstanceSubsystem
 
 
 #pragma region FTickableGameObject
@@ -44,6 +44,8 @@ void UMainStateTreeSubsystem::Tick(const float deltaTime)
         return;
     }
 
+	ensureMsgf(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
+												"m_stateTreeAsset is not assigned, check the blueprint"));
 	if (m_isRunning && IsValid(m_stateTreeAsset))
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
@@ -76,12 +78,19 @@ bool UMainStateTreeSubsystem::IsTickable() const
 bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 {
 	const UWorld* world = GetWorld();
-    if (!world || world->IsPreparingMapChange())
-    {
-        return false;
-    }
 
-	if (m_isRunning && IsValid(m_stateTreeAsset))
+	check(world);
+	ensureMsgf(!world->IsPreparingMapChange(), TEXT("UMainStateTreeSubsystem: "
+												 "Level is being changed while sending a flowevent, this should not happen."));
+	ensureMsgf(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
+												"m_stateTreeAsset is not assigned, check the blueprint"));
+
+	if (world->IsPreparingMapChange() || !IsValid(m_stateTreeAsset))
+	{
+		return false;
+	}
+
+	if (m_isRunning)
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
 		context.SendEvent(tag);
@@ -92,9 +101,16 @@ bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 		return false;
 	}
 }
-void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* GameMode, APlayerController* NewPlayer)
+void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, APlayerController* newPlayer)
 {
-	if (m_isRunning || !IsValid(m_stateTreeAsset))
+	if (m_isRunning)
+	{
+		return;
+	}
+
+	ensureMsgf(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
+												"m_stateTreeAsset is not assigned, check the blueprint"));
+	if (!IsValid(m_stateTreeAsset))
 	{
 		return;
 	}

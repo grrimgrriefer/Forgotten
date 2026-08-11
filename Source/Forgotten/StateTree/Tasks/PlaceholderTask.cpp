@@ -1,6 +1,5 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
-
 #include "PlaceholderTask.h"
 
 #include "StateTreeExecutionContext.h"
@@ -12,7 +11,7 @@ FPlaceholderTask::FPlaceholderTask()
 }
 const UScriptStruct* FPlaceholderTask::GetInstanceDataType() const
 {
-	return FPlaceholderTask::StaticStruct();
+	return FInstanceDataType::StaticStruct();
 }
 EStateTreeRunStatus FPlaceholderTask::EnterState(
 	FStateTreeExecutionContext& context,
