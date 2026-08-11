@@ -7,11 +7,18 @@ void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	check(m_continueButton);
+	check(m_loadSaveButton);
+	check(m_newGameButton);
+	check(m_quitButton);
+	check(m_openSavesMenuButton);
+	check(m_openSettingsButton);
+	check(m_backButton);
+
 	m_continueButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnContinueClicked);
 	m_loadSaveButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnLoadSaveClicked);
 	m_newGameButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnNewGameClicked);
 	m_quitButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnQuitClicked);
-
 	m_openSavesMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnOpenSavesMenuClicked);
 	m_openSettingsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnOpenSettingsClicked);
 	m_backButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnBackClicked);

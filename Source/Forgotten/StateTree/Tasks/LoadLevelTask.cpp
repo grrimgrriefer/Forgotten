@@ -22,7 +22,9 @@ EStateTreeRunStatus FLoadLevelTask::EnterState(
 	const UWorld* world = context.GetWorld();
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
 
-	ensureMsgf(!instanceData.m_LevelToLoad.IsNull(), TEXT("FLoadLevelTask: m_LevelToLoad is not assigned, check the StateTree."));
+	check(world);
+	ensureMsgf(!instanceData.m_LevelToLoad.IsNull(), TEXT("FLoadLevelTask: m_LevelToLoad is not assigned, "
+													   "check the StateTree."));
 	UGameplayStatics::OpenLevelBySoftObjectPtr(world, instanceData.m_LevelToLoad);
 
 	return EStateTreeRunStatus::Succeeded;

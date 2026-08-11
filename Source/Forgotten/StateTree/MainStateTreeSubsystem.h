@@ -47,7 +47,7 @@ protected:
 	TObjectPtr<UStateTree> m_stateTreeAsset;
 
 private:
-	void OnGameModePostLoginEvent(AGameModeBase* GameMode, APlayerController* NewPlayer);
+	void OnGameModePostLoginEvent(AGameModeBase* gameMode, APlayerController* newPlayer);
 
 	UPROPERTY()
 	FStateTreeInstanceData m_instanceData;

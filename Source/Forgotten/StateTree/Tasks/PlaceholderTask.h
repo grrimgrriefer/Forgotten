@@ -6,12 +6,6 @@
 #include "Blueprint/StateTreeTaskBlueprintBase.h"
 #include "PlaceholderTask.generated.h"
 
-USTRUCT()
-struct FPlaceholderTaskInstanceData
-{
-	GENERATED_BODY()
-};
-
 /**
  * Placeholder task to avoid the StateTree from transitioning,
  * i.e. keep it in place
@@ -22,11 +16,8 @@ struct FORGOTTEN_API FPlaceholderTask : public FStateTreeTaskBase
 	GENERATED_BODY()
 
 public:
-	using FInstanceDataType = FPlaceholderTaskInstanceData;
-
 	FPlaceholderTask();
 
-	virtual const UScriptStruct* GetInstanceDataType() const override;
 	virtual EStateTreeRunStatus EnterState(
 		FStateTreeExecutionContext& context,
 		const FStateTreeTransitionResult& transitions) const override;

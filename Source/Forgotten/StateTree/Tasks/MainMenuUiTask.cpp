@@ -18,15 +18,17 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 	FStateTreeExecutionContext& context,
 	const FStateTreeTransitionResult& transitions) const
 {
-	FInstanceDataType& instanceData = context.GetInstanceData(*this);
 	const UWorld* world = context.GetWorld();
+	FInstanceDataType& instanceData = context.GetInstanceData(*this);
+
+	check(world);
 	APlayerController* playerController = world->GetFirstPlayerController();
 
-	ensure(playerController);
-	ensureMsgf(m_MenuWidgetClass, TEXT("MainMenuUiTask: m_MenuWidgetClass is null, check the StateTree."));
+	check(playerController);
+	ensureMsgf(m_MenuWidgetClass, TEXT("MainMenuUiTask: m_MenuWidgetClass is not assigned, check the StateTree."));
 	UMainMenuWidget* mainMenuWidget = CreateWidget<UMainMenuWidget>(playerController, m_MenuWidgetClass);
 
-	ensure(mainMenuWidget);
+	check(mainMenuWidget);
 	mainMenuWidget->AddToViewport();
 	instanceData.m_WidgetPtr = mainMenuWidget;
 	instanceData.m_PlayerControllerPtr = playerController;

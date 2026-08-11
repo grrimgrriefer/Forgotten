@@ -11,13 +11,13 @@ Voxta Plugin: https://github.com/grrimgrriefer/UnrealVoxta / https://dev.azure.c
 
 Mostly follows UE's condings standards with the following exceptions:
 
-Member variables, always start with `m_` 
-Private & protected ones are camelCase, public ones are Pascal.
-Local variables & parameters always are camelCase.
-
-When using multiple inheritance, overrides must be grouped in #pragma region blocks, clarifying which base is being overriden.
-
-Header files cannot contain function definitions.
+* Member variables, always start with `m_`
+* Private & protected ones are camelCase, public ones are Pascal.
+* Local variables & parameters always are camelCase.
+* When using multiple inheritance, all overrides must be grouped in `#pragma region basename` blocks
+* Header files cannot contain function definitions.
+* Lines cannot extend 120 chars
+  * When parameters are split, every parameter must be on a newline in both .h and .cpp files.
 
 # Context
 
