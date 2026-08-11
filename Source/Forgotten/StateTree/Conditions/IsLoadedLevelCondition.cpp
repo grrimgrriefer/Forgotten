@@ -52,4 +52,4 @@ FText FIsLoadedLevelCondition::GetDescription(
 		FText::FromString(levelName)
 	);
 }
-#endif WITH_EDITOR
+#endif

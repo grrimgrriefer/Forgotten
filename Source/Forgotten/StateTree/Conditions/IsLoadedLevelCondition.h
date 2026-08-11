@@ -37,5 +37,5 @@ public:
 		FStateTreeDataView instanceDataView,
 		const IStateTreeBindingLookup& bindingLookup,
 		EStateTreeNodeFormatting formatting) const override;
-#endif WITH_EDITOR
+#endif
 };

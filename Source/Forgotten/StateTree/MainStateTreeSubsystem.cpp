@@ -108,8 +108,9 @@ void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, 
 		return;
 	}
 
-	if (!ensureMsgf(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
-													"m_stateTreeAsset is not assigned, check the blueprint")))
+	ensureMsgf(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
+												"m_stateTreeAsset is not assigned, check the blueprint"));
+	if (!IsValid(m_stateTreeAsset))
 	{
 		return;
 	}

@@ -9,6 +9,10 @@ FPlaceholderTask::FPlaceholderTask()
 {
 	bShouldCallTick = false;
 }
+const UScriptStruct* FPlaceholderTask::GetInstanceDataType() const
+{
+	return FInstanceDataType::StaticStruct();
+}
 EStateTreeRunStatus FPlaceholderTask::EnterState(
 	FStateTreeExecutionContext& context,
 	const FStateTreeTransitionResult& transitions) const
