@@ -13,6 +13,9 @@ struct FIsLoadedLevelConditionInstanceData
 
 	UPROPERTY(EditAnywhere, Category = "Level")
 	TSoftObjectPtr<UWorld> m_LevelToCheck;
+
+	UPROPERTY(EditAnywhere, Category = "Condition")
+	bool m_invert = false;
 };
 
 /**
@@ -28,4 +31,9 @@ public:
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;
 	virtual bool TestCondition(FStateTreeExecutionContext& context) const override;
+	virtual FText GetDescription(
+		const FGuid& id,
+		FStateTreeDataView instanceDataView,
+		const IStateTreeBindingLookup& bindingLookup,
+		EStateTreeNodeFormatting formatting) const override;
 };

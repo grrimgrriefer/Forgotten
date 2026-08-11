@@ -2,6 +2,7 @@
 
 #include "IsLoadedLevelCondition.h"
 #include "StateTreeExecutionContext.h"
+#include "StateTreeNodeDescriptionHelpers.h"
 #include "Engine/World.h"
 #include "Misc/PackageName.h"
 #include "UObject/Package.h"
@@ -30,5 +31,18 @@ bool FIsLoadedLevelCondition::TestCondition(FStateTreeExecutionContext& context)
 	currentPackageName = UWorld::RemovePIEPrefix(currentPackageName);
 #endif
 
-	return currentPackageName == targetPackageName;
+	const bool isMatch = (currentPackageName == targetPackageName);
+	return instanceData.m_invert ? !isMatch : isMatch;
+}
+FText FIsLoadedLevelCondition::GetDescription(const FGuid& ID, FStateTreeDataView InstanceDataView, const IStateTreeBindingLookup& BindingLookup, EStateTreeNodeFormatting Formatting) const
+{
+	const FInstanceDataType* instanceData = InstanceDataView.GetPtr<FInstanceDataType>();
+	const FString levelName = (instanceData && !instanceData->m_LevelToCheck.IsNull()) ? instanceData->m_LevelToCheck.GetAssetName() : TEXT("None");
+
+	const FText invertPrefix = instanceData->m_invert ? NSLOCTEXT("StateTree", "InvertPrefix", "NOT ") : FText::GetEmpty();
+	return FText::Format(
+		NSLOCTEXT("StateTree", "IsLoadedLevelCondition_CombinedDesc", "{0} Is Loaded Level ({1})"),
+		invertPrefix,
+		FText::FromString(levelName)
+	);
 }
