@@ -39,10 +39,10 @@ void UMainStateTreeSubsystem::Tick(const float deltaTime)
 	m_lastFrameNumberWeTicked = GFrameCounter;
 
 	const UWorld* world = GetWorld();
-    if (!world || world->IsPreparingMapChange())
-    {
-        return;
-    }
+	if (!world || world->IsPreparingMapChange())
+	{
+		return;
+	}
 
 	ensureMsgf(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
 												"m_stateTreeAsset is not assigned, check the blueprint"));
@@ -70,7 +70,7 @@ bool UMainStateTreeSubsystem::IsTickableInEditor() const
 }
 bool UMainStateTreeSubsystem::IsTickable() const
 {
-    return !HasAnyFlags(RF_ClassDefaultObject) && m_isRunning && IsValid(m_stateTreeAsset);
+	return !HasAnyFlags(RF_ClassDefaultObject) && m_isRunning && IsValid(m_stateTreeAsset);
 }
 #pragma endregion FTickableGameObject
 

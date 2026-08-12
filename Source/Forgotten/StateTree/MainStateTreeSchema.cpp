@@ -19,7 +19,7 @@ TConstArrayView<FStateTreeExternalDataDesc> UMainStateTreeSchema::GetContextData
 }
 bool UMainStateTreeSchema::IsStructAllowed(const UScriptStruct* inScriptStruct) const
 {
-    return inScriptStruct->IsChildOf(FStateTreeTaskBase::StaticStruct())
-        || inScriptStruct->IsChildOf(FStateTreeEvaluatorBase::StaticStruct())
-        || inScriptStruct->IsChildOf(FStateTreeConditionBase::StaticStruct());
+	return inScriptStruct->IsChildOf(FStateTreeTaskBase::StaticStruct())
+		|| inScriptStruct->IsChildOf(FStateTreeEvaluatorBase::StaticStruct())
+		|| inScriptStruct->IsChildOf(FStateTreeConditionBase::StaticStruct());
 }
