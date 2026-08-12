@@ -23,7 +23,6 @@ void UMainMenuWidget::NativeConstruct()
 	m_openSettingsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnOpenSettingsClicked);
 	m_backButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnBackClicked);
 }
-
 void UMainMenuWidget::NativeDestruct()
 {
 	m_continueButton->OnClicked.RemoveAll(this);
@@ -36,7 +35,6 @@ void UMainMenuWidget::NativeDestruct()
 
 	Super::NativeDestruct();
 }
-
 void UMainMenuWidget::OnContinueClicked() const
 {
 	// TODO

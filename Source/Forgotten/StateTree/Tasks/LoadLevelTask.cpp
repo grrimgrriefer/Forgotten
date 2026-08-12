@@ -27,5 +27,5 @@ EStateTreeRunStatus FLoadLevelTask::EnterState(
 													   "check the StateTree."));
 	UGameplayStatics::OpenLevelBySoftObjectPtr(world, instanceData.m_LevelToLoad);
 
-	return EStateTreeRunStatus::Succeeded;
+    return EStateTreeRunStatus::Running;
 }

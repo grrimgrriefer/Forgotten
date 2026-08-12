@@ -33,6 +33,7 @@ bool FIsLoadedLevelCondition::TestCondition(FStateTreeExecutionContext& context)
 	const bool isMatch = (currentPackageName == targetPackageName);
 	return instanceData.m_Invert ? !isMatch : isMatch;
 }
+
 #if WITH_EDITOR
 FText FIsLoadedLevelCondition::GetDescription(
 	const FGuid& id,
@@ -42,10 +43,12 @@ FText FIsLoadedLevelCondition::GetDescription(
 {
 	const FInstanceDataType* instanceData = instanceDataView.GetPtr<FInstanceDataType>();
 	const FString levelName = (instanceData && !instanceData->m_LevelToCheck.IsNull())
-		? instanceData->m_LevelToCheck.GetAssetName() : TEXT("None");
+		                          ? instanceData->m_LevelToCheck.GetAssetName()
+		                          : TEXT("None");
 
 	const FText invertPrefix = instanceData->m_Invert
-		? NSLOCTEXT("StateTree", "InvertPrefix", "NOT ") : FText::GetEmpty();
+		                           ? NSLOCTEXT("StateTree", "InvertPrefix", "NOT ")
+		                           : FText::GetEmpty();
 	return FText::Format(
 		NSLOCTEXT("StateTree", "IsLoadedLevelCondition_CombinedDesc", "{0} Is Loaded Level ({1})"),
 		invertPrefix,

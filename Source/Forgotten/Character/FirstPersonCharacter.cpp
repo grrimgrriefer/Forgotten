@@ -1,8 +1,67 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
 #include "FirstPersonCharacter.h"
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "Engine/LocalPlayer.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+
+	m_cameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+	m_cameraComponent->SetupAttachment(GetCapsuleComponent());
+	m_cameraComponent->bUsePawnControlRotation = true;
+}
+void AFirstPersonCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	const APlayerController* playerController = Cast<APlayerController>(GetController());
+	check(playerController);
+
+	UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+		playerController->GetLocalPlayer());
+	check(subsystem);
+
+	ensureMsgf(m_defaultMappingContext, TEXT("AFirstPersonCharacter: m_defaultMappingContext is not assigned, check the blueprint."));
+	subsystem->AddMappingContext(m_defaultMappingContext, 0);
+}
+void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInputComponent)
+{
+	Super::SetupPlayerInputComponent(playerInputComponent);
+
+	UEnhancedInputComponent* enhancedInputComponent = Cast<UEnhancedInputComponent>(playerInputComponent);
+	check(enhancedInputComponent);
+
+	ensureMsgf(m_moveAction, TEXT("AFirstPersonCharacter: m_moveAction is not assigned, check the blueprint."));
+	enhancedInputComponent->BindAction(m_moveAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Move);
+	ensureMsgf(m_lookAction, TEXT("AFirstPersonCharacter: m_lookAction is not assigned, check the blueprint."));
+	enhancedInputComponent->BindAction(m_lookAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Look);
+}
+void AFirstPersonCharacter::Move(const FInputActionValue& value)
+{
+	const FVector2D movementVector = value.Get<FVector2D>();
+	check(Controller);
+
+	const FRotator yawRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
+	const FVector forwardDirection = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::X);
+	const FVector rightDirection = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::Y);
+
+	AddMovementInput(forwardDirection, movementVector.Y);
+	AddMovementInput(rightDirection, movementVector.X);
+}
+void AFirstPersonCharacter::Look(const FInputActionValue& value)
+{
+	const FVector2D lookAxisVector = value.Get<FVector2D>();
+	check(Controller);
+
+	AddControllerYawInput(lookAxisVector.X);
+	AddControllerPitchInput(lookAxisVector.Y);
 }
