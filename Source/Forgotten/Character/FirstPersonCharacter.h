@@ -23,7 +23,11 @@ public:
 	AFirstPersonCharacter();
 
 	virtual void BeginPlay() override;
+	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
+
+	void EnterConversationMode(AActor* targetActor);
+	void ExitConversationMode();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -44,8 +48,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	float m_interactionDistance = 250.0f;
 
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	float m_cameraInterpSpeed = 5.0f;
+
+	UPROPERTY(Transient)
+	TObjectPtr<AActor> m_conversationTarget = nullptr;
+
 private:
 	void Move(const FInputActionValue& value);
 	void Look(const FInputActionValue& value);
 	void Interact();
+	void SetInternalConversationMode(AActor* targetActor);
 };

@@ -11,7 +11,7 @@
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationPitch = false;
@@ -38,6 +38,29 @@ void AFirstPersonCharacter::BeginPlay()
 
 	ensureMsgf(m_cameraComponent, TEXT("AFirstPersonCharacter: m_cameraComponen has been removed? Check the blueprint."));
 }
+void AFirstPersonCharacter::Tick(const float deltaTime)
+{
+	Super::Tick(deltaTime);
+
+	if (IsValid(m_conversationTarget))
+	{
+		check(m_cameraComponent);
+		const FVector cameraLoc = m_cameraComponent->GetComponentLocation();
+		const FVector targetLoc = m_conversationTarget->GetActorLocation();
+		const FRotator targetRotation = (targetLoc - cameraLoc).Rotation();
+		APlayerController* playerController = Cast<APlayerController>(GetController());
+
+		check(playerController);
+		const FRotator currentRotation = playerController->GetControlRotation();
+		const FRotator newRotation = FMath::RInterpTo(
+			currentRotation,
+			targetRotation,
+			deltaTime,
+			m_cameraInterpSpeed);
+
+		playerController->SetControlRotation(newRotation);
+	}
+}
 void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInputComponent)
 {
 	Super::SetupPlayerInputComponent(playerInputComponent);
@@ -51,6 +74,15 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	enhancedInputComponent->BindAction(m_lookAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Look);
 	ensureMsgf(m_interactAction, TEXT("AFirstPersonCharacter: m_interactAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_interactAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::Interact);
+}
+void AFirstPersonCharacter::EnterConversationMode(AActor* targetActor)
+{
+	ensureMsgf(targetActor, TEXT("AFirstPersonCharacter: EnterConversationMode should always provide a valid target."));
+	SetInternalConversationMode(targetActor);
+}
+void AFirstPersonCharacter::ExitConversationMode()
+{
+	SetInternalConversationMode(nullptr);
 }
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
 {
@@ -100,4 +132,13 @@ void AFirstPersonCharacter::Interact()
 			interactable->Interact(playerController);
 		}
 	}
+}
+void AFirstPersonCharacter::SetInternalConversationMode(AActor* targetActor)
+{
+	m_conversationTarget = targetActor;
+	PrimaryActorTick.SetTickFunctionEnable(m_conversationTarget != nullptr);
+
+	APlayerController* playerController = Cast<APlayerController>(GetController());
+	check(playerController);
+	playerController->SetIgnoreMoveInput(m_conversationTarget != nullptr);
 }
