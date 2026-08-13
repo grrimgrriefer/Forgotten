@@ -20,8 +20,10 @@ class FORGOTTEN_API ARainNPC : public ACharacter, public IInteractableInterface
 public:
 	ARainNPC();
 
-	virtual void Interact(APlayerController* instigator) override;
-	virtual FText GetInteractionPrompt() const override;
+	#pragma region IInteractableInterface
+		virtual void Interact(APlayerController* instigator) override;
+		virtual FText GetInteractionPrompt() const override;
+	#pragma endregion IInteractableInterface
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")

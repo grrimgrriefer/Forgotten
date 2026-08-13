@@ -15,6 +15,8 @@ ARainNPC::ARainNPC()
 	m_interactionPrompt = NSLOCTEXT("Interaction", "TalkToRain", "Talk to Rain");
 }
 
+
+#pragma region IInteractableInterface
 void ARainNPC::Interact(APlayerController* instigator)
 {
 	const UWorld* world = GetWorld();
@@ -24,8 +26,9 @@ void ARainNPC::Interact(APlayerController* instigator)
 	check(stateTreeSubsystem);
 	stateTreeSubsystem->TrySendFlowEvent(FGameplayTag::RequestGameplayTag(TEXT("State.Conversation.Start")));
 }
-
 FText ARainNPC::GetInteractionPrompt() const
 {
 	return m_interactionPrompt;
 }
+#pragma endregion IInteractableInterface
+
