@@ -57,6 +57,6 @@ protected:
 private:
 	void Move(const FInputActionValue& value);
 	void Look(const FInputActionValue& value);
-	void Interact();
+	void AttemptInteraction();
 	void SetInternalConversationMode(AActor* targetActor);
 };

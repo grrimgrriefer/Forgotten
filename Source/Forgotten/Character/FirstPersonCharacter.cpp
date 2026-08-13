@@ -73,7 +73,7 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	ensureMsgf(m_lookAction, TEXT("AFirstPersonCharacter: m_lookAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_lookAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Look);
 	ensureMsgf(m_interactAction, TEXT("AFirstPersonCharacter: m_interactAction is not assigned, check the blueprint."));
-	enhancedInputComponent->BindAction(m_interactAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::Interact);
+	enhancedInputComponent->BindAction(m_interactAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::AttemptInteraction);
 }
 void AFirstPersonCharacter::EnterConversationMode(AActor* targetActor)
 {
@@ -104,7 +104,7 @@ void AFirstPersonCharacter::Look(const FInputActionValue& value)
 	AddControllerYawInput(lookAxisVector.X);
 	AddControllerPitchInput(lookAxisVector.Y);
 }
-void AFirstPersonCharacter::Interact()
+void AFirstPersonCharacter::AttemptInteraction()
 {
 	check(m_cameraComponent);
 	const FVector traceStart = m_cameraComponent->GetComponentLocation();
@@ -136,9 +136,17 @@ void AFirstPersonCharacter::Interact()
 void AFirstPersonCharacter::SetInternalConversationMode(AActor* targetActor)
 {
 	m_conversationTarget = targetActor;
-	PrimaryActorTick.SetTickFunctionEnable(m_conversationTarget != nullptr);
+	const bool isInConversation = m_conversationTarget != nullptr;
+	PrimaryActorTick.SetTickFunctionEnable(isInConversation);
 
 	APlayerController* playerController = Cast<APlayerController>(GetController());
-	check(playerController);
-	playerController->SetIgnoreMoveInput(m_conversationTarget != nullptr);
+	if (isInConversation)
+	{
+		check(playerController);
+	}
+
+	if (IsValid(playerController))
+	{
+		playerController->SetIgnoreMoveInput(isInConversation);
+	}
 }
