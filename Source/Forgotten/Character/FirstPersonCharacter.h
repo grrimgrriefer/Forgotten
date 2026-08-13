@@ -38,7 +38,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> m_lookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> m_interactAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
+	float m_interactionDistance = 250.0f;
+
 private:
 	void Move(const FInputActionValue& value);
 	void Look(const FInputActionValue& value);
+	void Interact();
 };

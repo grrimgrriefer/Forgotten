@@ -6,6 +6,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
+#include "Engine/World.h"
+#include "Forgotten/Interactables/InteractableInterface.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
@@ -30,8 +32,11 @@ void AFirstPersonCharacter::BeginPlay()
 		playerController->GetLocalPlayer());
 	check(subsystem);
 
-	ensureMsgf(m_defaultMappingContext, TEXT("AFirstPersonCharacter: m_defaultMappingContext is not assigned, check the blueprint."));
+	ensureMsgf(m_defaultMappingContext, TEXT("AFirstPersonCharacter: m_defaultMappingContext is not assigned, "
+										  "check the blueprint."));
 	subsystem->AddMappingContext(m_defaultMappingContext, 0);
+
+	ensureMsgf(m_cameraComponent, TEXT("AFirstPersonCharacter: m_cameraComponen has been removed? Check the blueprint."));
 }
 void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInputComponent)
 {
@@ -44,6 +49,8 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	enhancedInputComponent->BindAction(m_moveAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Move);
 	ensureMsgf(m_lookAction, TEXT("AFirstPersonCharacter: m_lookAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_lookAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Look);
+	ensureMsgf(m_interactAction, TEXT("AFirstPersonCharacter: m_interactAction is not assigned, check the blueprint."));
+	enhancedInputComponent->BindAction(m_interactAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::Interact);
 }
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
 {
@@ -64,4 +71,33 @@ void AFirstPersonCharacter::Look(const FInputActionValue& value)
 
 	AddControllerYawInput(lookAxisVector.X);
 	AddControllerPitchInput(lookAxisVector.Y);
+}
+void AFirstPersonCharacter::Interact()
+{
+	check(m_cameraComponent);
+	const FVector traceStart = m_cameraComponent->GetComponentLocation();
+	const FVector traceEnd = traceStart + (m_cameraComponent->GetForwardVector() * m_interactionDistance);
+
+	FHitResult hitResult;
+	FCollisionQueryParams queryParams;
+	queryParams.AddIgnoredActor(this);
+
+	const UWorld* world = GetWorld();
+	check(world);
+	const bool bHit = world->LineTraceSingleByChannel(
+		hitResult,
+		traceStart,
+		traceEnd,
+		ECC_Visibility,
+		queryParams);
+
+	if (bHit && hitResult.GetActor())
+	{
+		if (IInteractableInterface* interactable = Cast<IInteractableInterface>(hitResult.GetActor()))
+		{
+			APlayerController* playerController = Cast<APlayerController>(GetController());
+			check(playerController);
+			interactable->Interact(playerController);
+		}
+	}
 }
