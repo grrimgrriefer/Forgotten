@@ -32,25 +32,18 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<UCameraComponent> m_cameraComponent;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> m_defaultMappingContext;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> m_moveAction;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> m_lookAction;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> m_interactAction;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	float m_interactionDistance = 250.0f;
-
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	float m_cameraInterpSpeed = 5.0f;
-
 	UPROPERTY(Transient)
 	TObjectPtr<AActor> m_conversationTarget = nullptr;
 

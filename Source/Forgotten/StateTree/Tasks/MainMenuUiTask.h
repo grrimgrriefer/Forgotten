@@ -19,7 +19,6 @@ struct FMainMenuUiTaskInstanceData
 
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UMainMenuWidget> m_WidgetPtr = nullptr;
-
 	UPROPERTY(Transient)
 	TWeakObjectPtr<APlayerController> m_PlayerControllerPtr = nullptr;
 

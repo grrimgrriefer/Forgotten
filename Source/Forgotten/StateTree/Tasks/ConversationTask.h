@@ -16,7 +16,6 @@ struct FConversationTaskInstanceData
 
 	UPROPERTY(Transient)
 	TWeakObjectPtr<AFirstPersonCharacter> m_PlayerCharacter = nullptr;
-
 	UPROPERTY(Transient)
 	TWeakObjectPtr<ARainNPC> m_TargetNPC = nullptr;
 };

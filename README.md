@@ -17,7 +17,36 @@ Mostly follows UE's condings standards with the following exceptions:
 * When using multiple inheritance, all overrides must be grouped in `#pragma region basename` blocks
 * Header files cannot contain function definitions.
 * Lines cannot extend 120 chars
-  * When parameters are split, every parameter must be on a newline in both .h and .cpp files.
+  * When parameters have to be split, every parameter must be on a newline in both .h and .cpp files.
+* Virtual private functions should be avoided.
+* Global using-declarations should be avoided.
+
+## Header file layout
+
+* Includes
+* Forward declarations
+* Class summary
+* Public
+  * Using-declarations
+  * Constructor
+  * Delegates (not delegathandles)
+  * Virtuals & Overrides
+  * Functions
+  * UFunctions
+  * UProperties
+* Protected
+  * Virtuals & Overrides
+  * Functions
+  * UFunctions
+  * UProperties
+  * Member fields
+* Private
+  * Functions
+  * UFunctions
+  * UPROPERTIES
+  * Member fields
+
+_CPP file must implement functions in the same order as used in the header file._
 
 # Context
 
