@@ -3,6 +3,7 @@
 #include "RainNPC.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/GameInstance.h"
+#include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/StateTree/MainStateTreeSubsystem.h"
 
 ARainNPC::ARainNPC()
@@ -24,7 +25,7 @@ void ARainNPC::Interact(APlayerController* instigator)
 	UMainStateTreeSubsystem* stateTreeSubsystem = world->GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
 
 	check(stateTreeSubsystem);
-	stateTreeSubsystem->TrySendFlowEvent(FGameplayTag::RequestGameplayTag(TEXT("State.Conversation.Start")));
+	stateTreeSubsystem->TrySendFlowEvent(TAG_State_Conversation_Start);
 }
 FText ARainNPC::GetInteractionPrompt() const
 {
