@@ -17,7 +17,9 @@ public class Forgotten : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"GameplayTags",
-			"UMG"
+			"UMG",
+			"Slate",
+			"SlateCore"
 		]);
 
 		PrivateDependencyModuleNames.AddRange([]);

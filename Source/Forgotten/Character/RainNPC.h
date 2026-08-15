@@ -28,7 +28,6 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> m_placeholderMesh;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	FText m_interactionPrompt;
 };

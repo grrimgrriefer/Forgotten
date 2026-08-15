@@ -39,7 +39,6 @@ public:
 		virtual bool IsTickable() const override;
 	#pragma endregion FTickableGameObject
 
-	UFUNCTION(BlueprintCallable, Category = "GameFlow")
 	bool TrySendFlowEvent(const FGameplayTag tag);
 
 protected:

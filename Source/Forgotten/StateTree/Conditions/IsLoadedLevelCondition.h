@@ -13,7 +13,6 @@ struct FIsLoadedLevelConditionInstanceData
 
 	UPROPERTY(EditAnywhere, Category = "Level")
 	TSoftObjectPtr<UWorld> m_LevelToCheck;
-
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	bool m_Invert = false;
 };

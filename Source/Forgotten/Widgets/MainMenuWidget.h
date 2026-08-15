@@ -29,49 +29,17 @@ public:
 	FOnMenuActionRequested m_OnActionRequested;
 
 protected:
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> m_continueButton;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> m_loadSaveButton;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> m_newGameButton;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> m_quitButton;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> m_openSavesMenuButton;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> m_openSettingsButton;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> m_backButton;
-
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> m_continueButton;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> m_quitButton;
 
 private:
 	UFUNCTION()
 	void OnContinueClicked() const;
-
-	UFUNCTION()
-	void OnNewGameClicked() const;
-
-	UFUNCTION()
-	void OnLoadSaveClicked() const;
-
 	UFUNCTION()
 	void OnQuitClicked() const;
-
-	UFUNCTION()
-	void OnOpenSavesMenuClicked();
-
-	UFUNCTION()
-	void OnOpenSettingsClicked();
-
-	UFUNCTION()
-	void OnBackClicked();
 };
