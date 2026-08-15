@@ -54,15 +54,11 @@ EStateTreeRunStatus FConversationTask::EnterState(
 	playerController->SetShowMouseCursor(true);
 
 	instanceData.m_TextSubmittedHandle = conversationWidget->m_OnTextSubmitted.AddLambda(
-		[conversationWidget](const FText& textSubmitted)
+		[weakWidget = TWeakObjectPtr<UConversationWidget>(conversationWidget)](const FText& textSubmitted)
 		{
-			ensureMsgf(conversationWidget, TEXT("FConversationTask: conversationWidget is not valid when trying to "
-											"add a transcript entry, this should not happen."));
-			if (IsValid(conversationWidget))
+			if (UConversationWidget* strongWidget = weakWidget.Get())
 			{
-				conversationWidget->AddTranscriptEntry(
-					NSLOCTEXT("Conversation", "You", "You"),
-					textSubmitted);
+				strongWidget->AddTranscriptEntry(NSLOCTEXT("Conversation", "You", "You"), textSubmitted);
 			}
 		});
 
