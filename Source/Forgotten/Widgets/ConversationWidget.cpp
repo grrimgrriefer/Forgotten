@@ -1,6 +1,8 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
 #include "ConversationWidget.h"
+
+#include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Components/ScrollBox.h"
@@ -13,13 +15,13 @@ void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FTe
 		speakerName,
 		messageText);
 
-	check(m_transcriptScrollBox);
-	UTextBlock* newEntry = NewObject<UTextBlock>(m_transcriptScrollBox);
+	UTextBlock* newEntry = WidgetTree->ConstructWidget<UTextBlock>();
 
 	check(newEntry);
 	newEntry->SetText(formattedText);
 	newEntry->SetAutoWrapText(true);
 
+	check(m_transcriptScrollBox);
 	m_transcriptScrollBox->AddChild(newEntry);
 	m_transcriptScrollBox->ScrollToEnd();
 }

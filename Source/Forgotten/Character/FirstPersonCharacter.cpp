@@ -12,6 +12,7 @@
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationPitch = false;

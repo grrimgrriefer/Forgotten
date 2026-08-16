@@ -24,10 +24,14 @@ bool FIsLoadedLevelCondition::TestCondition(FStateTreeExecutionContext& context)
 		return false;
 	}
 
-	const FString targetPackageName = FPackageName::ObjectPathToPackageName(instanceData.m_LevelToCheck.ToString());
-	FString currentPackageName = world->GetOutermost()->GetName();
+	const FName targetPackageName = instanceData.m_LevelToCheck.GetLongPackageFName();
+	FName currentPackageName;
 #if WITH_EDITOR
-	currentPackageName = UWorld::RemovePIEPrefix(currentPackageName);
+	FString currentPackageString = world->GetOutermost()->GetName();
+	currentPackageString = UWorld::RemovePIEPrefix(currentPackageString);
+	currentPackageName = FName(*currentPackageString);
+#else
+	currentPackageName = world->GetOutermost()->GetFName();
 #endif
 
 	const bool isMatch = (currentPackageName == targetPackageName);
