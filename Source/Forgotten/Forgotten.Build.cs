@@ -22,6 +22,9 @@ public class Forgotten : ModuleRules
 			"SlateCore"
 		]);
 
-		PrivateDependencyModuleNames.AddRange([]);
+		if (Target.bBuildEditor)
+        {
+            PrivateDependencyModuleNames.AddRange(["UnrealEd"]);
+        }
 	}
 }
