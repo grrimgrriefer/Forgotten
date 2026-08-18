@@ -8,6 +8,7 @@
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "Forgotten/Interactables/InteractableInterface.h"
+#include "Forgotten/Utils/AssertMacros.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
@@ -27,17 +28,18 @@ void AFirstPersonCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	const APlayerController* playerController = Cast<APlayerController>(GetController());
-	check(playerController);
+	ASSERT_CHECK(playerController);
 
 	UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
 		playerController->GetLocalPlayer());
-	check(subsystem);
+	ASSERT_CHECK(subsystem);
 
-	ensureMsgf(m_defaultMappingContext, TEXT("AFirstPersonCharacter: m_defaultMappingContext is not assigned, "
+	ASSERT_CHECK(m_defaultMappingContext, TEXT("AFirstPersonCharacter: m_defaultMappingContext is not assigned, "
 										  "check the blueprint."));
 	subsystem->AddMappingContext(m_defaultMappingContext, 0);
 
-	ensureMsgf(m_cameraComponent, TEXT("AFirstPersonCharacter: m_cameraComponen has been removed? Check the blueprint."));
+	ASSERT_CHECK(m_cameraComponent, TEXT("AFirstPersonCharacter: "
+									  "m_cameraComponen has been removed? Check the blueprint."));
 }
 void AFirstPersonCharacter::Tick(const float deltaTime)
 {
@@ -45,13 +47,13 @@ void AFirstPersonCharacter::Tick(const float deltaTime)
 
 	if (IsValid(m_conversationTarget))
 	{
-		check(m_cameraComponent);
+		ASSERT_CHECK(m_cameraComponent);
 		const FVector cameraLoc = m_cameraComponent->GetComponentLocation();
 		const FVector targetLoc = m_conversationTarget->GetActorLocation();
 		const FRotator targetRotation = (targetLoc - cameraLoc).Rotation();
 		APlayerController* playerController = Cast<APlayerController>(GetController());
 
-		check(playerController);
+		ASSERT_CHECK(playerController);
 		const FRotator currentRotation = playerController->GetControlRotation();
 		const FRotator newRotation = FMath::RInterpTo(
 			currentRotation,
@@ -67,18 +69,18 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	Super::SetupPlayerInputComponent(playerInputComponent);
 
 	UEnhancedInputComponent* enhancedInputComponent = Cast<UEnhancedInputComponent>(playerInputComponent);
-	check(enhancedInputComponent);
+	ASSERT_CHECK(enhancedInputComponent);
 
-	ensureMsgf(m_moveAction, TEXT("AFirstPersonCharacter: m_moveAction is not assigned, check the blueprint."));
+	ASSERT_CHECK(m_moveAction, TEXT("AFirstPersonCharacter: m_moveAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_moveAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Move);
-	ensureMsgf(m_lookAction, TEXT("AFirstPersonCharacter: m_lookAction is not assigned, check the blueprint."));
+	ASSERT_CHECK(m_lookAction, TEXT("AFirstPersonCharacter: m_lookAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_lookAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Look);
-	ensureMsgf(m_interactAction, TEXT("AFirstPersonCharacter: m_interactAction is not assigned, check the blueprint."));
+	ASSERT_CHECK(m_interactAction, TEXT("AFirstPersonCharacter: m_interactAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_interactAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::AttemptInteraction);
 }
 void AFirstPersonCharacter::EnterConversationMode(AActor* targetActor)
 {
-	ensureMsgf(targetActor, TEXT("AFirstPersonCharacter: EnterConversationMode should always provide a valid target."));
+	ASSERT_CHECK(targetActor, TEXT("AFirstPersonCharacter: EnterConversationMode should always provide a valid target."));
 	SetInternalConversationMode(targetActor);
 }
 void AFirstPersonCharacter::ExitConversationMode()
@@ -88,7 +90,7 @@ void AFirstPersonCharacter::ExitConversationMode()
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
 {
 	const FVector2D movementVector = value.Get<FVector2D>();
-	check(Controller);
+	ASSERT_CHECK(Controller);
 
 	const FRotator yawRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
 	const FVector forwardDirection = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::X);
@@ -100,14 +102,14 @@ void AFirstPersonCharacter::Move(const FInputActionValue& value)
 void AFirstPersonCharacter::Look(const FInputActionValue& value)
 {
 	const FVector2D lookAxisVector = value.Get<FVector2D>();
-	check(Controller);
+	ASSERT_CHECK(Controller);
 
 	AddControllerYawInput(lookAxisVector.X);
 	AddControllerPitchInput(lookAxisVector.Y);
 }
 void AFirstPersonCharacter::AttemptInteraction()
 {
-	check(m_cameraComponent);
+	ASSERT_CHECK(m_cameraComponent);
 	const FVector traceStart = m_cameraComponent->GetComponentLocation();
 	const FVector traceEnd = traceStart + (m_cameraComponent->GetForwardVector() * m_interactionDistance);
 
@@ -116,7 +118,7 @@ void AFirstPersonCharacter::AttemptInteraction()
 	queryParams.AddIgnoredActor(this);
 
 	const UWorld* world = GetWorld();
-	check(world);
+	ASSERT_CHECK(world);
 	const bool bHit = world->LineTraceSingleByChannel(
 		hitResult,
 		traceStart,
@@ -129,7 +131,7 @@ void AFirstPersonCharacter::AttemptInteraction()
 		if (IInteractableInterface* interactable = Cast<IInteractableInterface>(hitResult.GetActor()))
 		{
 			APlayerController* playerController = Cast<APlayerController>(GetController());
-			check(playerController);
+			ASSERT_CHECK(playerController);
 			interactable->Interact(playerController);
 		}
 	}
@@ -143,7 +145,7 @@ void AFirstPersonCharacter::SetInternalConversationMode(AActor* targetActor)
 	APlayerController* playerController = Cast<APlayerController>(GetController());
 	if (isInConversation)
 	{
-		check(playerController);
+		ASSERT_CHECK(playerController);
 	}
 
 	if (IsValid(playerController))

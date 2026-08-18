@@ -3,6 +3,7 @@
 #include "MainMenuUiTask.h"
 #include "StateTreeAsyncExecutionContext.h"
 #include "StateTreeExecutionContext.h"
+#include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/MainMenuWidget.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -21,14 +22,15 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 	const UWorld* world = context.GetWorld();
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
 
-	check(world);
+	ASSERT_CHECK_RETURN(world, EStateTreeRunStatus::Failed);
 	APlayerController* playerController = world->GetFirstPlayerController();
 
-	check(playerController);
-	ensureMsgf(m_MenuWidgetClass, TEXT("MainMenuUiTask: m_MenuWidgetClass is not assigned, check the StateTree."));
+	ASSERT_CHECK_RETURN(playerController, EStateTreeRunStatus::Failed);
+	ASSERT_CHECK_RETURN(m_MenuWidgetClass, EStateTreeRunStatus::Failed,
+		TEXT("MainMenuUiTask: m_MenuWidgetClass is not assigned, check the StateTree."));
 	UMainMenuWidget* mainMenuWidget = CreateWidget<UMainMenuWidget>(playerController, m_MenuWidgetClass);
 
-	check(mainMenuWidget);
+	ASSERT_CHECK_RETURN(mainMenuWidget, EStateTreeRunStatus::Failed);
 	mainMenuWidget->AddToViewport();
 	instanceData.m_WidgetPtr = mainMenuWidget;
 	instanceData.m_PlayerControllerPtr = playerController;

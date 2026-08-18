@@ -4,6 +4,7 @@
 
 #include "StateTreeExecutionContext.h"
 #include "Engine/World.h"
+#include "Forgotten/Utils/AssertMacros.h"
 #include "Kismet/GameplayStatics.h"
 #include "VisualLogger/VisualLogger.h"
 
@@ -22,9 +23,9 @@ EStateTreeRunStatus FLoadLevelTask::EnterState(
 	const UWorld* world = context.GetWorld();
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
 
-	check(world);
-	ensureMsgf(!instanceData.m_LevelToLoad.IsNull(), TEXT("FLoadLevelTask: m_LevelToLoad is not assigned, "
-													   "check the StateTree."));
+	ASSERT_CHECK_RETURN(world, EStateTreeRunStatus::Failed);
+	ASSERT_CHECK_RETURN(!instanceData.m_LevelToLoad.IsNull(), EStateTreeRunStatus::Failed,
+		TEXT("FLoadLevelTask: m_LevelToLoad is not assigned, check the StateTree."));
 	UGameplayStatics::OpenLevelBySoftObjectPtr(world, instanceData.m_LevelToLoad);
 
     return EStateTreeRunStatus::Running;

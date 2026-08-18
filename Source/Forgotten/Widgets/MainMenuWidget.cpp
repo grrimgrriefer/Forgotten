@@ -2,13 +2,14 @@
 
 #include "MainMenuWidget.h"
 #include "Components/Button.h"
+#include "Forgotten/Utils/AssertMacros.h"
 
 void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	check(m_continueButton);
-	check(m_quitButton);
+	ASSERT_CHECK(m_continueButton);
+	ASSERT_CHECK(m_quitButton);
 	m_continueButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnContinueClicked);
 	m_quitButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnQuitClicked);
 }

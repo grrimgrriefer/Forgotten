@@ -5,6 +5,7 @@
 #include "Engine/GameInstance.h"
 #include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/StateTree/MainStateTreeSubsystem.h"
+#include "Forgotten/Utils/AssertMacros.h"
 
 ARainNPC::ARainNPC()
 {
@@ -21,10 +22,10 @@ ARainNPC::ARainNPC()
 void ARainNPC::Interact(APlayerController* instigator)
 {
 	const UWorld* world = GetWorld();
-	check(world);
+	ASSERT_CHECK(world);
 	UMainStateTreeSubsystem* stateTreeSubsystem = world->GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
 
-	check(stateTreeSubsystem);
+	ASSERT_CHECK(stateTreeSubsystem);
 	stateTreeSubsystem->TrySendFlowEvent(TAG_State_Conversation_Start);
 }
 FText ARainNPC::GetInteractionPrompt() const

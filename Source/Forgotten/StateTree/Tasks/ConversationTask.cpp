@@ -10,6 +10,7 @@
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Character/RainNPC.h"
 #include "Forgotten/StateTree/MainStateTreeSubsystem.h"
+#include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
 
 FConversationTask::FConversationTask()
@@ -27,23 +28,24 @@ EStateTreeRunStatus FConversationTask::EnterState(
 	const UWorld* world = context.GetWorld();
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
 
-	check(world);
+	ASSERT_CHECK_RETURN(world, EStateTreeRunStatus::Failed);
 	APlayerController* playerController = world->GetFirstPlayerController();
 
-	check(playerController);
+	ASSERT_CHECK_RETURN(playerController, EStateTreeRunStatus::Failed);
 	AFirstPersonCharacter* playerCharacter = Cast<AFirstPersonCharacter>(playerController->GetPawn());
 	ARainNPC* rainNPC = Cast<ARainNPC>(UGameplayStatics::GetActorOfClass(world, ARainNPC::StaticClass()));
 
-	check(playerCharacter);
-	check(rainNPC);
+	ASSERT_CHECK_RETURN(playerCharacter, EStateTreeRunStatus::Failed);
+	ASSERT_CHECK_RETURN(rainNPC, EStateTreeRunStatus::Failed);
 	instanceData.m_PlayerCharacter = playerCharacter;
 	instanceData.m_TargetNPC = rainNPC;
 	playerCharacter->EnterConversationMode(rainNPC);
 
-	ensureMsgf(m_ConversationWidgetClass, TEXT("FConversationTask: m_ConversationWidgetClass is not assigned, check the StateTree."));
+	ASSERT_CHECK_RETURN(m_ConversationWidgetClass, EStateTreeRunStatus::Failed,
+		TEXT("FConversationTask: m_ConversationWidgetClass is not assigned, check the StateTree."));
 	UConversationWidget* conversationWidget = CreateWidget<UConversationWidget>(playerController, m_ConversationWidgetClass);
 
-	check(conversationWidget);
+	ASSERT_CHECK_RETURN(conversationWidget, EStateTreeRunStatus::Failed);
 	conversationWidget->AddToViewport();
 	instanceData.m_WidgetPtr = conversationWidget;
 
@@ -77,7 +79,7 @@ EStateTreeRunStatus FConversationTask::EnterState(
 				? worldContext->GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>()
 				: nullptr;
 
-			ensureMsgf(stateTreeSubsystem, TEXT("FConversationTask: MainStateTreeSubsystem is not valid when trying "
+			ASSERT_CHECK(stateTreeSubsystem, TEXT("FConversationTask: MainStateTreeSubsystem is not valid when trying "
 											"to end the conversation, this should not happen."));
 			if (IsValid(stateTreeSubsystem))
 			{

@@ -2,6 +2,7 @@
 
 #include "MainStateTreeSubsystem.h"
 #include "StateTreeExecutionContext.h"
+#include "Forgotten/Utils/AssertMacros.h"
 #include "GameFramework/GameModeBase.h"
 
 #pragma region UGameInstanceSubsystem
@@ -44,7 +45,7 @@ void UMainStateTreeSubsystem::Tick(const float deltaTime)
 		return;
 	}
 
-	ensureMsgf(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
+	ASSERT_CHECK(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
 												"m_stateTreeAsset is not assigned, check the blueprint"));
 	if (m_isRunning && IsValid(m_stateTreeAsset))
 	{
@@ -79,11 +80,11 @@ bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 {
 	const UWorld* world = GetWorld();
 
-	check(world);
-	ensureMsgf(!world->IsPreparingMapChange(), TEXT("UMainStateTreeSubsystem: "
-												 "Level is being changed while sending a flowevent, this should not happen."));
-	ensureMsgf(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
-												"m_stateTreeAsset is not assigned, check the blueprint"));
+	ASSERT_CHECK_RETURN(world, false);
+	ASSERT_CHECK_RETURN(!world->IsPreparingMapChange(), false,
+		TEXT("UMainStateTreeSubsystem: Level is being changed while sending a flowevent, this should not happen."));
+	ASSERT_CHECK_RETURN(IsValid(m_stateTreeAsset), false,
+		TEXT("UMainStateTreeSubsystem: m_stateTreeAsset is not assigned, check the blueprint"));
 
 	if (world->IsPreparingMapChange() || !IsValid(m_stateTreeAsset))
 	{
@@ -108,7 +109,7 @@ void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, 
 		return;
 	}
 
-	ensureMsgf(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
+	ASSERT_CHECK(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
 												"m_stateTreeAsset is not assigned, check the blueprint"));
 	if (!IsValid(m_stateTreeAsset))
 	{
