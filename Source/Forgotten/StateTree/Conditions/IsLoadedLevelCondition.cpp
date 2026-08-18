@@ -4,7 +4,7 @@
 #include "StateTreeExecutionContext.h"
 #include "StateTreeNodeDescriptionHelpers.h"
 #include "Engine/World.h"
-#include "Misc/PackageName.h"
+#include "Forgotten/Utils/AssertMacros.h"
 #include "UObject/Package.h"
 
 const UScriptStruct* FIsLoadedLevelCondition::GetInstanceDataType() const
@@ -16,8 +16,8 @@ bool FIsLoadedLevelCondition::TestCondition(FStateTreeExecutionContext& context)
 	const UWorld* world = context.GetWorld();
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
 
-	check(world);
-	ensureMsgf(!instanceData.m_LevelToCheck.IsNull(), TEXT("FIsLoadedLevelCondition: "
+	ASSERT_CHECK_RETURN(world, false);
+	ASSERT_CHECK_RETURN(!instanceData.m_LevelToCheck.IsNull(), false, TEXT("FIsLoadedLevelCondition: "
 														"m_LevelToCheck is not assigned, check the StateTree."));
 	if (instanceData.m_LevelToCheck.IsNull())
 	{

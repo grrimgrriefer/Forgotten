@@ -7,6 +7,7 @@
 #include "Components/EditableTextBox.h"
 #include "Components/ScrollBox.h"
 #include "Components/TextBlock.h"
+#include "Forgotten/Utils/AssertMacros.h"
 
 void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FText& messageText) const
 {
@@ -17,11 +18,11 @@ void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FTe
 
 	UTextBlock* newEntry = WidgetTree->ConstructWidget<UTextBlock>();
 
-	check(newEntry);
+	ASSERT_CHECK(newEntry);
 	newEntry->SetText(formattedText);
 	newEntry->SetAutoWrapText(true);
 
-	check(m_transcriptScrollBox);
+	ASSERT_CHECK(m_transcriptScrollBox);
 	m_transcriptScrollBox->AddChild(newEntry);
 	m_transcriptScrollBox->ScrollToEnd();
 }
@@ -29,10 +30,10 @@ void UConversationWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    check(m_transcriptScrollBox);
-    check(m_inputTextBox);
-    check(m_sendButton);
-    check(m_endConversationButton);
+    ASSERT_CHECK(m_transcriptScrollBox);
+    ASSERT_CHECK(m_inputTextBox);
+    ASSERT_CHECK(m_sendButton);
+    ASSERT_CHECK(m_endConversationButton);
 
     m_sendButton->OnClicked.AddDynamic(this, &UConversationWidget::OnSendClicked);
     m_inputTextBox->OnTextCommitted.AddDynamic(this, &UConversationWidget::OnInputTextCommitted);
@@ -48,7 +49,7 @@ void UConversationWidget::NativeDestruct()
 }
 void UConversationWidget::SubmitCurrentInputText() const
 {
-	check(m_inputTextBox);
+	ASSERT_CHECK(m_inputTextBox);
 	const FText textToSubmit = m_inputTextBox->GetText();
 	if (textToSubmit.IsEmptyOrWhitespace())
 	{
