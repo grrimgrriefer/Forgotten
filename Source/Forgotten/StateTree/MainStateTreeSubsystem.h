@@ -40,6 +40,7 @@ public:
 	#pragma endregion FTickableGameObject
 
 	bool TrySendFlowEvent(const FGameplayTag tag);
+	bool TryBindContextData(const FName contextName, UObject* data);
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings", meta=(RequiredAssetDataTags="Schema=UMainStateTreeSchema"))

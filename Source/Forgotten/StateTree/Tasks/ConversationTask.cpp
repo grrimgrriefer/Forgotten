@@ -3,10 +3,10 @@
 #include "ConversationTask.h"
 #include "StateTreeAsyncExecutionContext.h"
 #include "StateTreeExecutionContext.h"
+#include "StateTreeLinker.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "Forgotten/CustomGameplayTags.h"
-#include "Kismet/GameplayStatics.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Character/RainNPC.h"
 #include "Forgotten/StateTree/MainStateTreeSubsystem.h"
@@ -21,25 +21,28 @@ const UScriptStruct* FConversationTask::GetInstanceDataType() const
 {
 	return FInstanceDataType::StaticStruct();
 }
+bool FConversationTask::Link(FStateTreeLinker& Linker)
+{
+	Linker.LinkExternalData(m_RainHandle);
+	Linker.LinkExternalData(m_PlayerCharacterHandle);
+	return true;
+}
 EStateTreeRunStatus FConversationTask::EnterState(
 	FStateTreeExecutionContext& context,
 	const FStateTreeTransitionResult& transitions) const
 {
-	const UWorld* world = context.GetWorld();
-	FInstanceDataType& instanceData = context.GetInstanceData(*this);
+	ARainNPC& rainNPC = context.GetExternalData(m_RainHandle);
+	AFirstPersonCharacter& firstPersonCharacter = context.GetExternalData(m_PlayerCharacterHandle);
 
+	FInstanceDataType& instanceData = context.GetInstanceData(*this);
+	instanceData.m_PlayerCharacter = &firstPersonCharacter;
+	instanceData.m_RainNPC = &rainNPC;
+	firstPersonCharacter.EnterConversationMode(&rainNPC);
+	rainNPC.Interact(&firstPersonCharacter);
+
+	const UWorld* world = context.GetWorld();
 	ASSERT_CHECK_RETURN(world, EStateTreeRunStatus::Failed);
 	APlayerController* playerController = world->GetFirstPlayerController();
-
-	ASSERT_CHECK_RETURN(playerController, EStateTreeRunStatus::Failed);
-	AFirstPersonCharacter* playerCharacter = Cast<AFirstPersonCharacter>(playerController->GetPawn());
-	ARainNPC* rainNPC = Cast<ARainNPC>(UGameplayStatics::GetActorOfClass(world, ARainNPC::StaticClass()));
-
-	ASSERT_CHECK_RETURN(playerCharacter, EStateTreeRunStatus::Failed);
-	ASSERT_CHECK_RETURN(rainNPC, EStateTreeRunStatus::Failed);
-	instanceData.m_PlayerCharacter = playerCharacter;
-	instanceData.m_TargetNPC = rainNPC;
-	playerCharacter->EnterConversationMode(rainNPC);
 
 	ASSERT_CHECK_RETURN(m_ConversationWidgetClass, EStateTreeRunStatus::Failed,
 		TEXT("FConversationTask: m_ConversationWidgetClass is not assigned, check the StateTree."));
@@ -56,9 +59,9 @@ EStateTreeRunStatus FConversationTask::EnterState(
 	playerController->SetShowMouseCursor(true);
 
 	instanceData.m_TextSubmittedHandle = conversationWidget->m_OnTextSubmitted.AddLambda(
-		[weakWidget = TWeakObjectPtr<UConversationWidget>(conversationWidget)](const FText& textSubmitted)
+		[weakWidget = TWeakObjectPtr(conversationWidget)](const FText& textSubmitted)
 		{
-			if (UConversationWidget* strongWidget = weakWidget.Get())
+			if (const UConversationWidget* strongWidget = weakWidget.Get())
 			{
 				strongWidget->AddTranscriptEntry(NSLOCTEXT("Conversation", "You", "You"), textSubmitted);
 			}
@@ -117,5 +120,5 @@ void FConversationTask::ExitState(
 
 	instanceData.m_WidgetPtr = nullptr;
 	instanceData.m_PlayerCharacter = nullptr;
-	instanceData.m_TargetNPC = nullptr;
+	instanceData.m_RainNPC = nullptr;
 }

@@ -19,7 +19,7 @@ ARainNPC::ARainNPC()
 
 
 #pragma region IInteractableInterface
-void ARainNPC::Interact(APlayerController* instigator)
+void ARainNPC::Interact(ACharacter* instigator)
 {
 	const UWorld* world = GetWorld();
 	ASSERT_CHECK(world);

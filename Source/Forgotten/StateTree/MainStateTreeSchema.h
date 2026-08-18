@@ -23,7 +23,16 @@ public:
 	virtual TConstArrayView<FStateTreeExternalDataDesc> GetContextDataDescs() const override;
 	virtual bool IsStructAllowed(const UScriptStruct* inScriptStruct) const override;
 
+	static const FName m_PlayerBindingName;
+	static const FName m_RainBindingName;
+
 protected:
 	UPROPERTY()
 	FStateTreeExternalDataDesc m_subsystemData;
+	UPROPERTY()
+	FStateTreeExternalDataDesc m_playerData;
+	UPROPERTY()
+	FStateTreeExternalDataDesc m_rainData;
+
+	TArray<FStateTreeExternalDataDesc> m_contextDescs;
 };

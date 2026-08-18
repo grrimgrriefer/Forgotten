@@ -4,6 +4,7 @@
 #include "StateTreeExecutionContext.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "GameFramework/GameModeBase.h"
+#include "UObject/FastReferenceCollector.h"
 
 #pragma region UGameInstanceSubsystem
 bool UMainStateTreeSubsystem::ShouldCreateSubsystem(UObject* outer) const
@@ -95,6 +96,19 @@ bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
 		context.SendEvent(tag);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+bool UMainStateTreeSubsystem::TryBindContextData(const FName contextName, UObject* data)
+{
+	if (m_isRunning)
+	{
+		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
+		context.SetContextDataByName(contextName, FStateTreeDataView(data));
 		return true;
 	}
 	else

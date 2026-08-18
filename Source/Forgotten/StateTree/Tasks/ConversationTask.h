@@ -19,7 +19,7 @@ struct FConversationTaskInstanceData
 	UPROPERTY(Transient)
 	TWeakObjectPtr<AFirstPersonCharacter> m_PlayerCharacter = nullptr;
 	UPROPERTY(Transient)
-	TWeakObjectPtr<ARainNPC> m_TargetNPC = nullptr;
+	TWeakObjectPtr<ARainNPC> m_RainNPC = nullptr;
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UConversationWidget> m_WidgetPtr = nullptr;
 
@@ -41,6 +41,7 @@ public:
 	FConversationTask();
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;
+	virtual bool Link(FStateTreeLinker& Linker) override;
 	virtual EStateTreeRunStatus EnterState(
 		FStateTreeExecutionContext& context,
 		const FStateTreeTransitionResult& transitions) const override;
@@ -50,4 +51,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UConversationWidget> m_ConversationWidgetClass;
+
+	TStateTreeExternalDataHandle<AFirstPersonCharacter> m_PlayerCharacterHandle;
+	TStateTreeExternalDataHandle<ARainNPC> m_RainHandle;
 };
