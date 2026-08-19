@@ -21,12 +21,7 @@ ARainNPC::ARainNPC()
 #pragma region IInteractableInterface
 void ARainNPC::Interact(ACharacter* instigator)
 {
-	const UWorld* world = GetWorld();
-	ASSERT_CHECK(world);
-	UMainStateTreeSubsystem* stateTreeSubsystem = world->GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
 
-	ASSERT_CHECK(stateTreeSubsystem);
-	stateTreeSubsystem->TrySendFlowEvent(TAG_State_Conversation_Start);
 }
 FText ARainNPC::GetInteractionPrompt() const
 {

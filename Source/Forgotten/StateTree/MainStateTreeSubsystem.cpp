@@ -1,7 +1,11 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
 #include "MainStateTreeSubsystem.h"
+
+#include "MainStateTreeSchema.h"
 #include "StateTreeExecutionContext.h"
+#include "Forgotten/Character/FirstPersonCharacter.h"
+#include "Forgotten/Character/RainNPC.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "GameFramework/GameModeBase.h"
 #include "UObject/FastReferenceCollector.h"
@@ -91,6 +95,26 @@ bool UMainStateTreeSubsystem::SetContextRequirements(FStateTreeExecutionContext&
 		return false;
 	}
 
+	context.SetContextDataByName(FName(TEXT("Subsystem")), FStateTreeDataView(this));
+
+	UObject* playerObj = nullptr;
+	if (const TWeakObjectPtr<UObject>* found = m_contextObjects.Find(UMainStateTreeSchema::m_PlayerBindingName))
+	{
+		playerObj = found->Get();
+	}
+	context.SetContextDataByName(
+		UMainStateTreeSchema::m_PlayerBindingName,
+		FStateTreeDataView(AFirstPersonCharacter::StaticClass(), playerObj));
+
+	UObject* rainObj = nullptr;
+	if (const TWeakObjectPtr<UObject>* found = m_contextObjects.Find(UMainStateTreeSchema::m_RainBindingName))
+	{
+		rainObj = found->Get();
+	}
+	context.SetContextDataByName(
+		UMainStateTreeSchema::m_RainBindingName,
+		FStateTreeDataView(ARainNPC::StaticClass(), rainObj));
+
 	context.SetCollectExternalDataCallback(FOnCollectStateTreeExternalData::CreateUObject(
 		this,
 		&UMainStateTreeSubsystem::CollectExternalData));
@@ -112,9 +136,32 @@ bool UMainStateTreeSubsystem::CollectExternalData(
 		{
 			outDataViews[i] = FStateTreeDataView(this);
 		}
-		else if (const TWeakObjectPtr<UObject>* foundData = m_contextObjects.Find(desc.Name))
+		else
 		{
-			outDataViews[i] = FStateTreeDataView(foundData->Get());
+			UObject* objectPtr = nullptr;
+			if (const TWeakObjectPtr<UObject>* foundData = m_contextObjects.Find(desc.Name))
+			{
+				objectPtr = foundData->Get();
+			}
+
+			if (!objectPtr && desc.Struct)
+			{
+				for (const auto& [name, weakObj] : m_contextObjects)
+				{
+					if (UObject* obj = weakObj.Get())
+					{
+						if (const UClass* itemClass = Cast<const UClass>(desc.Struct))
+						{
+							if (obj->IsA(itemClass))
+							{
+								objectPtr = obj;
+								break;
+							}
+						}
+					}
+				}
+			}
+			outDataViews[i] = FStateTreeDataView(desc.Struct, objectPtr);
 		}
 	}
 	return true;

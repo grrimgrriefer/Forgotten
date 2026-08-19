@@ -17,10 +17,6 @@ struct FConversationTaskInstanceData
 	GENERATED_BODY()
 
 	UPROPERTY(Transient)
-	TWeakObjectPtr<AFirstPersonCharacter> m_PlayerCharacter = nullptr;
-	UPROPERTY(Transient)
-	TWeakObjectPtr<ARainNPC> m_RainNPC = nullptr;
-	UPROPERTY(Transient)
 	TWeakObjectPtr<UConversationWidget> m_WidgetPtr = nullptr;
 
 	FDelegateHandle m_TextSubmittedHandle;

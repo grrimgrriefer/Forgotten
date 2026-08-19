@@ -31,11 +31,10 @@ EStateTreeRunStatus FConversationTask::EnterState(
 	FStateTreeExecutionContext& context,
 	const FStateTreeTransitionResult& transitions) const
 {
-	FInstanceDataType& instanceData = context.GetInstanceData(*this);
-	instanceData.m_PlayerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
-	instanceData.m_RainNPC = context.GetExternalDataPtr(m_RainHandle);
-	instanceData.m_PlayerCharacter->EnterConversationMode(instanceData.m_RainNPC.Get());
-	instanceData.m_RainNPC->Interact(instanceData.m_PlayerCharacter.Get());
+	AFirstPersonCharacter* m_PlayerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
+	ARainNPC* m_RainNPC = context.GetExternalDataPtr(m_RainHandle);
+	m_PlayerCharacter->EnterConversationMode(m_RainNPC);
+	m_RainNPC->Interact(m_PlayerCharacter);
 
 	const UWorld* world = context.GetWorld();
 	ASSERT_CHECK_RETURN(world, EStateTreeRunStatus::Failed);
@@ -45,6 +44,7 @@ EStateTreeRunStatus FConversationTask::EnterState(
 		TEXT("FConversationTask: m_ConversationWidgetClass is not assigned, check the StateTree."));
 	UConversationWidget* conversationWidget = CreateWidget<UConversationWidget>(playerController, m_ConversationWidgetClass);
 
+	FInstanceDataType& instanceData = context.GetInstanceData(*this);
 	ASSERT_CHECK_RETURN(conversationWidget, EStateTreeRunStatus::Failed);
 	conversationWidget->AddToViewport();
 	instanceData.m_WidgetPtr = conversationWidget;
@@ -95,7 +95,7 @@ void FConversationTask::ExitState(
 {
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
 
-	if (AFirstPersonCharacter* playerCharacter = instanceData.m_PlayerCharacter.Get())
+	if (AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle))
 	{
 		playerCharacter->ExitConversationMode();
 
@@ -107,14 +107,13 @@ void FConversationTask::ExitState(
 		}
 	}
 
+	// TODO: Exit Rain interaction too with context.GetExternalDataPtr(m_TargetNPCHandle)
+
 	if (UConversationWidget* conversationWidget = instanceData.m_WidgetPtr.Get())
 	{
 		conversationWidget->m_OnTextSubmitted.Remove(instanceData.m_TextSubmittedHandle);
 		conversationWidget->m_OnConversationEnded.Remove(instanceData.m_EndedHandle);
 		conversationWidget->RemoveFromParent();
 	}
-
 	instanceData.m_WidgetPtr = nullptr;
-	instanceData.m_PlayerCharacter = nullptr;
-	instanceData.m_RainNPC = nullptr;
 }
