@@ -21,7 +21,7 @@ public:
 	ARainNPC();
 
 	#pragma region IInteractableInterface
-		virtual void Interact(APlayerController* instigator) override;
+		virtual void Interact(ACharacter* instigator) override;
 		virtual FText GetInteractionPrompt() const override;
 	#pragma endregion IInteractableInterface
 

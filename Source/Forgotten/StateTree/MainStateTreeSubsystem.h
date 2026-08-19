@@ -40,6 +40,7 @@ public:
 	#pragma endregion FTickableGameObject
 
 	bool TrySendFlowEvent(const FGameplayTag tag);
+	bool TryBindContextData(UObject* data);
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings", meta=(RequiredAssetDataTags="Schema=UMainStateTreeSchema"))
@@ -48,8 +49,17 @@ protected:
 private:
 	void OnGameModePostLoginEvent(AGameModeBase* gameMode, APlayerController* newPlayer);
 
+	bool SetContextRequirements(FStateTreeExecutionContext& context);
+	bool CollectExternalData(
+		const FStateTreeExecutionContext& context,
+		const UStateTree* stateTree,
+		TArrayView<const FStateTreeExternalDataDesc> externalDataDescs,
+		TArrayView<FStateTreeDataView> outDataViews);
+
 	UPROPERTY()
 	FStateTreeInstanceData m_instanceData;
+
+	TArray<TWeakObjectPtr<UObject>> m_contextObjects;
 
 	uint32 m_lastFrameNumberWeTicked = INDEX_NONE;
 	bool m_isRunning = false;

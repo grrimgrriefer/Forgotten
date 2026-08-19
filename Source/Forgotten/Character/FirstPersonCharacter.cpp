@@ -7,7 +7,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
+#include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/Interactables/InteractableInterface.h"
+#include "Forgotten/StateTree/MainStateTreeSchema.h"
+#include "Forgotten/StateTree/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
@@ -130,9 +133,14 @@ void AFirstPersonCharacter::AttemptInteraction()
 	{
 		if (IInteractableInterface* interactable = Cast<IInteractableInterface>(hitResult.GetActor()))
 		{
-			APlayerController* playerController = Cast<APlayerController>(GetController());
-			ASSERT_CHECK(playerController);
-			interactable->Interact(playerController);
+			UMainStateTreeSubsystem* stateTreeSubsystem = world->GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
+
+			ASSERT_CHECK(stateTreeSubsystem);
+
+			stateTreeSubsystem->TryBindContextData(this);
+			stateTreeSubsystem->TryBindContextData(hitResult.GetActor());
+
+			stateTreeSubsystem->TrySendFlowEvent(TAG_State_Conversation_Start);
 		}
 	}
 }

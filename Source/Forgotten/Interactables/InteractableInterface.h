@@ -20,6 +20,6 @@ class FORGOTTEN_API IInteractableInterface
 	GENERATED_BODY()
 
 public:
-	virtual void Interact(APlayerController* instigator) = 0;
+	virtual void Interact(ACharacter* instigator) = 0;
 	virtual FText GetInteractionPrompt() const = 0;
 };
