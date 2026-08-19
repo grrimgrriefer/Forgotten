@@ -31,14 +31,11 @@ EStateTreeRunStatus FConversationTask::EnterState(
 	FStateTreeExecutionContext& context,
 	const FStateTreeTransitionResult& transitions) const
 {
-	ARainNPC& rainNPC = context.GetExternalData(m_RainHandle);
-	AFirstPersonCharacter& firstPersonCharacter = context.GetExternalData(m_PlayerCharacterHandle);
-
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
-	instanceData.m_PlayerCharacter = &firstPersonCharacter;
-	instanceData.m_RainNPC = &rainNPC;
-	firstPersonCharacter.EnterConversationMode(&rainNPC);
-	rainNPC.Interact(&firstPersonCharacter);
+	instanceData.m_PlayerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
+	instanceData.m_RainNPC = context.GetExternalDataPtr(m_RainHandle);
+	instanceData.m_PlayerCharacter->EnterConversationMode(instanceData.m_RainNPC.Get());
+	instanceData.m_RainNPC->Interact(instanceData.m_PlayerCharacter.Get());
 
 	const UWorld* world = context.GetWorld();
 	ASSERT_CHECK_RETURN(world, EStateTreeRunStatus::Failed);
@@ -92,7 +89,6 @@ EStateTreeRunStatus FConversationTask::EnterState(
 
 	return EStateTreeRunStatus::Running;
 }
-
 void FConversationTask::ExitState(
 	FStateTreeExecutionContext& context,
 	const FStateTreeTransitionResult& transitions) const

@@ -22,10 +22,14 @@ void UMainStateTreeSubsystem::Deinitialize()
 	if (m_isRunning && IsValid(m_stateTreeAsset))
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
-		context.Stop();
+		if (SetContextRequirements(context))
+		{
+			context.Stop();
+		}
 		m_isRunning = false;
 		UE_LOG(LogTemp, Log, TEXT("%s: StateTree stopped."), *GetNameSafe(this));
 	}
+	m_contextObjects.Empty();
 	Super::Deinitialize();
 }
 #pragma endregion UGameInstanceSubsystem
@@ -51,7 +55,10 @@ void UMainStateTreeSubsystem::Tick(const float deltaTime)
 	if (m_isRunning && IsValid(m_stateTreeAsset))
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
-		context.Tick(deltaTime);
+		if (SetContextRequirements(context))
+		{
+			context.Tick(deltaTime);
+		}
 	}
 }
 ETickableTickType UMainStateTreeSubsystem::GetTickableTickType() const
@@ -77,6 +84,41 @@ bool UMainStateTreeSubsystem::IsTickable() const
 #pragma endregion FTickableGameObject
 
 
+bool UMainStateTreeSubsystem::SetContextRequirements(FStateTreeExecutionContext& context)
+{
+	if (!context.IsValid())
+	{
+		return false;
+	}
+
+	context.SetCollectExternalDataCallback(FOnCollectStateTreeExternalData::CreateUObject(
+		this,
+		&UMainStateTreeSubsystem::CollectExternalData));
+
+	const bool isValid = context.AreContextDataViewsValid();
+	ASSERT_CHECK_RETURN(isValid, false);
+	return isValid;
+}
+bool UMainStateTreeSubsystem::CollectExternalData(
+	const FStateTreeExecutionContext& context,
+	const UStateTree* stateTree,
+	TArrayView<const FStateTreeExternalDataDesc> externalDataDescs,
+	TArrayView<FStateTreeDataView> outDataViews)
+{
+	for (int32 i = 0; i < externalDataDescs.Num(); i++)
+	{
+		const FStateTreeExternalDataDesc& desc = externalDataDescs[i];
+		if (desc.Struct && desc.Struct->IsChildOf(StaticClass()))
+		{
+			outDataViews[i] = FStateTreeDataView(this);
+		}
+		else if (const TWeakObjectPtr<UObject>* foundData = m_contextObjects.Find(desc.Name))
+		{
+			outDataViews[i] = FStateTreeDataView(foundData->Get());
+		}
+	}
+	return true;
+}
 bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 {
 	const UWorld* world = GetWorld();
@@ -95,26 +137,18 @@ bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 	if (m_isRunning)
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
-		context.SendEvent(tag);
-		return true;
+		if (SetContextRequirements(context))
+		{
+			context.SendEvent(tag);
+			return true;
+		}
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 bool UMainStateTreeSubsystem::TryBindContextData(const FName contextName, UObject* data)
 {
-	if (m_isRunning)
-	{
-		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
-		context.SetContextDataByName(contextName, FStateTreeDataView(data));
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	m_contextObjects.FindOrAdd(contextName) = data;
+	return true;
 }
 void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, APlayerController* newPlayer)
 {
@@ -131,9 +165,12 @@ void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, 
 	}
 
 	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
-	if (context.Start() == EStateTreeRunStatus::Running)
+	if (SetContextRequirements(context))
 	{
-		m_isRunning = true;
-		UE_LOG(LogTemp, Log, TEXT("%s: StateTree started."), *GetNameSafe(this));
+		if (context.Start() == EStateTreeRunStatus::Running)
+		{
+			m_isRunning = true;
+			UE_LOG(LogTemp, Log, TEXT("%s: StateTree started."), *GetNameSafe(this));
+		}
 	}
 }

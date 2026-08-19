@@ -49,8 +49,17 @@ protected:
 private:
 	void OnGameModePostLoginEvent(AGameModeBase* gameMode, APlayerController* newPlayer);
 
+	bool SetContextRequirements(FStateTreeExecutionContext& context);
+	bool CollectExternalData(
+		const FStateTreeExecutionContext& context,
+		const UStateTree* stateTree,
+		TArrayView<const FStateTreeExternalDataDesc> externalDataDescs,
+		TArrayView<FStateTreeDataView> outDataViews);
+
 	UPROPERTY()
 	FStateTreeInstanceData m_instanceData;
+
+	TMap<FName, TWeakObjectPtr<UObject>> m_contextObjects;
 
 	uint32 m_lastFrameNumberWeTicked = INDEX_NONE;
 	bool m_isRunning = false;

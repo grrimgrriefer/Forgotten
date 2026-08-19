@@ -16,9 +16,11 @@ UMainStateTreeSchema::UMainStateTreeSchema()
 	, m_playerData(m_PlayerBindingName, AFirstPersonCharacter::StaticClass(), FGuid::NewGuid())
 	, m_rainData(m_RainBindingName, ARainNPC::StaticClass(), FGuid::NewGuid())
 {
+	m_playerData.Requirement = EStateTreeExternalDataRequirement::Optional;
+	m_rainData.Requirement = EStateTreeExternalDataRequirement::Optional;
+
 	m_contextDescs = { m_subsystemData, m_playerData, m_rainData };
 }
-
 TConstArrayView<FStateTreeExternalDataDesc> UMainStateTreeSchema::GetContextDataDescs() const
 {
 	return m_contextDescs;
@@ -28,4 +30,13 @@ bool UMainStateTreeSchema::IsStructAllowed(const UScriptStruct* inScriptStruct) 
 	return inScriptStruct->IsChildOf(FStateTreeTaskBase::StaticStruct())
 		|| inScriptStruct->IsChildOf(FStateTreeEvaluatorBase::StaticStruct())
 		|| inScriptStruct->IsChildOf(FStateTreeConditionBase::StaticStruct());
+}
+bool UMainStateTreeSchema::IsExternalItemAllowed(const UStruct& inStruct) const
+{
+	if (const UClass* itemClass = Cast<const UClass>(&inStruct))
+	{
+		return itemClass->IsChildOf(AActor::StaticClass())
+			|| itemClass->IsChildOf(UGameInstanceSubsystem::StaticClass());
+	}
+	return false;
 }

@@ -43,16 +43,16 @@ inline void HandleAssertFailed(
 
 #define ASSERT_CHECK(expr, ...) \
 do { \
-if (UNLIKELY(!(expr))) { \
-HandleAssertFailed(TEXT(#expr), TEXT(__FILE__), __LINE__, ##__VA_ARGS__); \
-return; \
-} \
+	if (UNLIKELY(!(expr))) { \
+		HandleAssertFailed(TEXT(#expr), TEXT(__FILE__), __LINE__, ##__VA_ARGS__); \
+		return; \
+	} \
 } while(0)
 
 #define ASSERT_CHECK_RETURN(expr, retVal, ...) \
 do { \
-if (UNLIKELY(!(expr))) { \
-HandleAssertFailed(TEXT(#expr), TEXT(__FILE__), __LINE__, ##__VA_ARGS__); \
-return (retVal); \
-} \
+	if (UNLIKELY(!(expr))) { \
+		HandleAssertFailed(TEXT(#expr), TEXT(__FILE__), __LINE__, ##__VA_ARGS__); \
+		return (retVal); \
+	} \
 } while(0)

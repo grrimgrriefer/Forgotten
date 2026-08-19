@@ -52,6 +52,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UConversationWidget> m_ConversationWidgetClass;
 
-	TStateTreeExternalDataHandle<AFirstPersonCharacter> m_PlayerCharacterHandle;
-	TStateTreeExternalDataHandle<ARainNPC> m_RainHandle;
+	TStateTreeExternalDataHandle<AFirstPersonCharacter, EStateTreeExternalDataRequirement::Optional> m_PlayerCharacterHandle;
+	TStateTreeExternalDataHandle<ARainNPC, EStateTreeExternalDataRequirement::Optional> m_RainHandle;
 };
