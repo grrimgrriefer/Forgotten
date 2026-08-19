@@ -4,8 +4,6 @@
 
 #include "MainStateTreeSchema.h"
 #include "StateTreeExecutionContext.h"
-#include "Forgotten/Character/FirstPersonCharacter.h"
-#include "Forgotten/Character/RainNPC.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "GameFramework/GameModeBase.h"
 #include "UObject/FastReferenceCollector.h"
@@ -95,33 +93,38 @@ bool UMainStateTreeSubsystem::SetContextRequirements(FStateTreeExecutionContext&
 		return false;
 	}
 
-	context.SetContextDataByName(FName(TEXT("Subsystem")), FStateTreeDataView(this));
+	context.SetContextDataByName(UMainStateTreeSchema::m_SubsystemBindingName, FStateTreeDataView(this));
 
-	UObject* playerObj = nullptr;
-	if (const TWeakObjectPtr<UObject>* found = m_contextObjects.Find(UMainStateTreeSchema::m_PlayerBindingName))
+	for (const FStateTreeExternalDataDesc& desc : GetDefault<UMainStateTreeSchema>()->GetContextDataDescs())
 	{
-		playerObj = found->Get();
-	}
-	context.SetContextDataByName(
-		UMainStateTreeSchema::m_PlayerBindingName,
-		FStateTreeDataView(AFirstPersonCharacter::StaticClass(), playerObj));
+		if (desc.Name == UMainStateTreeSchema::m_SubsystemBindingName)
+		{
+			continue;
+		}
 
-	UObject* rainObj = nullptr;
-	if (const TWeakObjectPtr<UObject>* found = m_contextObjects.Find(UMainStateTreeSchema::m_RainBindingName))
-	{
-		rainObj = found->Get();
+		UObject* matchedObject = nullptr;
+		if (const UClass* expectedClass = Cast<const UClass>(desc.Struct))
+		{
+			for (const TWeakObjectPtr<UObject>& weakObj : m_contextObjects)
+			{
+				if (UObject* obj = weakObj.Get())
+				{
+					if (obj->IsA(expectedClass))
+					{
+						matchedObject = obj;
+						break;
+					}
+				}
+			}
+		}
+		context.SetContextDataByName(desc.Name, FStateTreeDataView(desc.Struct, matchedObject));
 	}
-	context.SetContextDataByName(
-		UMainStateTreeSchema::m_RainBindingName,
-		FStateTreeDataView(ARainNPC::StaticClass(), rainObj));
 
 	context.SetCollectExternalDataCallback(FOnCollectStateTreeExternalData::CreateUObject(
 		this,
 		&UMainStateTreeSubsystem::CollectExternalData));
 
-	const bool isValid = context.AreContextDataViewsValid();
-	ASSERT_CHECK_RETURN(isValid, false);
-	return isValid;
+	return context.AreContextDataViewsValid();
 }
 bool UMainStateTreeSubsystem::CollectExternalData(
 	const FStateTreeExecutionContext& context,
@@ -129,40 +132,31 @@ bool UMainStateTreeSubsystem::CollectExternalData(
 	TArrayView<const FStateTreeExternalDataDesc> externalDataDescs,
 	TArrayView<FStateTreeDataView> outDataViews)
 {
-	for (int32 i = 0; i < externalDataDescs.Num(); i++)
+	for (int32 i = 0; i < externalDataDescs.Num(); ++i)
 	{
 		const FStateTreeExternalDataDesc& desc = externalDataDescs[i];
 		if (desc.Struct && desc.Struct->IsChildOf(StaticClass()))
 		{
 			outDataViews[i] = FStateTreeDataView(this);
+			continue;
 		}
-		else
-		{
-			UObject* objectPtr = nullptr;
-			if (const TWeakObjectPtr<UObject>* foundData = m_contextObjects.Find(desc.Name))
-			{
-				objectPtr = foundData->Get();
-			}
 
-			if (!objectPtr && desc.Struct)
+		UObject* matchedObject = nullptr;
+		if (const UClass* targetClass = Cast<const UClass>(desc.Struct))
+		{
+			for (const TWeakObjectPtr<UObject>& weakObj : m_contextObjects)
 			{
-				for (const auto& [name, weakObj] : m_contextObjects)
+				if (UObject* obj = weakObj.Get())
 				{
-					if (UObject* obj = weakObj.Get())
+					if (obj->IsA(targetClass))
 					{
-						if (const UClass* itemClass = Cast<const UClass>(desc.Struct))
-						{
-							if (obj->IsA(itemClass))
-							{
-								objectPtr = obj;
-								break;
-							}
-						}
+						matchedObject = obj;
+						break;
 					}
 				}
 			}
-			outDataViews[i] = FStateTreeDataView(desc.Struct, objectPtr);
 		}
+		outDataViews[i] = FStateTreeDataView(desc.Struct, matchedObject);
 	}
 	return true;
 }
@@ -192,9 +186,14 @@ bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 	}
 	return false;
 }
-bool UMainStateTreeSubsystem::TryBindContextData(const FName contextName, UObject* data)
+bool UMainStateTreeSubsystem::TryBindContextData(UObject* data)
 {
-	m_contextObjects.FindOrAdd(contextName) = data;
+	if (!IsValid(data))
+	{
+		return false;
+	}
+
+	m_contextObjects.AddUnique(data);
 	return true;
 }
 void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, APlayerController* newPlayer)

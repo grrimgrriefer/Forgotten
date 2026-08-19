@@ -40,7 +40,7 @@ public:
 	#pragma endregion FTickableGameObject
 
 	bool TrySendFlowEvent(const FGameplayTag tag);
-	bool TryBindContextData(const FName contextName, UObject* data);
+	bool TryBindContextData(UObject* data);
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings", meta=(RequiredAssetDataTags="Schema=UMainStateTreeSchema"))
@@ -59,7 +59,7 @@ private:
 	UPROPERTY()
 	FStateTreeInstanceData m_instanceData;
 
-	TMap<FName, TWeakObjectPtr<UObject>> m_contextObjects;
+	TArray<TWeakObjectPtr<UObject>> m_contextObjects;
 
 	uint32 m_lastFrameNumberWeTicked = INDEX_NONE;
 	bool m_isRunning = false;

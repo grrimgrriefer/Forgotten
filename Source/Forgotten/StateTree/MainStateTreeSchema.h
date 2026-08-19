@@ -26,6 +26,7 @@ public:
 
 	static const FName m_PlayerBindingName;
 	static const FName m_RainBindingName;
+	static const FName m_SubsystemBindingName;
 
 protected:
 	UPROPERTY()

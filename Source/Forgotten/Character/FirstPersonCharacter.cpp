@@ -137,8 +137,8 @@ void AFirstPersonCharacter::AttemptInteraction()
 
 			ASSERT_CHECK(stateTreeSubsystem);
 
-			stateTreeSubsystem->TryBindContextData(UMainStateTreeSchema::m_PlayerBindingName, this);
-			stateTreeSubsystem->TryBindContextData(UMainStateTreeSchema::m_RainBindingName, hitResult.GetActor());
+			stateTreeSubsystem->TryBindContextData(this);
+			stateTreeSubsystem->TryBindContextData(hitResult.GetActor());
 
 			stateTreeSubsystem->TrySendFlowEvent(TAG_State_Conversation_Start);
 		}
