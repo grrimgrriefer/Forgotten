@@ -24,7 +24,8 @@ struct FConversationTaskInstanceData
 };
 
 /**
- * Tells the player to lock movement, spawn conversation UI, and change camera orientation.
+ * Handles the lifecycle of the conversation.
+ * Is also responsible for the high level flow interactions when entering & leaving conversations.
  */
 USTRUCT(meta = (DisplayName = "Conversation State", Category = "Gameplay"))
 struct FORGOTTEN_API FConversationTask : public FStateTreeTaskBase

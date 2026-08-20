@@ -10,7 +10,7 @@
 class UMainStateTreeSubsystem;
 
 /**
- * Custom schema for the StateTree being on the subsystem
+ * Custom schema for the main StateTree
  */
 UCLASS()
 class FORGOTTEN_API UMainStateTreeSchema : public UStateTreeSchema
@@ -25,7 +25,7 @@ public:
 	virtual bool IsExternalItemAllowed(const UStruct& inStruct) const override;
 
 	static const FName m_PlayerBindingName;
-	static const FName m_RainBindingName;
+	static const FName m_ConversableNpcBindingName;
 	static const FName m_SubsystemBindingName;
 
 protected:
@@ -34,7 +34,7 @@ protected:
 	UPROPERTY()
 	FStateTreeExternalDataDesc m_playerData;
 	UPROPERTY()
-	FStateTreeExternalDataDesc m_rainData;
+	FStateTreeExternalDataDesc m_conversableNpcData;
 
 	TArray<FStateTreeExternalDataDesc> m_contextDescs;
 };

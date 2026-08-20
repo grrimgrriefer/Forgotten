@@ -9,18 +9,18 @@
 #include "Forgotten/Character/ConversableNPC.h"
 
 const FName UMainStateTreeSchema::m_PlayerBindingName = FName(TEXT("Player"));
-const FName UMainStateTreeSchema::m_RainBindingName = FName(TEXT("Rain"));
+const FName UMainStateTreeSchema::m_ConversableNpcBindingName = FName(TEXT("ConversableNpc"));
 const FName UMainStateTreeSchema::m_SubsystemBindingName = FName(TEXT("Subsystem"));
 
 UMainStateTreeSchema::UMainStateTreeSchema()
 	: m_subsystemData(m_SubsystemBindingName, UMainStateTreeSubsystem::StaticClass(), FGuid::NewGuid())
 	, m_playerData(m_PlayerBindingName, AFirstPersonCharacter::StaticClass(), FGuid::NewGuid())
-	, m_rainData(m_RainBindingName, AConversableNPC::StaticClass(), FGuid::NewGuid())
+	, m_conversableNpcData(m_ConversableNpcBindingName, AConversableNPC::StaticClass(), FGuid::NewGuid())
 {
 	m_playerData.Requirement = EStateTreeExternalDataRequirement::Optional;
-	m_rainData.Requirement = EStateTreeExternalDataRequirement::Optional;
+	m_conversableNpcData.Requirement = EStateTreeExternalDataRequirement::Optional;
 
-	m_contextDescs = { m_subsystemData, m_playerData, m_rainData };
+	m_contextDescs = { m_subsystemData, m_playerData, m_conversableNpcData };
 }
 TConstArrayView<FStateTreeExternalDataDesc> UMainStateTreeSchema::GetContextDataDescs() const
 {

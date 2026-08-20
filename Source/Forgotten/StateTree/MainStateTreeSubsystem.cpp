@@ -86,6 +86,80 @@ bool UMainStateTreeSubsystem::IsTickable() const
 #pragma endregion FTickableGameObject
 
 
+bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
+{
+	const UWorld* world = GetWorld();
+
+	ASSERT_CHECK_RETURN(world, false);
+	ASSERT_CHECK_RETURN(!world->IsPreparingMapChange(), false,
+		TEXT("UMainStateTreeSubsystem: Level is being changed while sending a flowevent, this should not happen."));
+	ASSERT_CHECK_RETURN(IsValid(m_stateTreeAsset), false,
+		TEXT("UMainStateTreeSubsystem: m_stateTreeAsset is not assigned, check the blueprint"));
+
+	if (world->IsPreparingMapChange() || !IsValid(m_stateTreeAsset))
+	{
+		return false;
+	}
+
+	if (m_isRunning)
+	{
+		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
+		if (SetContextRequirements(context))
+		{
+			context.SendEvent(tag);
+			return true;
+		}
+	}
+	return false;
+}
+bool UMainStateTreeSubsystem::TryBindContextData(UObject* data)
+{
+	if (!IsValid(data))
+	{
+		return false;
+	}
+
+	m_contextObjects.AddUnique(data);
+	return true;
+}
+bool UMainStateTreeSubsystem::TryUnbindContextData(UObject* data)
+{
+	if (!IsValid(data))
+	{
+		return false;
+	}
+
+	const int32 removedCount = m_contextObjects.RemoveAll([data](const TWeakObjectPtr<UObject>& weakObj)
+	{
+		return !weakObj.IsValid() || weakObj.Get() == data;
+	});
+
+	return removedCount > 0;
+}
+void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, APlayerController* newPlayer)
+{
+	if (m_isRunning)
+	{
+		return;
+	}
+
+	ASSERT_CHECK(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
+												"m_stateTreeAsset is not assigned, check the blueprint"));
+	if (!IsValid(m_stateTreeAsset))
+	{
+		return;
+	}
+
+	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
+	if (SetContextRequirements(context))
+	{
+		if (context.Start() == EStateTreeRunStatus::Running)
+		{
+			m_isRunning = true;
+			UE_LOG(LogTemp, Log, TEXT("%s: StateTree started."), *GetNameSafe(this));
+		}
+	}
+}
 bool UMainStateTreeSubsystem::SetContextRequirements(FStateTreeExecutionContext& context)
 {
 	if (!context.IsValid())
@@ -159,64 +233,4 @@ bool UMainStateTreeSubsystem::CollectExternalData(
 		outDataViews[i] = FStateTreeDataView(desc.Struct, matchedObject);
 	}
 	return true;
-}
-bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
-{
-	const UWorld* world = GetWorld();
-
-	ASSERT_CHECK_RETURN(world, false);
-	ASSERT_CHECK_RETURN(!world->IsPreparingMapChange(), false,
-		TEXT("UMainStateTreeSubsystem: Level is being changed while sending a flowevent, this should not happen."));
-	ASSERT_CHECK_RETURN(IsValid(m_stateTreeAsset), false,
-		TEXT("UMainStateTreeSubsystem: m_stateTreeAsset is not assigned, check the blueprint"));
-
-	if (world->IsPreparingMapChange() || !IsValid(m_stateTreeAsset))
-	{
-		return false;
-	}
-
-	if (m_isRunning)
-	{
-		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
-		if (SetContextRequirements(context))
-		{
-			context.SendEvent(tag);
-			return true;
-		}
-	}
-	return false;
-}
-bool UMainStateTreeSubsystem::TryBindContextData(UObject* data)
-{
-	if (!IsValid(data))
-	{
-		return false;
-	}
-
-	m_contextObjects.AddUnique(data);
-	return true;
-}
-void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, APlayerController* newPlayer)
-{
-	if (m_isRunning)
-	{
-		return;
-	}
-
-	ASSERT_CHECK(IsValid(m_stateTreeAsset), TEXT("UMainStateTreeSubsystem: "
-												"m_stateTreeAsset is not assigned, check the blueprint"));
-	if (!IsValid(m_stateTreeAsset))
-	{
-		return;
-	}
-
-	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
-	if (SetContextRequirements(context))
-	{
-		if (context.Start() == EStateTreeRunStatus::Running)
-		{
-			m_isRunning = true;
-			UE_LOG(LogTemp, Log, TEXT("%s: StateTree started."), *GetNameSafe(this));
-		}
-	}
 }

@@ -110,9 +110,17 @@ void FConversationTask::ExitState(
 		}
 	}
 
-	if (AConversableNPC* playerCharacter = context.GetExternalDataPtr(m_ConversableNpcHandle))
+	if (AConversableNPC* conversableNpc = context.GetExternalDataPtr(m_ConversableNpcHandle))
 	{
-		playerCharacter->EndConversation();
+		conversableNpc->EndConversation();
+		const UWorld* world = context.GetWorld();
+		if (IsValid(world) && IsValid(world->GetGameInstance()))
+		{
+			if (UMainStateTreeSubsystem* stateTreeSubsystem = world->GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>())
+			{
+				stateTreeSubsystem->TryUnbindContextData(conversableNpc);
+			}
+		}
 	}
 
 	if (UConversationWidget* conversationWidget = instanceData.m_WidgetPtr.Get())
