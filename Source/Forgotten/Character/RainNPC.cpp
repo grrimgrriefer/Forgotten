@@ -4,7 +4,6 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/GameInstance.h"
 #include "Forgotten/CustomGameplayTags.h"
-#include "Forgotten/StateTree/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 
 ARainNPC::ARainNPC()
@@ -14,18 +13,20 @@ ARainNPC::ARainNPC()
 	m_placeholderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlaceholderMesh"));
 	m_placeholderMesh->SetupAttachment(RootComponent);
 
-	m_interactionPrompt = NSLOCTEXT("Interaction", "TalkToRain", "Talk to Rain");
+	m_characterName = NSLOCTEXT("Names", "NameRain", "Rain");
 }
 
 
-#pragma region IInteractableInterface
-void ARainNPC::Interact(ACharacter* instigator)
+#pragma region IConversableInterface
+void ARainNPC::StartConversation(ACharacter* instigator)
 {
-
 }
-FText ARainNPC::GetInteractionPrompt() const
+void ARainNPC::EndConversation()
 {
-	return m_interactionPrompt;
 }
-#pragma endregion IInteractableInterface
+FText ARainNPC::GetSpeakerName() const
+{
+	return m_characterName;
+}
+#pragma endregion IConversableInterface
 

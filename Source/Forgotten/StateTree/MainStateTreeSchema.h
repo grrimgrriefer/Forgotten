@@ -25,7 +25,7 @@ public:
 	virtual bool IsExternalItemAllowed(const UStruct& inStruct) const override;
 
 	static const FName m_PlayerBindingName;
-	static const FName m_RainBindingName;
+	static const FName m_ConversationNpcBindingName;
 	static const FName m_SubsystemBindingName;
 
 protected:
@@ -34,7 +34,7 @@ protected:
 	UPROPERTY()
 	FStateTreeExternalDataDesc m_playerData;
 	UPROPERTY()
-	FStateTreeExternalDataDesc m_rainData;
+	FStateTreeExternalDataDesc m_conversationNpcData;
 
 	TArray<FStateTreeExternalDataDesc> m_contextDescs;
 };

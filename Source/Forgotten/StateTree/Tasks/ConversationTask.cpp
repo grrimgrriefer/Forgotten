@@ -23,7 +23,7 @@ const UScriptStruct* FConversationTask::GetInstanceDataType() const
 }
 bool FConversationTask::Link(FStateTreeLinker& Linker)
 {
-	Linker.LinkExternalData(m_RainHandle);
+	Linker.LinkExternalData(m_ConversationNpcHandle);
 	Linker.LinkExternalData(m_PlayerCharacterHandle);
 	return true;
 }
@@ -31,10 +31,16 @@ EStateTreeRunStatus FConversationTask::EnterState(
 	FStateTreeExecutionContext& context,
 	const FStateTreeTransitionResult& transitions) const
 {
-	AFirstPersonCharacter* m_PlayerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
-	ARainNPC* m_RainNPC = context.GetExternalDataPtr(m_RainHandle);
-	m_PlayerCharacter->EnterConversationMode(m_RainNPC);
-	m_RainNPC->Interact(m_PlayerCharacter);
+	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
+	ACharacter* npcCharacter = context.GetExternalDataPtr(m_ConversationNpcHandle);
+	ASSERT_CHECK_RETURN(playerCharacter, EStateTreeRunStatus::Failed);
+	ASSERT_CHECK_RETURN(npcCharacter, EStateTreeRunStatus::Failed);
+
+	IConversableInterface* conversationNpc = Cast<IConversableInterface>(npcCharacter);
+	ASSERT_CHECK_RETURN(conversationNpc, EStateTreeRunStatus::Failed);
+
+	playerCharacter->EnterConversationMode(npcCharacter);
+	conversationNpc->StartConversation(playerCharacter);
 
 	const UWorld* world = context.GetWorld();
 	ASSERT_CHECK_RETURN(world, EStateTreeRunStatus::Failed);
@@ -107,7 +113,12 @@ void FConversationTask::ExitState(
 		}
 	}
 
-	// TODO: Exit Rain interaction too with context.GetExternalDataPtr(m_TargetNPCHandle)
+	if (ACharacter* targetActor = context.GetExternalDataPtr(m_ConversationNpcHandle))
+	{
+		IConversableInterface* conversable = Cast<IConversableInterface>(targetActor);
+		ASSERT_CHECK(conversable);
+		conversable->EndConversation();
+	}
 
 	if (UConversationWidget* conversationWidget = instanceData.m_WidgetPtr.Get())
 	{

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Forgotten/Interactables/InteractableInterface.h"
+#include "Forgotten/Interactables/ConversableInterface.h"
 #include "RainNPC.generated.h"
 
 class UStaticMeshComponent;
@@ -13,21 +13,22 @@ class UStaticMeshComponent;
  * Rain character
  */
 UCLASS()
-class FORGOTTEN_API ARainNPC : public ACharacter, public IInteractableInterface
+class FORGOTTEN_API ARainNPC : public ACharacter, public IConversableInterface
 {
 	GENERATED_BODY()
 
 public:
 	ARainNPC();
 
-	#pragma region IInteractableInterface
-		virtual void Interact(ACharacter* instigator) override;
-		virtual FText GetInteractionPrompt() const override;
-	#pragma endregion IInteractableInterface
+	#pragma region IConversableInterface
+		virtual void StartConversation(ACharacter* instigator) override;
+		virtual void EndConversation() override;
+		virtual FText GetSpeakerName() const override;
+	#pragma endregion IConversableInterface
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> m_placeholderMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
-	FText m_interactionPrompt;
+	FText m_characterName;
 };
