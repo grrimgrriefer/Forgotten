@@ -7,8 +7,8 @@
 #include "Templates/SubclassOf.h"
 #include "ConversationTask.generated.h"
 
-class ACharacter;
 class AFirstPersonCharacter;
+class AConversableNPC;
 class UConversationWidget;
 
 USTRUCT()
@@ -49,5 +49,5 @@ public:
 	TSubclassOf<UConversationWidget> m_ConversationWidgetClass;
 
 	TStateTreeExternalDataHandle<AFirstPersonCharacter, EStateTreeExternalDataRequirement::Optional> m_PlayerCharacterHandle;
-	TStateTreeExternalDataHandle<ACharacter, EStateTreeExternalDataRequirement::Optional> m_ConversationNpcHandle;
+	TStateTreeExternalDataHandle<AConversableNPC, EStateTreeExternalDataRequirement::Optional> m_ConversableNpcHandle;
 };

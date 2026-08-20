@@ -26,7 +26,7 @@ public:
 	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
 
-	void EnterConversationMode(ACharacter* targetActor);
+	void EnterConversationMode(AActor* targetActor);
 	void ExitConversationMode();
 
 protected:
@@ -45,11 +45,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	float m_cameraInterpSpeed = 5.0f;
 	UPROPERTY(Transient)
-	TObjectPtr<ACharacter> m_conversationTarget = nullptr;
+	TObjectPtr<AActor> m_conversationTarget = nullptr;
 
 private:
 	void Move(const FInputActionValue& value);
 	void Look(const FInputActionValue& value);
 	void AttemptInteraction();
-	void SetInternalConversationMode(ACharacter* targetActor);
+	void SetInternalConversationMode(AActor* targetActor);
 };

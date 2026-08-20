@@ -8,7 +8,7 @@
 #include "Engine/World.h"
 #include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
-#include "Forgotten/Character/RainNPC.h"
+#include "Forgotten/Character/ConversableNPC.h"
 #include "Forgotten/StateTree/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
@@ -23,7 +23,7 @@ const UScriptStruct* FConversationTask::GetInstanceDataType() const
 }
 bool FConversationTask::Link(FStateTreeLinker& Linker)
 {
-	Linker.LinkExternalData(m_ConversationNpcHandle);
+	Linker.LinkExternalData(m_ConversableNpcHandle);
 	Linker.LinkExternalData(m_PlayerCharacterHandle);
 	return true;
 }
@@ -32,15 +32,12 @@ EStateTreeRunStatus FConversationTask::EnterState(
 	const FStateTreeTransitionResult& transitions) const
 {
 	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
-	ACharacter* npcCharacter = context.GetExternalDataPtr(m_ConversationNpcHandle);
+	AConversableNPC* conversableNpc = context.GetExternalDataPtr(m_ConversableNpcHandle);
+
 	ASSERT_CHECK_RETURN(playerCharacter, EStateTreeRunStatus::Failed);
-	ASSERT_CHECK_RETURN(npcCharacter, EStateTreeRunStatus::Failed);
-
-	IConversableInterface* conversationNpc = Cast<IConversableInterface>(npcCharacter);
-	ASSERT_CHECK_RETURN(conversationNpc, EStateTreeRunStatus::Failed);
-
-	playerCharacter->EnterConversationMode(npcCharacter);
-	conversationNpc->StartConversation(playerCharacter);
+	ASSERT_CHECK_RETURN(conversableNpc, EStateTreeRunStatus::Failed);
+	playerCharacter->EnterConversationMode(conversableNpc);
+	conversableNpc->StartConversation(playerCharacter);
 
 	const UWorld* world = context.GetWorld();
 	ASSERT_CHECK_RETURN(world, EStateTreeRunStatus::Failed);
@@ -113,11 +110,9 @@ void FConversationTask::ExitState(
 		}
 	}
 
-	if (ACharacter* targetActor = context.GetExternalDataPtr(m_ConversationNpcHandle))
+	if (AConversableNPC* playerCharacter = context.GetExternalDataPtr(m_ConversableNpcHandle))
 	{
-		IConversableInterface* conversable = Cast<IConversableInterface>(targetActor);
-		ASSERT_CHECK(conversable);
-		conversable->EndConversation();
+		playerCharacter->EndConversation();
 	}
 
 	if (UConversationWidget* conversationWidget = instanceData.m_WidgetPtr.Get())

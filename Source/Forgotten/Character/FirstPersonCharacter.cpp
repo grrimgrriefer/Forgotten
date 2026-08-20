@@ -1,6 +1,8 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
 #include "FirstPersonCharacter.h"
+
+#include "ConversableNPC.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
@@ -8,7 +10,6 @@
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "Forgotten/CustomGameplayTags.h"
-#include "Forgotten/Interactables/ConversableInterface.h"
 #include "Forgotten/Interactables/InteractableInterface.h"
 #include "Forgotten/StateTree/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
@@ -81,7 +82,7 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	ASSERT_CHECK(m_interactAction, TEXT("AFirstPersonCharacter: m_interactAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_interactAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::AttemptInteraction);
 }
-void AFirstPersonCharacter::EnterConversationMode(ACharacter* targetActor)
+void AFirstPersonCharacter::EnterConversationMode(AActor* targetActor)
 {
 	ASSERT_CHECK(targetActor, TEXT("AFirstPersonCharacter: EnterConversationMode should always provide a valid target."));
 	SetInternalConversationMode(targetActor);
@@ -131,25 +132,21 @@ void AFirstPersonCharacter::AttemptInteraction()
 
 	if (bHit && hitResult.GetActor())
 	{
-		AActor* hitActor = hitResult.GetActor();
-		if (hitActor->Implements<UConversableInterface>())
+		//if (IInteractableInterface* interactable = Cast<IInteractableInterface>(hitResult.GetActor()))
+		if (AConversableNPC* conversableNpc = Cast<AConversableNPC>(hitResult.GetActor()))
 		{
 			UMainStateTreeSubsystem* stateTreeSubsystem = world->GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
 
 			ASSERT_CHECK(stateTreeSubsystem);
 
 			stateTreeSubsystem->TryBindContextData(this);
-			stateTreeSubsystem->TryBindContextData(hitActor);
+			stateTreeSubsystem->TryBindContextData(hitResult.GetActor());
 
 			stateTreeSubsystem->TrySendFlowEvent(TAG_State_Conversation_Start);
 		}
-		else if (IInteractableInterface* interactable = Cast<IInteractableInterface>(hitActor))
-		{
-			interactable->Interact(this);
-		}
 	}
 }
-void AFirstPersonCharacter::SetInternalConversationMode(ACharacter* targetActor)
+void AFirstPersonCharacter::SetInternalConversationMode(AActor* targetActor)
 {
 	m_conversationTarget = targetActor;
 	const bool isInConversation = m_conversationTarget != nullptr;
