@@ -1,31 +1,32 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
-#include "RainNPC.h"
+#include "ConversableNPC.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/GameInstance.h"
 #include "Forgotten/CustomGameplayTags.h"
-#include "Forgotten/StateTree/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 
-ARainNPC::ARainNPC()
+AConversableNPC::AConversableNPC()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
 	m_placeholderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlaceholderMesh"));
 	m_placeholderMesh->SetupAttachment(RootComponent);
-
-	m_interactionPrompt = NSLOCTEXT("Interaction", "TalkToRain", "Talk to Rain");
 }
-
-
-#pragma region IInteractableInterface
-void ARainNPC::Interact(ACharacter* instigator)
+void AConversableNPC::StartConversation(AFirstPersonCharacter* player)
 {
 
 }
-FText ARainNPC::GetInteractionPrompt() const
+void AConversableNPC::EndConversation()
 {
-	return m_interactionPrompt;
+
 }
-#pragma endregion IInteractableInterface
+FText AConversableNPC::GetSpeakerName() const
+{
+	return m_characterName;
+}
+FVector AConversableNPC::GetLocation() const
+{
+	return GetActorLocation();
+}
 

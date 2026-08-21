@@ -41,6 +41,7 @@ public:
 
 	bool TrySendFlowEvent(const FGameplayTag tag);
 	bool TryBindContextData(UObject* data);
+	bool TryUnbindContextData(UObject* data);
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings", meta=(RequiredAssetDataTags="Schema=UMainStateTreeSchema"))

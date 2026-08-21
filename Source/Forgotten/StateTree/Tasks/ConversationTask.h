@@ -8,7 +8,7 @@
 #include "ConversationTask.generated.h"
 
 class AFirstPersonCharacter;
-class ARainNPC;
+class AConversableNPC;
 class UConversationWidget;
 
 USTRUCT()
@@ -24,7 +24,8 @@ struct FConversationTaskInstanceData
 };
 
 /**
- * Tells the player to lock movement, spawn conversation UI, and change camera orientation.
+ * Handles the lifecycle of the conversation.
+ * Is also responsible for the high level flow interactions when entering & leaving conversations.
  */
 USTRUCT(meta = (DisplayName = "Conversation State", Category = "Gameplay"))
 struct FORGOTTEN_API FConversationTask : public FStateTreeTaskBase
@@ -49,5 +50,5 @@ public:
 	TSubclassOf<UConversationWidget> m_ConversationWidgetClass;
 
 	TStateTreeExternalDataHandle<AFirstPersonCharacter, EStateTreeExternalDataRequirement::Optional> m_PlayerCharacterHandle;
-	TStateTreeExternalDataHandle<ARainNPC, EStateTreeExternalDataRequirement::Optional> m_RainHandle;
+	TStateTreeExternalDataHandle<AConversableNPC, EStateTreeExternalDataRequirement::Optional> m_ConversableNpcHandle;
 };

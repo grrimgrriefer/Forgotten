@@ -8,7 +8,7 @@
 #include "Engine/World.h"
 #include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
-#include "Forgotten/Character/RainNPC.h"
+#include "Forgotten/Character/ConversableNPC.h"
 #include "Forgotten/StateTree/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
@@ -23,7 +23,7 @@ const UScriptStruct* FConversationTask::GetInstanceDataType() const
 }
 bool FConversationTask::Link(FStateTreeLinker& Linker)
 {
-	Linker.LinkExternalData(m_RainHandle);
+	Linker.LinkExternalData(m_ConversableNpcHandle);
 	Linker.LinkExternalData(m_PlayerCharacterHandle);
 	return true;
 }
@@ -31,10 +31,13 @@ EStateTreeRunStatus FConversationTask::EnterState(
 	FStateTreeExecutionContext& context,
 	const FStateTreeTransitionResult& transitions) const
 {
-	AFirstPersonCharacter* m_PlayerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
-	ARainNPC* m_RainNPC = context.GetExternalDataPtr(m_RainHandle);
-	m_PlayerCharacter->EnterConversationMode(m_RainNPC);
-	m_RainNPC->Interact(m_PlayerCharacter);
+	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
+	AConversableNPC* conversableNpc = context.GetExternalDataPtr(m_ConversableNpcHandle);
+
+	ASSERT_CHECK_RETURN(playerCharacter, EStateTreeRunStatus::Failed);
+	ASSERT_CHECK_RETURN(conversableNpc, EStateTreeRunStatus::Failed);
+	playerCharacter->EnterConversationMode(conversableNpc);
+	conversableNpc->StartConversation(playerCharacter);
 
 	const UWorld* world = context.GetWorld();
 	ASSERT_CHECK_RETURN(world, EStateTreeRunStatus::Failed);
@@ -107,7 +110,18 @@ void FConversationTask::ExitState(
 		}
 	}
 
-	// TODO: Exit Rain interaction too with context.GetExternalDataPtr(m_TargetNPCHandle)
+	if (AConversableNPC* conversableNpc = context.GetExternalDataPtr(m_ConversableNpcHandle))
+	{
+		conversableNpc->EndConversation();
+		const UWorld* world = context.GetWorld();
+		if (IsValid(world) && IsValid(world->GetGameInstance()))
+		{
+			if (UMainStateTreeSubsystem* stateTreeSubsystem = world->GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>())
+			{
+				stateTreeSubsystem->TryUnbindContextData(conversableNpc);
+			}
+		}
+	}
 
 	if (UConversationWidget* conversationWidget = instanceData.m_WidgetPtr.Get())
 	{

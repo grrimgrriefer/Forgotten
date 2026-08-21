@@ -1,6 +1,8 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
 #include "FirstPersonCharacter.h"
+
+#include "ConversableNPC.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
@@ -9,7 +11,6 @@
 #include "Engine/World.h"
 #include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/Interactables/InteractableInterface.h"
-#include "Forgotten/StateTree/MainStateTreeSchema.h"
 #include "Forgotten/StateTree/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 
@@ -33,16 +34,20 @@ void AFirstPersonCharacter::BeginPlay()
 	const APlayerController* playerController = Cast<APlayerController>(GetController());
 	ASSERT_CHECK(playerController);
 
-	UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+	UEnhancedInputLocalPlayerSubsystem* inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
 		playerController->GetLocalPlayer());
-	ASSERT_CHECK(subsystem);
+	ASSERT_CHECK(inputSubsystem);
 
 	ASSERT_CHECK(m_defaultMappingContext, TEXT("AFirstPersonCharacter: m_defaultMappingContext is not assigned, "
 										  "check the blueprint."));
-	subsystem->AddMappingContext(m_defaultMappingContext, 0);
+	inputSubsystem->AddMappingContext(m_defaultMappingContext, 0);
 
 	ASSERT_CHECK(m_cameraComponent, TEXT("AFirstPersonCharacter: "
-									  "m_cameraComponen has been removed? Check the blueprint."));
+									  "m_cameraComponent has been removed? Check the blueprint."));
+
+	UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
+	ASSERT_CHECK(stateTreeSubsystem);
+	stateTreeSubsystem->TryBindContextData(this);
 }
 void AFirstPersonCharacter::Tick(const float deltaTime)
 {
@@ -131,15 +136,13 @@ void AFirstPersonCharacter::AttemptInteraction()
 
 	if (bHit && hitResult.GetActor())
 	{
-		if (IInteractableInterface* interactable = Cast<IInteractableInterface>(hitResult.GetActor()))
+		//if (IInteractableInterface* interactable = Cast<IInteractableInterface>(hitResult.GetActor()))
+		if (AConversableNPC* conversableNpc = Cast<AConversableNPC>(hitResult.GetActor()))
 		{
-			UMainStateTreeSubsystem* stateTreeSubsystem = world->GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
+			UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
 
 			ASSERT_CHECK(stateTreeSubsystem);
-
-			stateTreeSubsystem->TryBindContextData(this);
 			stateTreeSubsystem->TryBindContextData(hitResult.GetActor());
-
 			stateTreeSubsystem->TrySendFlowEvent(TAG_State_Conversation_Start);
 		}
 	}
