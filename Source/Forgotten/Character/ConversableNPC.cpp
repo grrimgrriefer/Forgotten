@@ -13,14 +13,6 @@ AConversableNPC::AConversableNPC()
 	m_placeholderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlaceholderMesh"));
 	m_placeholderMesh->SetupAttachment(RootComponent);
 }
-void AConversableNPC::StartConversation(AFirstPersonCharacter* player)
-{
-
-}
-void AConversableNPC::EndConversation()
-{
-
-}
 FText AConversableNPC::GetSpeakerName() const
 {
 	return m_characterName;

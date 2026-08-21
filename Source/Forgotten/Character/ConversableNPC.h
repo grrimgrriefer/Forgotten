@@ -20,8 +20,6 @@ class FORGOTTEN_API AConversableNPC : public ACharacter
 public:
 	AConversableNPC();
 
-	void StartConversation(AFirstPersonCharacter* player);
-	void EndConversation();
 	FText GetSpeakerName() const;
 	FVector GetLocation() const;
 

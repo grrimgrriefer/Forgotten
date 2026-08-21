@@ -8,15 +8,17 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
+#include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/Character/ConversableNPC.h"
-#include "Forgotten/Utils/AssertMacros.h"
-
 #include "Forgotten/SubSystems/ConversationSubsystem.h"
+#include "Forgotten/SubSystems/MainStateTreeSubsystem.h"
+#include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationPitch = false;
@@ -33,7 +35,7 @@ void AFirstPersonCharacter::BeginPlay()
 	ASSERT_CHECK(m_cameraComponent, TEXT("AFirstPersonCharacter: "
 									  "m_cameraComponent has been removed? Check the blueprint."));
 
-	const APlayerController* playerController = Cast<APlayerController>(GetController());
+	APlayerController* playerController = Cast<APlayerController>(GetController());
 	ASSERT_CHECK(playerController);
 
 	UEnhancedInputLocalPlayerSubsystem* inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
@@ -57,10 +59,37 @@ void AFirstPersonCharacter::BeginPlay()
 	UWorld* world = GetWorld();
 	ASSERT_CHECK(world);
 	UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
-
 	ASSERT_CHECK(conversationSubSystem);
 	m_chatWidget->m_OnTextSubmitted.AddUObject(conversationSubSystem, &UConversationSubsystem::SubmitPlayerMessage);
 	conversationSubSystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
+
+	UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
+	ASSERT_CHECK(stateTreeSubsystem);
+	stateTreeSubsystem->TryBindContextData(this);
+}
+void AFirstPersonCharacter::Tick(const float deltaTime)
+{
+	Super::Tick(deltaTime);
+
+	if (IsSeated())
+	{
+		ASSERT_CHECK(m_cameraComponent);
+		const FVector cameraLoc = m_cameraComponent->GetComponentLocation();
+		const FVector targetLoc = m_seatedTarget->GetActorLocation();
+		const FRotator targetRotation = (targetLoc - cameraLoc).Rotation();
+
+		APlayerController* playerController = Cast<APlayerController>(GetController());
+		ASSERT_CHECK(playerController);
+
+		const FRotator currentRotation = playerController->GetControlRotation();
+		const FRotator newRotation = FMath::RInterpTo(
+			currentRotation,
+			targetRotation,
+			deltaTime,
+			m_cameraInterpSpeed);
+
+		playerController->SetControlRotation(newRotation);
+	}
 }
 void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInputComponent)
 {
@@ -80,14 +109,28 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	ASSERT_CHECK(m_focusChatAction, TEXT("AFirstPersonCharacter: m_focusChatAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_focusChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::FocusChat);
 }
+void AFirstPersonCharacter::EnterSeatedMode(AActor* targetActor)
+{
+	ASSERT_CHECK(targetActor);
+	m_seatedTarget = targetActor;
+	PrimaryActorTick.SetTickFunctionEnable(true);
+
+	APlayerController* playerController = Cast<APlayerController>(GetController());
+	ASSERT_CHECK(playerController);
+	playerController->SetIgnoreMoveInput(true);
+}
+void AFirstPersonCharacter::ExitSeatedMode()
+{
+	m_seatedTarget = nullptr;
+	PrimaryActorTick.SetTickFunctionEnable(false);
+
+	if (APlayerController* playerController = Cast<APlayerController>(GetController()))
+	{
+		playerController->SetIgnoreMoveInput(false);
+	}
+}
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
 {
-	if (m_chatWidget && m_chatWidget->IsInputFocused())
-	{
-		// Currently typing in text box
-		return;
-	}
-
 	const FVector2D movementVector = value.Get<FVector2D>();
 	ASSERT_CHECK(Controller);
 
@@ -100,12 +143,6 @@ void AFirstPersonCharacter::Move(const FInputActionValue& value)
 }
 void AFirstPersonCharacter::Look(const FInputActionValue& value)
 {
-	if (m_chatWidget && m_chatWidget->IsInputFocused())
-	{
-		// Currently typing in text box
-		return;
-	}
-
 	const FVector2D lookAxisVector = value.Get<FVector2D>();
 	ASSERT_CHECK(Controller);
 
@@ -128,36 +165,50 @@ void AFirstPersonCharacter::AttemptInteraction()
 	{
 		if (AConversableNPC* conversableNpc = Cast<AConversableNPC>(hitResult.GetActor()))
 		{
-			UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
-			ASSERT_CHECK(conversationSubSystem);
-
-			conversationSubSystem->SetCurrentConversableNpc(conversableNpc);
-			FocusChat();
+			// TODO hook up focused conversation
 		}
 	}
 }
 void AFirstPersonCharacter::ToggleChat()
 {
-	ASSERT_CHECK(m_chatWidget, "The ChatWidget should not be destroyed during gameplay, check the logs.");
+	ASSERT_CHECK(m_chatWidget);
 	m_chatWidget->ToggleTranscriptVisibility();
 }
 void AFirstPersonCharacter::FocusChat()
 {
-	ASSERT_CHECK(m_chatWidget, "The ChatWidget should not be destroyed during gameplay, check the logs.");
-	m_chatWidget->FocusInput();
-
-	FInputModeGameAndUI inputMode;
-	inputMode.SetWidgetToFocus(m_chatWidget->TakeWidget());
-	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	if (m_chatWidget->IsInputFocused())
+	{
+		return;
+	}
 
 	APlayerController* playerController = Cast<APlayerController>(GetController());
+	ASSERT_CHECK(playerController);
+
+	playerController->SetIgnoreMoveInput(true);
+	playerController->SetIgnoreLookInput(true);
+
+	FInputModeGameAndUI inputMode;
+	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	playerController->SetInputMode(inputMode);
+
+	ASSERT_CHECK(m_chatWidget);
+	m_chatWidget->FocusInput();
 }
 void AFirstPersonCharacter::OnChatFocusLost()
 {
-	if (APlayerController* playerController = Cast<APlayerController>(GetController()))
+	APlayerController* playerController = Cast<APlayerController>(GetController());
+	if (!playerController)
 	{
-		const FInputModeGameOnly gameMode;
-		playerController->SetInputMode(gameMode);
+		return;
 	}
+
+	playerController->SetIgnoreMoveInput(IsSeated());
+	playerController->SetIgnoreLookInput(false);
+
+	const FInputModeGameOnly gameMode;
+	playerController->SetInputMode(gameMode);
+}
+bool AFirstPersonCharacter::IsSeated() const
+{
+	return IsValid(m_seatedTarget);
 }

@@ -2,7 +2,7 @@
 
 #include "MainStateTreeSubsystem.h"
 
-#include "MainStateTreeSchema.h"
+#include "Forgotten/StateTree/MainStateTreeSchema.h"
 #include "StateTreeExecutionContext.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "GameFramework/GameModeBase.h"
