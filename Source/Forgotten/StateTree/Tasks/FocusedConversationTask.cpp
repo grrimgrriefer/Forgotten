@@ -39,7 +39,7 @@ EStateTreeRunStatus FFocusedConversationTask::EnterState(
 	const UWorld* world = context.GetWorld();
 	UConversationSubsystem* conversationSubsystem = world->GetSubsystem<UConversationSubsystem>();
 	conversationSubsystem->SetCurrentConversableNpc(conversableNpc);
-	playerCharacter->EnterSeatedMode(conversableNpc);
+	playerCharacter->EnterFocusedConvoMode(conversableNpc);
 
 	return EStateTreeRunStatus::Running;
 }
@@ -49,7 +49,7 @@ void FFocusedConversationTask::ExitState(
 {
 	if (AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle))
 	{
-		playerCharacter->ExitSeatedMode();
+		playerCharacter->ExitFocusedConvoMode();
 	}
 
 	if (AConversableNPC* conversableNpc = context.GetExternalDataPtr(m_ConversableNpcHandle))

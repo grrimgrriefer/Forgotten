@@ -77,10 +77,6 @@ void UConversationWidget::SubmitCurrentInputText()
 	}
 	UnfocusInput();
 }
-void UConversationWidget::OnSendClicked()
-{
-	SubmitCurrentInputText();
-}
 void UConversationWidget::OnInputTextCommitted(const FText& text, ETextCommit::Type commitMethod)
 {
 	if (commitMethod == ETextCommit::OnEnter)

@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "FirstPersonCharacter.generated.h"
 
+class AConversableNPC;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
@@ -27,8 +28,8 @@ public:
 	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
 
-	void EnterSeatedMode(AActor* targetActor);
-	void ExitSeatedMode();
+	void EnterFocusedConvoMode(AConversableNPC* conversableNpc);
+	void ExitFocusedConvoMode();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -49,6 +50,8 @@ protected:
 	TObjectPtr<UInputAction> m_toggleChatAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> m_focusChatAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> m_exitAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	float m_interactionDistance = 250.0f;
@@ -58,7 +61,7 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;
 	UPROPERTY(Transient)
-	TObjectPtr<AActor> m_seatedTarget = nullptr;
+	TObjectPtr<AActor> m_focusedConversationNpc = nullptr;
 
 private:
 	void Move(const FInputActionValue& value);
@@ -66,6 +69,7 @@ private:
 	void AttemptInteraction();
 	void ToggleChat();
 	void FocusChat();
+	void ExitCurrentActivity();
 	void OnChatFocusLost();
-	bool IsSeated() const;
+	bool IsInFocusedConvo() const;
 };

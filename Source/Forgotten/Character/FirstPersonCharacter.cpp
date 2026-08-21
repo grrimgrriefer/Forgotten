@@ -71,11 +71,11 @@ void AFirstPersonCharacter::Tick(const float deltaTime)
 {
 	Super::Tick(deltaTime);
 
-	if (IsSeated())
+	if (IsInFocusedConvo())
 	{
 		ASSERT_CHECK(m_cameraComponent);
 		const FVector cameraLoc = m_cameraComponent->GetComponentLocation();
-		const FVector targetLoc = m_seatedTarget->GetActorLocation();
+		const FVector targetLoc = m_focusedConversationNpc->GetActorLocation();
 		const FRotator targetRotation = (targetLoc - cameraLoc).Rotation();
 
 		APlayerController* playerController = Cast<APlayerController>(GetController());
@@ -108,26 +108,23 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	enhancedInputComponent->BindAction(m_toggleChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ToggleChat);
 	ASSERT_CHECK(m_focusChatAction, TEXT("AFirstPersonCharacter: m_focusChatAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_focusChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::FocusChat);
+	ASSERT_CHECK(m_exitAction, TEXT("AFirstPersonCharacter: m_exitAction is not assigned, check the blueprint."));
+	enhancedInputComponent->BindAction(m_exitAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ExitCurrentActivity);
 }
-void AFirstPersonCharacter::EnterSeatedMode(AActor* targetActor)
+void AFirstPersonCharacter::EnterFocusedConvoMode(AConversableNPC* conversableNpc)
 {
-	ASSERT_CHECK(targetActor);
-	m_seatedTarget = targetActor;
+	ASSERT_CHECK(conversableNpc);
+	m_focusedConversationNpc = conversableNpc;
 	PrimaryActorTick.SetTickFunctionEnable(true);
 
-	APlayerController* playerController = Cast<APlayerController>(GetController());
-	ASSERT_CHECK(playerController);
-	playerController->SetIgnoreMoveInput(true);
+	FocusChat();
 }
-void AFirstPersonCharacter::ExitSeatedMode()
+void AFirstPersonCharacter::ExitFocusedConvoMode()
 {
-	m_seatedTarget = nullptr;
+	m_focusedConversationNpc = nullptr;
 	PrimaryActorTick.SetTickFunctionEnable(false);
 
-	if (APlayerController* playerController = Cast<APlayerController>(GetController()))
-	{
-		playerController->SetIgnoreMoveInput(false);
-	}
+	OnChatFocusLost();
 }
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
 {
@@ -165,7 +162,10 @@ void AFirstPersonCharacter::AttemptInteraction()
 	{
 		if (AConversableNPC* conversableNpc = Cast<AConversableNPC>(hitResult.GetActor()))
 		{
-			// TODO hook up focused conversation
+			UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
+			ASSERT_CHECK(stateTreeSubsystem);
+			stateTreeSubsystem->TryBindContextData(conversableNpc);
+			stateTreeSubsystem->TrySendFlowEvent(TAG_State_FocusedConversation_Start);
 		}
 	}
 }
@@ -194,6 +194,20 @@ void AFirstPersonCharacter::FocusChat()
 	ASSERT_CHECK(m_chatWidget);
 	m_chatWidget->FocusInput();
 }
+void AFirstPersonCharacter::ExitCurrentActivity()
+{
+	if (m_chatWidget->IsInputFocused())
+	{
+		m_chatWidget->UnfocusInput();
+		return;
+	}
+	if (IsInFocusedConvo())
+	{
+		UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
+		ASSERT_CHECK(stateTreeSubsystem);
+		stateTreeSubsystem->TrySendFlowEvent(TAG_State_FocusedConversation_End);
+	}
+}
 void AFirstPersonCharacter::OnChatFocusLost()
 {
 	APlayerController* playerController = Cast<APlayerController>(GetController());
@@ -202,13 +216,13 @@ void AFirstPersonCharacter::OnChatFocusLost()
 		return;
 	}
 
-	playerController->SetIgnoreMoveInput(IsSeated());
+	playerController->SetIgnoreMoveInput(IsInFocusedConvo());
 	playerController->SetIgnoreLookInput(false);
 
 	const FInputModeGameOnly gameMode;
 	playerController->SetInputMode(gameMode);
 }
-bool AFirstPersonCharacter::IsSeated() const
+bool AFirstPersonCharacter::IsInFocusedConvo() const
 {
-	return IsValid(m_seatedTarget);
+	return IsValid(m_focusedConversationNpc);
 }

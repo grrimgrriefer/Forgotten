@@ -46,7 +46,5 @@ private:
 	void SubmitCurrentInputText();
 
 	UFUNCTION()
-	void OnSendClicked();
-	UFUNCTION()
 	void OnInputTextCommitted(const FText& text, ETextCommit::Type commitMethod);
 };

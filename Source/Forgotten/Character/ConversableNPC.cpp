@@ -21,4 +21,3 @@ FVector AConversableNPC::GetLocation() const
 {
 	return GetActorLocation();
 }
-
