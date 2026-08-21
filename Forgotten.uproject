@@ -18,13 +18,16 @@
 				"Editor"
 			]
 		},
-        {
-            "Name": "StateTree",
-            "Enabled": true
-        },
+		{
+			"Name": "StateTree",
+			"Enabled": true
+		},
 		{
 			"Name": "GameplayStateTree",
 			"Enabled": true
 		}
+	],
+	"TargetPlatforms": [
+		"Linux"
 	]
 }
