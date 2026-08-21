@@ -10,6 +10,7 @@
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class UConversationWidget;
 
 /**
  * Main player character
@@ -23,15 +24,13 @@ public:
 	AFirstPersonCharacter();
 
 	virtual void BeginPlay() override;
-	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
-
-	void EnterConversationMode(AActor* targetActor);
-	void ExitConversationMode();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<UCameraComponent> m_cameraComponent;
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UConversationWidget> m_chatWidgetClass;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> m_defaultMappingContext;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -42,14 +41,20 @@ protected:
 	TObjectPtr<UInputAction> m_interactAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	float m_interactionDistance = 250.0f;
-	UPROPERTY(EditAnywhere, Category = "Interaction")
-	float m_cameraInterpSpeed = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> m_toggleChatAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> m_focusChatAction;
+
 	UPROPERTY(Transient)
-	TObjectPtr<AActor> m_conversationTarget = nullptr;
+	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;
 
 private:
 	void Move(const FInputActionValue& value);
 	void Look(const FInputActionValue& value);
 	void AttemptInteraction();
-	void SetInternalConversationMode(AActor* targetActor);
+	void ToggleChat();
+	void FocusChat();
+	void OnChatFocusLost();
+	void CheckNpcProximity();
 };
