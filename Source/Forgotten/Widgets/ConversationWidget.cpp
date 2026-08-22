@@ -3,11 +3,11 @@
 #include "ConversationWidget.h"
 
 #include "Blueprint/WidgetTree.h"
-#include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Components/ScrollBox.h"
 #include "Components/TextBlock.h"
 #include "Forgotten/Utils/AssertMacros.h"
+#include "Framework/Application/SlateApplication.h"
 
 void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FText& messageText) const
 {
@@ -26,51 +26,69 @@ void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FTe
 	m_transcriptScrollBox->AddChild(newEntry);
 	m_transcriptScrollBox->ScrollToEnd();
 }
+void UConversationWidget::ToggleTranscriptVisibility()
+{
+	const ESlateVisibility currentVis = GetVisibility();
+	const ESlateVisibility newVis = (currentVis == ESlateVisibility::Collapsed || currentVis == ESlateVisibility::Hidden)
+		? ESlateVisibility::SelfHitTestInvisible
+		: ESlateVisibility::Collapsed;
+
+	SetVisibility(newVis);
+}
+void UConversationWidget::FocusInput()
+{
+	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	ASSERT_CHECK(m_inputTextBox);
+	m_inputTextBox->SetKeyboardFocus();
+}
+void UConversationWidget::UnfocusInput()
+{
+	ASSERT_CHECK(m_inputTextBox);
+	m_inputTextBox->SetText(FText::GetEmpty());
+	if (FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().ClearKeyboardFocus();
+	}
+	m_OnChatFocusLost.Broadcast();
+}
+bool UConversationWidget::IsInputFocused() const
+{
+	return m_inputTextBox && m_inputTextBox->HasKeyboardFocus();
+}
 void UConversationWidget::NativeConstruct()
 {
-    Super::NativeConstruct();
+	Super::NativeConstruct();
 
-    ASSERT_CHECK(m_transcriptScrollBox);
-    ASSERT_CHECK(m_inputTextBox);
-    ASSERT_CHECK(m_sendButton);
-    ASSERT_CHECK(m_endConversationButton);
+	ASSERT_CHECK(m_transcriptScrollBox);
+	ASSERT_CHECK(m_inputTextBox);
 
-    m_sendButton->OnClicked.AddDynamic(this, &UConversationWidget::OnSendClicked);
-    m_inputTextBox->OnTextCommitted.AddDynamic(this, &UConversationWidget::OnInputTextCommitted);
-    m_endConversationButton->OnClicked.AddDynamic(this, &UConversationWidget::OnEndConversationClicked);
+	m_inputTextBox->OnTextCommitted.AddDynamic(this, &UConversationWidget::OnInputTextCommitted);
 }
 void UConversationWidget::NativeDestruct()
 {
-    m_sendButton->OnClicked.RemoveAll(this);
-    m_inputTextBox->OnTextCommitted.RemoveAll(this);
-    m_endConversationButton->OnClicked.RemoveAll(this);
+	m_inputTextBox->OnTextCommitted.RemoveAll(this);
 
-    Super::NativeDestruct();
+	Super::NativeDestruct();
 }
-void UConversationWidget::SubmitCurrentInputText() const
+void UConversationWidget::SubmitCurrentInputText(const FText& text)
 {
 	ASSERT_CHECK(m_inputTextBox);
 	const FText textToSubmit = m_inputTextBox->GetText();
-	if (textToSubmit.IsEmptyOrWhitespace())
+	if (!text.IsEmptyOrWhitespace())
 	{
-		return;
+		m_inputTextBox->SetText(FText::GetEmpty());
+		m_OnTextSubmitted.Broadcast(text);
 	}
-
-	m_inputTextBox->SetText(FText::GetEmpty());
-	m_OnTextSubmitted.Broadcast(textToSubmit);
-}
-void UConversationWidget::OnSendClicked()
-{
-    SubmitCurrentInputText();
+	UnfocusInput();
 }
 void UConversationWidget::OnInputTextCommitted(const FText& text, ETextCommit::Type commitMethod)
 {
-    if (commitMethod == ETextCommit::OnEnter)
-    {
-        SubmitCurrentInputText();
-    }
-}
-void UConversationWidget::OnEndConversationClicked()
-{
-    m_OnConversationEnded.Broadcast();
+	if (commitMethod == ETextCommit::OnEnter)
+	{
+		SubmitCurrentInputText(text);
+	}
+	else if (commitMethod == ETextCommit::OnCleared || commitMethod == ETextCommit::OnUserMovedFocus)
+	{
+		UnfocusInput();
+	}
 }

@@ -2,5 +2,5 @@
 
 #include "CustomGameplayTags.h"
 
-UE_DEFINE_GAMEPLAY_TAG(TAG_State_Conversation_Start, "State.Conversation.Start");
-UE_DEFINE_GAMEPLAY_TAG(TAG_State_Conversation_End, "State.Conversation.End");
+UE_DEFINE_GAMEPLAY_TAG(TAG_State_FocusedConversation_Start, "State.Conversation.Start");
+UE_DEFINE_GAMEPLAY_TAG(TAG_State_FocusedConversation_End, "State.Conversation.End");

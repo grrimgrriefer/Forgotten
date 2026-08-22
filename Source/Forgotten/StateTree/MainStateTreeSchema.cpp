@@ -1,7 +1,7 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
 #include "MainStateTreeSchema.h"
-#include "MainStateTreeSubsystem.h"
+#include "Forgotten/SubSystems/MainStateTreeSubsystem.h"
 #include "StateTreeConditionBase.h"
 #include "StateTreeEvaluatorBase.h"
 #include "StateTreeTaskBase.h"

@@ -2,7 +2,6 @@
 
 #include "FirstPersonCharacter.h"
 
-#include "ConversableNPC.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
@@ -10,9 +9,11 @@
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "Forgotten/CustomGameplayTags.h"
-#include "Forgotten/Interactables/InteractableInterface.h"
-#include "Forgotten/StateTree/MainStateTreeSubsystem.h"
+#include "Forgotten/Character/ConversableNPC.h"
+#include "Forgotten/SubSystems/ConversationSubsystem.h"
+#include "Forgotten/SubSystems/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
+#include "Forgotten/Widgets/ConversationWidget.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
@@ -31,7 +32,10 @@ void AFirstPersonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const APlayerController* playerController = Cast<APlayerController>(GetController());
+	ASSERT_CHECK(m_cameraComponent, TEXT("AFirstPersonCharacter: "
+									  "m_cameraComponent has been removed? Check the blueprint."));
+
+	APlayerController* playerController = Cast<APlayerController>(GetController());
 	ASSERT_CHECK(playerController);
 
 	UEnhancedInputLocalPlayerSubsystem* inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
@@ -42,8 +46,22 @@ void AFirstPersonCharacter::BeginPlay()
 										  "check the blueprint."));
 	inputSubsystem->AddMappingContext(m_defaultMappingContext, 0);
 
-	ASSERT_CHECK(m_cameraComponent, TEXT("AFirstPersonCharacter: "
-									  "m_cameraComponent has been removed? Check the blueprint."));
+
+	ASSERT_CHECK(m_chatWidgetClass, TEXT("AFirstPersonCharacter: m_chatWidgetClass has not been assigned, "
+									  "check the blueprint."));
+
+	m_chatWidget = CreateWidget<UConversationWidget>(playerController, m_chatWidgetClass);
+	ASSERT_CHECK(m_chatWidget);
+
+	m_chatWidget->AddToViewport();
+	m_chatWidget->m_OnChatFocusLost.AddUObject(this, &AFirstPersonCharacter::OnChatFocusLost);
+
+	UWorld* world = GetWorld();
+	ASSERT_CHECK(world);
+	UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
+	ASSERT_CHECK(conversationSubSystem);
+	m_chatWidget->m_OnTextSubmitted.AddUObject(conversationSubSystem, &UConversationSubsystem::SubmitPlayerMessage);
+	conversationSubSystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
 
 	UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
 	ASSERT_CHECK(stateTreeSubsystem);
@@ -53,15 +71,16 @@ void AFirstPersonCharacter::Tick(const float deltaTime)
 {
 	Super::Tick(deltaTime);
 
-	if (IsValid(m_conversationTarget))
+	if (IsInFocusedConvo())
 	{
 		ASSERT_CHECK(m_cameraComponent);
 		const FVector cameraLoc = m_cameraComponent->GetComponentLocation();
-		const FVector targetLoc = m_conversationTarget->GetActorLocation();
+		const FVector targetLoc = m_focusedConversationNpc->GetActorLocation();
 		const FRotator targetRotation = (targetLoc - cameraLoc).Rotation();
-		APlayerController* playerController = Cast<APlayerController>(GetController());
 
+		APlayerController* playerController = Cast<APlayerController>(GetController());
 		ASSERT_CHECK(playerController);
+
 		const FRotator currentRotation = playerController->GetControlRotation();
 		const FRotator newRotation = FMath::RInterpTo(
 			currentRotation,
@@ -85,15 +104,31 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	enhancedInputComponent->BindAction(m_lookAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Look);
 	ASSERT_CHECK(m_interactAction, TEXT("AFirstPersonCharacter: m_interactAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_interactAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::AttemptInteraction);
+	ASSERT_CHECK(m_toggleChatAction, TEXT("AFirstPersonCharacter: m_toggleChatAction is not assigned, check the blueprint."));
+	enhancedInputComponent->BindAction(m_toggleChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ToggleChat);
+	ASSERT_CHECK(m_focusChatAction, TEXT("AFirstPersonCharacter: m_focusChatAction is not assigned, check the blueprint."));
+	enhancedInputComponent->BindAction(m_focusChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::FocusChat);
+	ASSERT_CHECK(m_exitAction, TEXT("AFirstPersonCharacter: m_exitAction is not assigned, check the blueprint."));
+	enhancedInputComponent->BindAction(m_exitAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ExitCurrentActivity);
 }
-void AFirstPersonCharacter::EnterConversationMode(AActor* targetActor)
+void AFirstPersonCharacter::EnterFocusedConvoMode(AConversableNPC* conversableNpc)
 {
-	ASSERT_CHECK(targetActor, TEXT("AFirstPersonCharacter: EnterConversationMode should always provide a valid target."));
-	SetInternalConversationMode(targetActor);
+	ASSERT_CHECK(conversableNpc);
+	m_focusedConversationNpc = conversableNpc;
+	PrimaryActorTick.SetTickFunctionEnable(true);
+
+	FocusChat();
 }
-void AFirstPersonCharacter::ExitConversationMode()
+void AFirstPersonCharacter::ExitFocusedConvoMode()
 {
-	SetInternalConversationMode(nullptr);
+	m_focusedConversationNpc = nullptr;
+	PrimaryActorTick.SetTickFunctionEnable(false);
+
+	m_chatWidget->UnfocusInput();
+}
+bool AFirstPersonCharacter::IsInFocusedConvo() const
+{
+	return IsValid(m_focusedConversationNpc);
 }
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
 {
@@ -127,40 +162,84 @@ void AFirstPersonCharacter::AttemptInteraction()
 
 	const UWorld* world = GetWorld();
 	ASSERT_CHECK(world);
-	const bool bHit = world->LineTraceSingleByChannel(
-		hitResult,
-		traceStart,
-		traceEnd,
-		ECC_Visibility,
-		queryParams);
-
-	if (bHit && hitResult.GetActor())
+	if (world->LineTraceSingleByChannel(hitResult, traceStart, traceEnd, ECC_Visibility, queryParams))
 	{
-		//if (IInteractableInterface* interactable = Cast<IInteractableInterface>(hitResult.GetActor()))
 		if (AConversableNPC* conversableNpc = Cast<AConversableNPC>(hitResult.GetActor()))
 		{
 			UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
-
 			ASSERT_CHECK(stateTreeSubsystem);
-			stateTreeSubsystem->TryBindContextData(hitResult.GetActor());
-			stateTreeSubsystem->TrySendFlowEvent(TAG_State_Conversation_Start);
+			stateTreeSubsystem->TryBindContextData(conversableNpc);
+			stateTreeSubsystem->TrySendFlowEvent(TAG_State_FocusedConversation_Start);
 		}
 	}
 }
-void AFirstPersonCharacter::SetInternalConversationMode(AActor* targetActor)
+void AFirstPersonCharacter::ToggleChat()
 {
-	m_conversationTarget = targetActor;
-	const bool isInConversation = m_conversationTarget != nullptr;
-	PrimaryActorTick.SetTickFunctionEnable(isInConversation);
-
-	APlayerController* playerController = Cast<APlayerController>(GetController());
-	if (isInConversation)
+	ASSERT_CHECK(m_chatWidget);
+	m_chatWidget->ToggleTranscriptVisibility();
+}
+void AFirstPersonCharacter::FocusChat()
+{
+	if (m_chatWidget->IsInputFocused())
 	{
-		ASSERT_CHECK(playerController);
+		return;
 	}
 
-	if (IsValid(playerController))
+	ASSERT_CHECK(m_chatWidget);
+	m_chatWidget->FocusInput();
+
+	UpdateInputState();
+}
+void AFirstPersonCharacter::OnChatFocusLost()
+{
+	UpdateInputState();
+}
+void AFirstPersonCharacter::ExitCurrentActivity()
+{
+	if (m_chatWidget->IsInputFocused())
 	{
-		playerController->SetIgnoreMoveInput(isInConversation);
+		m_chatWidget->UnfocusInput();
+		return;
+	}
+	if (IsInFocusedConvo())
+	{
+		UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
+		ASSERT_CHECK(stateTreeSubsystem);
+		stateTreeSubsystem->TrySendFlowEvent(TAG_State_FocusedConversation_End);
+	}
+}
+void AFirstPersonCharacter::UpdateInputState() const
+{
+	APlayerController* playerController = Cast<APlayerController>(GetController());
+	if (!playerController)
+	{
+		return;
+	}
+
+	playerController->ResetIgnoreMoveInput();
+	playerController->ResetIgnoreLookInput();
+
+	const bool bChatFocused = IsValid(m_chatWidget) && m_chatWidget->IsInputFocused();
+	const bool bInFocusedConvo = IsInFocusedConvo();
+
+	if (bChatFocused || bInFocusedConvo)
+	{
+		playerController->SetIgnoreMoveInput(true);
+	}
+	if (bChatFocused)
+	{
+		playerController->SetIgnoreLookInput(true);
+	}
+
+	if (bChatFocused)
+	{
+		FInputModeGameAndUI inputMode;
+		inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		playerController->SetInputMode(inputMode);
+	}
+	else
+	{
+		const FInputModeGameOnly gameMode;
+		playerController->SetInputMode(gameMode);
 	}
 }

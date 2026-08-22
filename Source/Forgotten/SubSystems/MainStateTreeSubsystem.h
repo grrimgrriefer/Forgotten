@@ -15,8 +15,8 @@ class UObject;
 class FSubsystemCollectionBase;
 
 /**
- * Holds the main (persistent) StateTree and controls the high-level flow of the game.
- * Should not contain pointers to objects that are destroyed when leaving a Level.
+ * Holds the main (persistent) StateTree
+ * Controls the high-level flow of the game by dictating the major gameplay states.
  */
 UCLASS(Abstract, Blueprintable)
 class FORGOTTEN_API UMainStateTreeSubsystem : public UGameInstanceSubsystem, public FTickableGameObject

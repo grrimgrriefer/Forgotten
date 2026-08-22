@@ -12,10 +12,11 @@ class UEditableTextBox;
 class UScrollBox;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnConversationTextSubmitted, const FText&);
-DECLARE_MULTICAST_DELEGATE(FOnConversationEnded);
+DECLARE_MULTICAST_DELEGATE(FOnChatFocusLost);
 
 /**
- * Manages the UI during conversations with Rain.
+ * Toggleable Widget that displays the current status of the ongoing conversation.
+ * Also handles manual textmessage entry.
  */
 UCLASS(Abstract, Blueprintable)
 class FORGOTTEN_API UConversationWidget : public UUserWidget
@@ -24,9 +25,13 @@ class FORGOTTEN_API UConversationWidget : public UUserWidget
 
 public:
 	FOnConversationTextSubmitted m_OnTextSubmitted;
-	FOnConversationEnded m_OnConversationEnded;
+	FOnChatFocusLost m_OnChatFocusLost;
 
 	void AddTranscriptEntry(const FText& speakerName, const FText& messageText) const;
+	void ToggleTranscriptVisibility();
+	void FocusInput();
+	void UnfocusInput();
+	bool IsInputFocused() const;
 
 protected:
 	virtual void NativeConstruct() override;
@@ -36,18 +41,10 @@ protected:
 	TObjectPtr<UScrollBox> m_transcriptScrollBox;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UEditableTextBox> m_inputTextBox;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> m_sendButton;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> m_endConversationButton;
 
 private:
-	void SubmitCurrentInputText() const;
+	void SubmitCurrentInputText(const FText& text);
 
 	UFUNCTION()
-	void OnSendClicked();
-	UFUNCTION()
 	void OnInputTextCommitted(const FText& text, ETextCommit::Type commitMethod);
-	UFUNCTION()
-	void OnEndConversationClicked();
 };
