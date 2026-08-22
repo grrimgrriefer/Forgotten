@@ -64,12 +64,13 @@ protected:
 	TObjectPtr<AActor> m_focusedConversationNpc = nullptr;
 
 private:
+	bool IsInFocusedConvo() const;
 	void Move(const FInputActionValue& value);
 	void Look(const FInputActionValue& value);
 	void AttemptInteraction();
 	void ToggleChat();
 	void FocusChat();
-	void ExitCurrentActivity();
 	void OnChatFocusLost();
-	bool IsInFocusedConvo() const;
+	void ExitCurrentActivity();
+	void UpdateInputState() const;
 };

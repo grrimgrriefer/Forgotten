@@ -3,11 +3,11 @@
 #include "ConversationWidget.h"
 
 #include "Blueprint/WidgetTree.h"
-#include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Components/ScrollBox.h"
 #include "Components/TextBlock.h"
 #include "Forgotten/Utils/AssertMacros.h"
+#include "Framework/Application/SlateApplication.h"
 
 void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FText& messageText) const
 {
@@ -45,6 +45,10 @@ void UConversationWidget::UnfocusInput()
 {
 	ASSERT_CHECK(m_inputTextBox);
 	m_inputTextBox->SetText(FText::GetEmpty());
+	if (FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().ClearKeyboardFocus();
+	}
 	m_OnChatFocusLost.Broadcast();
 }
 bool UConversationWidget::IsInputFocused() const
@@ -66,14 +70,14 @@ void UConversationWidget::NativeDestruct()
 
 	Super::NativeDestruct();
 }
-void UConversationWidget::SubmitCurrentInputText()
+void UConversationWidget::SubmitCurrentInputText(const FText& text)
 {
 	ASSERT_CHECK(m_inputTextBox);
 	const FText textToSubmit = m_inputTextBox->GetText();
-	if (!textToSubmit.IsEmptyOrWhitespace())
+	if (!text.IsEmptyOrWhitespace())
 	{
 		m_inputTextBox->SetText(FText::GetEmpty());
-		m_OnTextSubmitted.Broadcast(textToSubmit);
+		m_OnTextSubmitted.Broadcast(text);
 	}
 	UnfocusInput();
 }
@@ -81,9 +85,9 @@ void UConversationWidget::OnInputTextCommitted(const FText& text, ETextCommit::T
 {
 	if (commitMethod == ETextCommit::OnEnter)
 	{
-		SubmitCurrentInputText();
+		SubmitCurrentInputText(text);
 	}
-	else if (commitMethod == ETextCommit::OnCleared)
+	else if (commitMethod == ETextCommit::OnCleared || commitMethod == ETextCommit::OnUserMovedFocus)
 	{
 		UnfocusInput();
 	}

@@ -124,7 +124,11 @@ void AFirstPersonCharacter::ExitFocusedConvoMode()
 	m_focusedConversationNpc = nullptr;
 	PrimaryActorTick.SetTickFunctionEnable(false);
 
-	OnChatFocusLost();
+	m_chatWidget->UnfocusInput();
+}
+bool AFirstPersonCharacter::IsInFocusedConvo() const
+{
+	return IsValid(m_focusedConversationNpc);
 }
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
 {
@@ -181,18 +185,14 @@ void AFirstPersonCharacter::FocusChat()
 		return;
 	}
 
-	APlayerController* playerController = Cast<APlayerController>(GetController());
-	ASSERT_CHECK(playerController);
-
-	playerController->SetIgnoreMoveInput(true);
-	playerController->SetIgnoreLookInput(true);
-
-	FInputModeGameAndUI inputMode;
-	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	playerController->SetInputMode(inputMode);
-
 	ASSERT_CHECK(m_chatWidget);
 	m_chatWidget->FocusInput();
+
+	UpdateInputState();
+}
+void AFirstPersonCharacter::OnChatFocusLost()
+{
+	UpdateInputState();
 }
 void AFirstPersonCharacter::ExitCurrentActivity()
 {
@@ -208,7 +208,7 @@ void AFirstPersonCharacter::ExitCurrentActivity()
 		stateTreeSubsystem->TrySendFlowEvent(TAG_State_FocusedConversation_End);
 	}
 }
-void AFirstPersonCharacter::OnChatFocusLost()
+void AFirstPersonCharacter::UpdateInputState() const
 {
 	APlayerController* playerController = Cast<APlayerController>(GetController());
 	if (!playerController)
@@ -216,13 +216,30 @@ void AFirstPersonCharacter::OnChatFocusLost()
 		return;
 	}
 
-	playerController->SetIgnoreMoveInput(IsInFocusedConvo());
-	playerController->SetIgnoreLookInput(false);
+	playerController->ResetIgnoreMoveInput();
+	playerController->ResetIgnoreLookInput();
 
-	const FInputModeGameOnly gameMode;
-	playerController->SetInputMode(gameMode);
-}
-bool AFirstPersonCharacter::IsInFocusedConvo() const
-{
-	return IsValid(m_focusedConversationNpc);
+	const bool bChatFocused = IsValid(m_chatWidget) && m_chatWidget->IsInputFocused();
+	const bool bInFocusedConvo = IsInFocusedConvo();
+
+	if (bChatFocused || bInFocusedConvo)
+	{
+		playerController->SetIgnoreMoveInput(true);
+	}
+	if (bChatFocused)
+	{
+		playerController->SetIgnoreLookInput(true);
+	}
+
+	if (bChatFocused)
+	{
+		FInputModeGameAndUI inputMode;
+		inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		playerController->SetInputMode(inputMode);
+	}
+	else
+	{
+		const FInputModeGameOnly gameMode;
+		playerController->SetInputMode(gameMode);
+	}
 }

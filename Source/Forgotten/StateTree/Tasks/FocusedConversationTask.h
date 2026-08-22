@@ -20,7 +20,7 @@ struct FConversationTaskInstanceData
  * Handles the lifecycle of focused conversations. (i.e. face-to-face-, seated-, etc.)
  * Also takes care of notifying the NPC, player, etc. when entering & exiting.
  */
-USTRUCT(meta = (DisplayName = "Seated Conversation State", Category = "Gameplay"))
+USTRUCT(meta = (DisplayName = "Focused Conversation State", Category = "Gameplay"))
 struct FORGOTTEN_API FFocusedConversationTask : public FStateTreeTaskBase
 {
 	GENERATED_BODY()

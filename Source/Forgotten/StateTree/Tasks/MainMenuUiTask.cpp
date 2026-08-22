@@ -36,7 +36,6 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 	instanceData.m_PlayerControllerPtr = playerController;
 
 	FInputModeUIOnly inputMode;
-	inputMode.SetWidgetToFocus(mainMenuWidget->TakeWidget());
 	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 
 	instanceData.m_PlayerControllerPtr->SetInputMode(inputMode);

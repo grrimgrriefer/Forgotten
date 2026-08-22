@@ -43,7 +43,7 @@ protected:
 	TObjectPtr<UEditableTextBox> m_inputTextBox;
 
 private:
-	void SubmitCurrentInputText();
+	void SubmitCurrentInputText(const FText& text);
 
 	UFUNCTION()
 	void OnInputTextCommitted(const FText& text, ETextCommit::Type commitMethod);
