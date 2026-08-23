@@ -32,5 +32,5 @@ public:
 
 private:
 	UPROPERTY(Transient)
-	TObjectPtr<AConversableNPC> m_activeNpc = nullptr;
+	TWeakObjectPtr<AConversableNPC> m_activeNpc = nullptr;
 };

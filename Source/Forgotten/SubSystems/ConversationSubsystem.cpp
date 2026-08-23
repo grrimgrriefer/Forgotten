@@ -5,19 +5,19 @@
 
 void UConversationSubsystem::SetCurrentConversableNpc(AConversableNPC* npc)
 {
-	if (m_activeNpc != npc)
+	if (m_activeNpc.Get() != npc)
 	{
 		m_activeNpc = npc;
-		m_OnCurrentConversableNpcChanged.Broadcast(m_activeNpc);
+		m_OnCurrentConversableNpcChanged.Broadcast(m_activeNpc.Get());
 	}
 }
 AConversableNPC* UConversationSubsystem::GetCurrentConversableNpc() const
 {
-	return m_activeNpc;
+	return m_activeNpc.Get();
 }
 bool UConversationSubsystem::HasCurrentConversableNpc() const
 {
-	return IsValid(m_activeNpc);
+	return m_activeNpc.IsValid();
 }
 void UConversationSubsystem::SubmitPlayerMessage(const FText& messageText)
 {

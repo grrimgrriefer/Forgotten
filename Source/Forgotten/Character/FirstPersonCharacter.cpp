@@ -115,14 +115,14 @@ void AFirstPersonCharacter::EnterFocusedConvoMode(AConversableNPC* conversableNp
 {
 	ASSERT_CHECK(conversableNpc);
 	m_focusedConversationNpc = conversableNpc;
-	PrimaryActorTick.SetTickFunctionEnable(true);
+	SetActorTickEnabled(true);
 
 	FocusChat();
 }
 void AFirstPersonCharacter::ExitFocusedConvoMode()
 {
 	m_focusedConversationNpc = nullptr;
-	PrimaryActorTick.SetTickFunctionEnable(false);
+	SetActorTickEnabled(false);
 
 	m_chatWidget->UnfocusInput();
 }

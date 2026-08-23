@@ -61,7 +61,7 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;
 	UPROPERTY(Transient)
-	TObjectPtr<AActor> m_focusedConversationNpc = nullptr;
+	TObjectPtr<AConversableNPC> m_focusedConversationNpc = nullptr;
 
 private:
 	bool IsInFocusedConvo() const;

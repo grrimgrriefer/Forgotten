@@ -47,7 +47,7 @@ void UConversationWidget::UnfocusInput()
 	m_inputTextBox->SetText(FText::GetEmpty());
 	if (FSlateApplication::IsInitialized())
 	{
-		FSlateApplication::Get().ClearKeyboardFocus();
+		FSlateApplication::Get().ClearUserFocus(0);
 	}
 	m_OnChatFocusLost.Broadcast();
 }
