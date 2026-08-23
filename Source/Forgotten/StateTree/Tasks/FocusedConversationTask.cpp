@@ -22,8 +22,9 @@ const UScriptStruct* FFocusedConversationTask::GetInstanceDataType() const
 }
 bool FFocusedConversationTask::Link(FStateTreeLinker& Linker)
 {
-	Linker.LinkExternalData(m_ConversableNpcHandle);
+	Linker.LinkExternalData(m_SubsystemHandle);
 	Linker.LinkExternalData(m_PlayerCharacterHandle);
+	Linker.LinkExternalData(m_ConversableNpcHandle);
 	return true;
 }
 EStateTreeRunStatus FFocusedConversationTask::EnterState(
@@ -38,6 +39,8 @@ EStateTreeRunStatus FFocusedConversationTask::EnterState(
 
 	const UWorld* world = context.GetWorld();
 	UConversationSubsystem* conversationSubsystem = world->GetSubsystem<UConversationSubsystem>();
+
+	ASSERT_CHECK_RETURN(conversationSubsystem, EStateTreeRunStatus::Failed);
 	conversationSubsystem->SetCurrentConversableNpc(conversableNpc);
 	playerCharacter->EnterFocusedConvoMode(conversableNpc);
 
@@ -52,15 +55,10 @@ void FFocusedConversationTask::ExitState(
 		playerCharacter->ExitFocusedConvoMode();
 	}
 
-	if (AConversableNPC* conversableNpc = context.GetExternalDataPtr(m_ConversableNpcHandle))
+	AConversableNPC* conversableNpc = context.GetExternalDataPtr(m_ConversableNpcHandle);
+	UMainStateTreeSubsystem* stateTreeSubsystem = context.GetExternalDataPtr(m_SubsystemHandle);
+	if (conversableNpc && stateTreeSubsystem)
 	{
-		const UWorld* world = context.GetWorld();
-		const UGameInstance* gameInstance = world->GetGameInstance();
-		if (IsValid(world) && IsValid(gameInstance))
-		{
-			UMainStateTreeSubsystem* stateTreeSubsystem = gameInstance->GetSubsystem<UMainStateTreeSubsystem>();
-			ASSERT_CHECK(stateTreeSubsystem);
-			stateTreeSubsystem->TryUnbindContextData(conversableNpc);
-		}
+		stateTreeSubsystem->TryUnbindContextData(conversableNpc);
 	}
 }

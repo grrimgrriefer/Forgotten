@@ -50,7 +50,7 @@ FText FIsLoadedLevelCondition::GetDescription(
 		                          ? instanceData->m_LevelToCheck.GetAssetName()
 		                          : TEXT("None");
 
-	const FText invertPrefix = instanceData->m_Invert
+	const FText invertPrefix = (instanceData && instanceData->m_Invert)
 		                           ? NSLOCTEXT("StateTree", "InvertPrefix", "NOT ")
 		                           : FText::GetEmpty();
 	return FText::Format(

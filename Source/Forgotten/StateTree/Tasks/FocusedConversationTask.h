@@ -7,6 +7,7 @@
 #include "Templates/SubclassOf.h"
 #include "FocusedConversationTask.generated.h"
 
+class UMainStateTreeSubsystem;
 class AFirstPersonCharacter;
 class AConversableNPC;
 
@@ -39,6 +40,7 @@ public:
 		FStateTreeExecutionContext& context,
 		const FStateTreeTransitionResult& transitions) const override;
 
+	TStateTreeExternalDataHandle<UMainStateTreeSubsystem> m_SubsystemHandle;
 	TStateTreeExternalDataHandle<AFirstPersonCharacter, EStateTreeExternalDataRequirement::Optional> m_PlayerCharacterHandle;
 	TStateTreeExternalDataHandle<AConversableNPC, EStateTreeExternalDataRequirement::Optional> m_ConversableNpcHandle;
 };

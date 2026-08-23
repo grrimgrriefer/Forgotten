@@ -67,6 +67,33 @@ void AFirstPersonCharacter::BeginPlay()
 	ASSERT_CHECK(stateTreeSubsystem);
 	stateTreeSubsystem->TryBindContextData(this);
 }
+void AFirstPersonCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
+{
+	if (m_chatWidget)
+	{
+		if (const UWorld* world = GetWorld())
+		{
+			if (UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>())
+			{
+				conversationSubSystem->m_OnTranscriptEntryAdded.RemoveAll(m_chatWidget.Get());
+				m_chatWidget->m_OnTextSubmitted.RemoveAll(conversationSubSystem);
+			}
+		}
+
+		m_chatWidget->RemoveFromParent();
+		m_chatWidget = nullptr;
+	}
+
+	if (const UGameInstance* gameInstance = GetGameInstance())
+	{
+		if (UMainStateTreeSubsystem* stateTreeSubsystem = gameInstance->GetSubsystem<UMainStateTreeSubsystem>())
+		{
+			stateTreeSubsystem->TryUnbindContextData(this);
+		}
+	}
+
+	Super::EndPlay(endPlayReason);
+}
 void AFirstPersonCharacter::Tick(const float deltaTime)
 {
 	Super::Tick(deltaTime);

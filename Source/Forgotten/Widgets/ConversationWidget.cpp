@@ -62,23 +62,26 @@ void UConversationWidget::NativeConstruct()
 	ASSERT_CHECK(m_transcriptScrollBox);
 	ASSERT_CHECK(m_inputTextBox);
 
+	m_inputTextBox->OnTextCommitted.RemoveDynamic(this, &UConversationWidget::OnInputTextCommitted);
 	m_inputTextBox->OnTextCommitted.AddDynamic(this, &UConversationWidget::OnInputTextCommitted);
 }
 void UConversationWidget::NativeDestruct()
 {
-	m_inputTextBox->OnTextCommitted.RemoveAll(this);
+	if (m_inputTextBox)
+	{
+		m_inputTextBox->OnTextCommitted.RemoveAll(this);
+	}
 
 	Super::NativeDestruct();
 }
 void UConversationWidget::SubmitCurrentInputText(const FText& text)
 {
 	ASSERT_CHECK(m_inputTextBox);
-	const FText textToSubmit = m_inputTextBox->GetText();
 	if (!text.IsEmptyOrWhitespace())
 	{
-		m_inputTextBox->SetText(FText::GetEmpty());
 		m_OnTextSubmitted.Broadcast(text);
 	}
+	m_inputTextBox->SetText(FText::GetEmpty());
 	UnfocusInput();
 }
 void UConversationWidget::OnInputTextCommitted(const FText& text, ETextCommit::Type commitMethod)

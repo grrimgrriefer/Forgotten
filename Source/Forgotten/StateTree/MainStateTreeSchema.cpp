@@ -8,14 +8,17 @@
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Character/ConversableNPC.h"
 
+const FName UMainStateTreeSchema::m_SubsystemBindingName = FName(TEXT("Subsystem"));
 const FName UMainStateTreeSchema::m_PlayerBindingName = FName(TEXT("Player"));
 const FName UMainStateTreeSchema::m_ConversableNpcBindingName = FName(TEXT("ConversableNpc"));
-const FName UMainStateTreeSchema::m_SubsystemBindingName = FName(TEXT("Subsystem"));
 
 UMainStateTreeSchema::UMainStateTreeSchema()
-	: m_subsystemData(m_SubsystemBindingName, UMainStateTreeSubsystem::StaticClass(), FGuid::NewGuid())
-	, m_playerData(m_PlayerBindingName, AFirstPersonCharacter::StaticClass(), FGuid::NewGuid())
-	, m_conversableNpcData(m_ConversableNpcBindingName, AConversableNPC::StaticClass(), FGuid::NewGuid())
+	: m_subsystemData(m_SubsystemBindingName, UMainStateTreeSubsystem::StaticClass(),
+		FGuid::NewDeterministicGuid(m_SubsystemBindingName.ToString()))
+	, m_playerData(m_PlayerBindingName, AFirstPersonCharacter::StaticClass(),
+		FGuid::NewDeterministicGuid(m_PlayerBindingName.ToString()))
+	, m_conversableNpcData(m_ConversableNpcBindingName, AConversableNPC::StaticClass(),
+		FGuid::NewDeterministicGuid(m_ConversableNpcBindingName.ToString()))
 {
 	m_playerData.Requirement = EStateTreeExternalDataRequirement::Optional;
 	m_conversableNpcData.Requirement = EStateTreeExternalDataRequirement::Optional;

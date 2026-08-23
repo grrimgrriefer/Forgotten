@@ -25,6 +25,7 @@ public:
 	AFirstPersonCharacter();
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
 	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
 

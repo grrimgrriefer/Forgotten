@@ -119,6 +119,7 @@ bool UMainStateTreeSubsystem::TryBindContextData(UObject* data)
 		return false;
 	}
 
+	m_contextObjects.RemoveAll([](const TWeakObjectPtr<UObject>& weakObj) { return !weakObj.IsValid(); });
 	m_contextObjects.AddUnique(data);
 	return true;
 }
@@ -169,14 +170,22 @@ bool UMainStateTreeSubsystem::SetContextRequirements(FStateTreeExecutionContext&
 
 	context.SetContextDataByName(UMainStateTreeSchema::m_SubsystemBindingName, FStateTreeDataView(this));
 
-	for (const FStateTreeExternalDataDesc& desc : GetDefault<UMainStateTreeSchema>()->GetContextDataDescs())
+	const UMainStateTreeSchema* schema = m_stateTreeAsset
+		? Cast<UMainStateTreeSchema>(m_stateTreeAsset->GetSchema())
+		: nullptr;
+
+	if (!schema)
+	{
+		return false;
+	}
+
+	for (const FStateTreeExternalDataDesc& desc : schema->GetContextDataDescs())
 	{
 		if (desc.Name == UMainStateTreeSchema::m_SubsystemBindingName)
 		{
 			continue;
 		}
 
-		UObject* matchedObject = nullptr;
 		if (const UClass* expectedClass = Cast<const UClass>(desc.Struct))
 		{
 			for (const TWeakObjectPtr<UObject>& weakObj : m_contextObjects)
@@ -185,13 +194,12 @@ bool UMainStateTreeSubsystem::SetContextRequirements(FStateTreeExecutionContext&
 				{
 					if (obj->IsA(expectedClass))
 					{
-						matchedObject = obj;
+						context.SetContextDataByName(desc.Name, FStateTreeDataView(desc.Struct, obj));
 						break;
 					}
 				}
 			}
 		}
-		context.SetContextDataByName(desc.Name, FStateTreeDataView(desc.Struct, matchedObject));
 	}
 
 	context.SetCollectExternalDataCallback(FOnCollectStateTreeExternalData::CreateUObject(
@@ -206,31 +214,43 @@ bool UMainStateTreeSubsystem::CollectExternalData(
 	TArrayView<const FStateTreeExternalDataDesc> externalDataDescs,
 	TArrayView<FStateTreeDataView> outDataViews)
 {
+	bool allRequirementsMet = true;
+
 	for (int32 i = 0; i < externalDataDescs.Num(); ++i)
 	{
 		const FStateTreeExternalDataDesc& desc = externalDataDescs[i];
-		if (desc.Struct && desc.Struct->IsChildOf(StaticClass()))
-		{
-			outDataViews[i] = FStateTreeDataView(this);
-			continue;
-		}
 
-		UObject* matchedObject = nullptr;
 		if (const UClass* targetClass = Cast<const UClass>(desc.Struct))
 		{
-			for (const TWeakObjectPtr<UObject>& weakObj : m_contextObjects)
+			UObject* matchedObject = nullptr;
+			if (this->IsA(targetClass))
 			{
-				if (UObject* obj = weakObj.Get())
+				matchedObject = this;
+			}
+			else
+			{
+				for (const TWeakObjectPtr<UObject>& weakObj : m_contextObjects)
 				{
-					if (obj->IsA(targetClass))
+					if (UObject* obj = weakObj.Get())
 					{
-						matchedObject = obj;
-						break;
+						if (obj->IsA(targetClass))
+						{
+							matchedObject = obj;
+							break;
+						}
 					}
 				}
 			}
+			outDataViews[i] = FStateTreeDataView(matchedObject);
 		}
-		outDataViews[i] = FStateTreeDataView(desc.Struct, matchedObject);
+
+		if (desc.Requirement == EStateTreeExternalDataRequirement::Required && !outDataViews[i].IsValid())
+		{
+			UE_LOG(LogStateTree, Error, TEXT("%s: Failed to provide required external data: %s"),
+				*GetName(), *desc.Struct->GetName());
+			allRequirementsMet = false;
+		}
 	}
-	return true;
+
+	return allRequirementsMet;
 }

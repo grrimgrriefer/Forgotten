@@ -79,10 +79,10 @@ void FMainMenuUiTask::ExitState(
 		playerController->SetShowMouseCursor(false);
 	}
 
-	if (UMainMenuWidget* Widget = instanceData.m_WidgetPtr.Get())
+	if (UMainMenuWidget* widget = instanceData.m_WidgetPtr.Get())
 	{
-		Widget->m_OnActionRequested.Remove(instanceData.m_ActionDelegateHandle);
-		Widget->RemoveFromParent();
+		widget->m_OnActionRequested.Remove(instanceData.m_ActionDelegateHandle);
+		widget->RemoveFromParent();
 	}
 	instanceData.m_WidgetPtr = nullptr;
 	instanceData.m_PlayerControllerPtr = nullptr;
