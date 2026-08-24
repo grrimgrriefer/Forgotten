@@ -8,6 +8,7 @@
 #include "Engine/World.h"
 #include "GameplayTagContainer.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Forgotten/StateTree/StateTreeContextBinder.h"
 #include "MainStateTreeSubsystem.generated.h"
 
 class UStateTree;
@@ -44,24 +45,16 @@ public:
 	bool TryUnbindContextData(UObject* data);
 
 protected:
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings", meta=(RequiredAssetDataTags="Schema=UMainStateTreeSchema"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings", meta=(RequiredAssetDataTags="Schema=UMainStateTreeSchema"))
 	TObjectPtr<UStateTree> m_stateTreeAsset;
 
 private:
 	void OnGameModePostLoginEvent(AGameModeBase* gameMode, APlayerController* newPlayer);
 
-	bool SetContextRequirements(FStateTreeExecutionContext& context);
-	bool CollectExternalData(
-		const FStateTreeExecutionContext& context,
-		const UStateTree* stateTree,
-		TArrayView<const FStateTreeExternalDataDesc> externalDataDescs,
-		TArrayView<FStateTreeDataView> outDataViews);
-
 	UPROPERTY()
 	FStateTreeInstanceData m_instanceData;
 
-	TArray<TWeakObjectPtr<UObject>> m_contextObjects;
-
+	StateTreeContextBinder m_contextBinder;
 	uint32 m_lastFrameNumberWeTicked = INDEX_NONE;
 	bool m_isRunning = false;
 };

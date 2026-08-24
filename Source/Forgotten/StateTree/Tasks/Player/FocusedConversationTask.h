@@ -4,10 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "StateTreeTaskBase.h"
-#include "Templates/SubclassOf.h"
 #include "FocusedConversationTask.generated.h"
 
-class UMainStateTreeSubsystem;
 class AFirstPersonCharacter;
 class AConversableNPC;
 
@@ -19,7 +17,7 @@ struct FConversationTaskInstanceData
 
 /**
  * Handles the lifecycle of focused conversations. (i.e. face-to-face-, seated-, etc.)
- * Also takes care of notifying the NPC, player, etc. when entering & exiting.
+ * Also takes care of notifying the NPC when entering & exiting.
  */
 USTRUCT(meta = (DisplayName = "Focused Conversation State", Category = "Gameplay"))
 struct FORGOTTEN_API FFocusedConversationTask : public FStateTreeTaskBase
@@ -40,7 +38,6 @@ public:
 		FStateTreeExecutionContext& context,
 		const FStateTreeTransitionResult& transitions) const override;
 
-	TStateTreeExternalDataHandle<UMainStateTreeSubsystem> m_SubsystemHandle;
-	TStateTreeExternalDataHandle<AFirstPersonCharacter, EStateTreeExternalDataRequirement::Optional> m_PlayerCharacterHandle;
+	TStateTreeExternalDataHandle<AFirstPersonCharacter> m_PlayerCharacterHandle;
 	TStateTreeExternalDataHandle<AConversableNPC, EStateTreeExternalDataRequirement::Optional> m_ConversableNpcHandle;
 };

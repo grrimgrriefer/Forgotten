@@ -5,25 +5,14 @@
 #include "StateTreeConditionBase.h"
 #include "StateTreeEvaluatorBase.h"
 #include "StateTreeTaskBase.h"
-#include "Forgotten/Character/FirstPersonCharacter.h"
-#include "Forgotten/Character/ConversableNPC.h"
 
 const FName UMainStateTreeSchema::m_SubsystemBindingName = FName(TEXT("Subsystem"));
-const FName UMainStateTreeSchema::m_PlayerBindingName = FName(TEXT("Player"));
-const FName UMainStateTreeSchema::m_ConversableNpcBindingName = FName(TEXT("ConversableNpc"));
 
 UMainStateTreeSchema::UMainStateTreeSchema()
 	: m_subsystemData(m_SubsystemBindingName, UMainStateTreeSubsystem::StaticClass(),
 		FGuid::NewDeterministicGuid(m_SubsystemBindingName.ToString()))
-	, m_playerData(m_PlayerBindingName, AFirstPersonCharacter::StaticClass(),
-		FGuid::NewDeterministicGuid(m_PlayerBindingName.ToString()))
-	, m_conversableNpcData(m_ConversableNpcBindingName, AConversableNPC::StaticClass(),
-		FGuid::NewDeterministicGuid(m_ConversableNpcBindingName.ToString()))
 {
-	m_playerData.Requirement = EStateTreeExternalDataRequirement::Optional;
-	m_conversableNpcData.Requirement = EStateTreeExternalDataRequirement::Optional;
-
-	m_contextDescs = { m_subsystemData, m_playerData, m_conversableNpcData };
+	m_contextDescs = { m_subsystemData };
 }
 TConstArrayView<FStateTreeExternalDataDesc> UMainStateTreeSchema::GetContextDataDescs() const
 {
@@ -39,8 +28,7 @@ bool UMainStateTreeSchema::IsExternalItemAllowed(const UStruct& inStruct) const
 {
 	if (const UClass* itemClass = Cast<const UClass>(&inStruct))
 	{
-		return itemClass->IsChildOf(ACharacter::StaticClass())
-			|| itemClass->IsChildOf(UGameInstanceSubsystem::StaticClass());
+		return itemClass->IsChildOf(UGameInstanceSubsystem::StaticClass());
 	}
 	return false;
 }

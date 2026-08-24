@@ -3,13 +3,10 @@
 #include "FocusedConversationTask.h"
 #include "StateTreeExecutionContext.h"
 #include "StateTreeLinker.h"
-#include "Engine/GameInstance.h"
 #include "Engine/World.h"
-#include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Character/ConversableNPC.h"
 #include "Forgotten/SubSystems/ConversationSubsystem.h"
-#include "Forgotten/SubSystems/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 
 FFocusedConversationTask::FFocusedConversationTask()
@@ -22,7 +19,6 @@ const UScriptStruct* FFocusedConversationTask::GetInstanceDataType() const
 }
 bool FFocusedConversationTask::Link(FStateTreeLinker& Linker)
 {
-	Linker.LinkExternalData(m_SubsystemHandle);
 	Linker.LinkExternalData(m_PlayerCharacterHandle);
 	Linker.LinkExternalData(m_ConversableNpcHandle);
 	return true;
@@ -50,15 +46,15 @@ void FFocusedConversationTask::ExitState(
 	FStateTreeExecutionContext& context,
 	const FStateTreeTransitionResult& transitions) const
 {
-	if (AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle))
+	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
+	if (playerCharacter)
 	{
 		playerCharacter->ExitFocusedConvoMode();
 	}
 
 	AConversableNPC* conversableNpc = context.GetExternalDataPtr(m_ConversableNpcHandle);
-	UMainStateTreeSubsystem* stateTreeSubsystem = context.GetExternalDataPtr(m_SubsystemHandle);
-	if (conversableNpc && stateTreeSubsystem)
+	if (conversableNpc && playerCharacter)
 	{
-		stateTreeSubsystem->TryUnbindContextData(conversableNpc);
+		playerCharacter->TryUnbindContextData(conversableNpc);
 	}
 }

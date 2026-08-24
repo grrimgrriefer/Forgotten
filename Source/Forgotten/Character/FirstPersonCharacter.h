@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Forgotten/StateTree/StateTreeContextBinder.h"
+#include "StateTreeInstanceData.h"
 #include "FirstPersonCharacter.generated.h"
 
 class AConversableNPC;
@@ -12,6 +14,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 class UConversationWidget;
+class UStateTree;
 
 /**
  * Main player character
@@ -31,6 +34,8 @@ public:
 
 	void EnterFocusedConvoMode(AConversableNPC* conversableNpc);
 	void ExitFocusedConvoMode();
+	bool TryBindContextData(UObject* data);
+	bool TryUnbindContextData(UObject* data);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -59,6 +64,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	float m_cameraInterpSpeed = 5.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "StateTree", meta = (RequiredAssetDataTags = "Schema=UPlayerStateTreeSchema"))
+	TObjectPtr<UStateTree> m_stateTreeAsset;
+
 	UPROPERTY(Transient)
 	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;
 	UPROPERTY(Transient)
@@ -74,4 +82,10 @@ private:
 	void OnChatFocusLost();
 	void ExitCurrentActivity();
 	void UpdateInputState() const;
+
+	UPROPERTY()
+	FStateTreeInstanceData m_stateTreeInstanceData;
+
+	StateTreeContextBinder m_contextBinder;
+	bool m_isStateTreeRunning = false;
 };
