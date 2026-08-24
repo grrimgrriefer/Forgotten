@@ -14,11 +14,11 @@
 #include "Forgotten/SubSystems/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
+#include "StateTreeExecutionContext.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationPitch = false;
@@ -63,12 +63,30 @@ void AFirstPersonCharacter::BeginPlay()
 	m_chatWidget->m_OnTextSubmitted.AddUObject(conversationSubSystem, &UConversationSubsystem::SubmitPlayerMessage);
 	conversationSubSystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
 
-	UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
-	ASSERT_CHECK(stateTreeSubsystem);
-	stateTreeSubsystem->TryBindContextData(this);
+	m_contextBinder.TryBindContextData(this);
+
+	ASSERT_CHECK(m_stateTreeAsset);
+	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+	{
+		if (context.Start() == EStateTreeRunStatus::Running)
+		{
+			m_isStateTreeRunning = true;
+		}
+	}
 }
 void AFirstPersonCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 {
+	if (m_isStateTreeRunning)
+	{
+		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+		if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+		{
+			context.Stop();
+		}
+		m_isStateTreeRunning = false;
+	}
+
 	if (m_chatWidget)
 	{
 		if (const UWorld* world = GetWorld())
@@ -84,19 +102,20 @@ void AFirstPersonCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 		m_chatWidget = nullptr;
 	}
 
-	if (const UGameInstance* gameInstance = GetGameInstance())
-	{
-		if (UMainStateTreeSubsystem* stateTreeSubsystem = gameInstance->GetSubsystem<UMainStateTreeSubsystem>())
-		{
-			stateTreeSubsystem->TryUnbindContextData(this);
-		}
-	}
-
 	Super::EndPlay(endPlayReason);
 }
 void AFirstPersonCharacter::Tick(const float deltaTime)
 {
 	Super::Tick(deltaTime);
+
+	if (m_isStateTreeRunning)
+	{
+		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+		if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+		{
+			context.Tick(deltaTime);
+		}
+	}
 
 	if (IsInFocusedConvo())
 	{
@@ -153,6 +172,14 @@ void AFirstPersonCharacter::ExitFocusedConvoMode()
 
 	m_chatWidget->UnfocusInput();
 }
+bool AFirstPersonCharacter::TryBindContextData(UObject* data)
+{
+	return m_contextBinder.TryBindContextData(data);
+}
+bool AFirstPersonCharacter::TryUnbindContextData(UObject* data)
+{
+	return m_contextBinder.TryUnbindContextData(data);
+}
 bool AFirstPersonCharacter::IsInFocusedConvo() const
 {
 	return IsValid(m_focusedConversationNpc);
@@ -193,10 +220,15 @@ void AFirstPersonCharacter::AttemptInteraction()
 	{
 		if (AConversableNPC* conversableNpc = Cast<AConversableNPC>(hitResult.GetActor()))
 		{
-			UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
-			ASSERT_CHECK(stateTreeSubsystem);
-			stateTreeSubsystem->TryBindContextData(conversableNpc);
-			stateTreeSubsystem->TrySendFlowEvent(TAG_State_FocusedConversation_Start);
+			TryBindContextData(conversableNpc);
+			if (m_isStateTreeRunning)
+			{
+				FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+				if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+				{
+					context.SendEvent(TAG_State_FocusedConversation_Start);
+				}
+			}
 		}
 	}
 }
@@ -230,9 +262,14 @@ void AFirstPersonCharacter::ExitCurrentActivity()
 	}
 	if (IsInFocusedConvo())
 	{
-		UMainStateTreeSubsystem* stateTreeSubsystem = GetGameInstance()->GetSubsystem<UMainStateTreeSubsystem>();
-		ASSERT_CHECK(stateTreeSubsystem);
-		stateTreeSubsystem->TrySendFlowEvent(TAG_State_FocusedConversation_End);
+		if (m_isStateTreeRunning)
+		{
+			FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+			if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+			{
+				context.SendEvent(TAG_State_FocusedConversation_End);
+			}
+		}
 	}
 }
 void AFirstPersonCharacter::UpdateInputState() const
