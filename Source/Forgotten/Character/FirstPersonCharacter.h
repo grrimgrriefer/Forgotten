@@ -9,6 +9,7 @@
 #include "StateTreeInstanceData.h"
 #include "FirstPersonCharacter.generated.h"
 
+class UConversationSubsystem;
 class AConversableNPC;
 class UCameraComponent;
 class UInputMappingContext;
@@ -24,6 +25,8 @@ class FORGOTTEN_API AFirstPersonCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	friend struct FFocusedConversationTask;
+
 public:
 	AFirstPersonCharacter();
 
@@ -32,10 +35,7 @@ public:
 	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
 
-	void EnterFocusedConvoMode(AConversableNPC* conversableNpc);
-	void ExitFocusedConvoMode();
-	bool TryBindContextData(UObject* data);
-	bool TryUnbindContextData(UObject* data);
+	void StartFocusedConversation(AConversableNPC* conversableNpc);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -69,11 +69,14 @@ protected:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;
-	UPROPERTY(Transient)
-	TObjectPtr<AConversableNPC> m_focusedConversationNpc = nullptr;
 
 private:
-	bool IsInFocusedConvo() const;
+	void EnterFocusedConvoMode();
+	void ExitFocusedConvoMode();
+
+	bool TryBindContextData(UObject* data);
+	bool TryUnbindContextData(UObject* data);
+
 	void Move(const FInputActionValue& value);
 	void Look(const FInputActionValue& value);
 	void AttemptInteraction();
@@ -82,6 +85,8 @@ private:
 	void OnChatFocusLost();
 	void ExitCurrentActivity();
 	void UpdateInputState() const;
+
+	UConversationSubsystem* GetConversationSubsystem(const bool allowNullptr = false) const;
 
 	UPROPERTY()
 	FStateTreeInstanceData m_stateTreeInstanceData;

@@ -15,6 +15,7 @@
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
 #include "StateTreeExecutionContext.h"
+#include "Forgotten/StateTree/EventPayloads/FocusedConversationPayload.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
@@ -56,14 +57,11 @@ void AFirstPersonCharacter::BeginPlay()
 	m_chatWidget->AddToViewport();
 	m_chatWidget->m_OnChatFocusLost.AddUObject(this, &AFirstPersonCharacter::OnChatFocusLost);
 
-	UWorld* world = GetWorld();
-	ASSERT_CHECK(world);
-	UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
-	ASSERT_CHECK(conversationSubSystem);
+	UConversationSubsystem* conversationSubSystem = GetConversationSubsystem();
 	m_chatWidget->m_OnTextSubmitted.AddUObject(conversationSubSystem, &UConversationSubsystem::SubmitPlayerMessage);
 	conversationSubSystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
 
-	m_contextBinder.TryBindContextData(this);
+	TryBindContextData(this);
 
 	ASSERT_CHECK(m_stateTreeAsset);
 	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
@@ -85,17 +83,15 @@ void AFirstPersonCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 			context.Stop();
 		}
 		m_isStateTreeRunning = false;
+		TryUnbindContextData(this);
 	}
 
 	if (m_chatWidget)
 	{
-		if (const UWorld* world = GetWorld())
+		if (UConversationSubsystem* conversationSubSystem = GetConversationSubsystem(true))
 		{
-			if (UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>())
-			{
-				conversationSubSystem->m_OnTranscriptEntryAdded.RemoveAll(m_chatWidget.Get());
-				m_chatWidget->m_OnTextSubmitted.RemoveAll(conversationSubSystem);
-			}
+			conversationSubSystem->m_OnTranscriptEntryAdded.RemoveAll(m_chatWidget.Get());
+			m_chatWidget->m_OnTextSubmitted.RemoveAll(conversationSubSystem);
 		}
 
 		m_chatWidget->RemoveFromParent();
@@ -115,26 +111,6 @@ void AFirstPersonCharacter::Tick(const float deltaTime)
 		{
 			context.Tick(deltaTime);
 		}
-	}
-
-	if (IsInFocusedConvo())
-	{
-		ASSERT_CHECK(m_cameraComponent);
-		const FVector cameraLoc = m_cameraComponent->GetComponentLocation();
-		const FVector targetLoc = m_focusedConversationNpc->GetActorLocation();
-		const FRotator targetRotation = (targetLoc - cameraLoc).Rotation();
-
-		APlayerController* playerController = Cast<APlayerController>(GetController());
-		ASSERT_CHECK(playerController);
-
-		const FRotator currentRotation = playerController->GetControlRotation();
-		const FRotator newRotation = FMath::RInterpTo(
-			currentRotation,
-			targetRotation,
-			deltaTime,
-			m_cameraInterpSpeed);
-
-		playerController->SetControlRotation(newRotation);
 	}
 }
 void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInputComponent)
@@ -157,20 +133,20 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	ASSERT_CHECK(m_exitAction, TEXT("AFirstPersonCharacter: m_exitAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_exitAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ExitCurrentActivity);
 }
-void AFirstPersonCharacter::EnterFocusedConvoMode(AConversableNPC* conversableNpc)
+void AFirstPersonCharacter::StartFocusedConversation(AConversableNPC* conversableNpc)
 {
-	ASSERT_CHECK(conversableNpc);
-	m_focusedConversationNpc = conversableNpc;
-	SetActorTickEnabled(true);
+	if (!m_isStateTreeRunning || !IsValid(conversableNpc))
+	{
+		return;
+	}
 
-	FocusChat();
-}
-void AFirstPersonCharacter::ExitFocusedConvoMode()
-{
-	m_focusedConversationNpc = nullptr;
-	SetActorTickEnabled(false);
-
-	m_chatWidget->UnfocusInput();
+	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+	{
+		FFocusedConversationPayload payload;
+		payload.ConversableNpc = conversableNpc;
+		context.SendEvent(TAG_State_FocusedConversation_Start, FConstStructView::Make(payload));
+	}
 }
 bool AFirstPersonCharacter::TryBindContextData(UObject* data)
 {
@@ -180,9 +156,13 @@ bool AFirstPersonCharacter::TryUnbindContextData(UObject* data)
 {
 	return m_contextBinder.TryUnbindContextData(data);
 }
-bool AFirstPersonCharacter::IsInFocusedConvo() const
+void AFirstPersonCharacter::EnterFocusedConvoMode()
 {
-	return IsValid(m_focusedConversationNpc);
+	FocusChat();
+}
+void AFirstPersonCharacter::ExitFocusedConvoMode()
+{
+	m_chatWidget->UnfocusInput();
 }
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
 {
@@ -218,15 +198,13 @@ void AFirstPersonCharacter::AttemptInteraction()
 	ASSERT_CHECK(world);
 	if (world->LineTraceSingleByChannel(hitResult, traceStart, traceEnd, ECC_Visibility, queryParams))
 	{
-		if (AConversableNPC* conversableNpc = Cast<AConversableNPC>(hitResult.GetActor()))
+		if (AActor* hitActor = hitResult.GetActor())
 		{
-			TryBindContextData(conversableNpc);
-			if (m_isStateTreeRunning)
+			if (IInteractableInterface* interactable = Cast<IInteractableInterface>(hitActor))
 			{
-				FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
-				if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+				if (interactable->CanInteract(this))
 				{
-					context.SendEvent(TAG_State_FocusedConversation_Start);
+					interactable->Interact(this);
 				}
 			}
 		}
@@ -260,15 +238,13 @@ void AFirstPersonCharacter::ExitCurrentActivity()
 		m_chatWidget->UnfocusInput();
 		return;
 	}
-	if (IsInFocusedConvo())
+
+	if (m_isStateTreeRunning)
 	{
-		if (m_isStateTreeRunning)
+		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+		if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
 		{
-			FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
-			if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
-			{
-				context.SendEvent(TAG_State_FocusedConversation_End);
-			}
+			context.SendEvent(TAG_State_Quit_CurrentActivity);
 		}
 	}
 }
@@ -283,19 +259,21 @@ void AFirstPersonCharacter::UpdateInputState() const
 	playerController->ResetIgnoreMoveInput();
 	playerController->ResetIgnoreLookInput();
 
-	const bool bChatFocused = IsValid(m_chatWidget) && m_chatWidget->IsInputFocused();
-	const bool bInFocusedConvo = IsInFocusedConvo();
+	const bool isChatFocused = IsValid(m_chatWidget) && m_chatWidget->IsInputFocused();
 
-	if (bChatFocused || bInFocusedConvo)
+	// TODO refactor this away, the Task should take care of its own input blocking
+	const bool inFocusedConvo = GetConversationSubsystem()->HasCurrentConversableNpc();
+
+	if (isChatFocused || inFocusedConvo)
 	{
 		playerController->SetIgnoreMoveInput(true);
 	}
-	if (bChatFocused)
+	if (isChatFocused)
 	{
 		playerController->SetIgnoreLookInput(true);
 	}
 
-	if (bChatFocused)
+	if (isChatFocused)
 	{
 		FInputModeGameAndUI inputMode;
 		inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
@@ -306,4 +284,20 @@ void AFirstPersonCharacter::UpdateInputState() const
 		const FInputModeGameOnly gameMode;
 		playerController->SetInputMode(gameMode);
 	}
+}
+UConversationSubsystem* AFirstPersonCharacter::GetConversationSubsystem(const bool allowNullptr) const
+{
+	const UWorld* world = GetWorld();
+	if (allowNullptr && !IsValid(world))
+	{
+		return nullptr;
+	}
+	ASSERT_CHECK_RETURN(world, nullptr);
+	UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
+	if (allowNullptr && !IsValid(conversationSubSystem))
+	{
+		return nullptr;
+	}
+	ASSERT_CHECK_RETURN(conversationSubSystem, nullptr);
+	return conversationSubSystem;
 }
