@@ -49,13 +49,9 @@ void FFocusedConversationTask::ExitState(
 	const FStateTreeTransitionResult& transitions) const
 {
 	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
-	if (playerCharacter)
-	{
-		playerCharacter->ExitFocusedConvoMode();
-	}
-
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
 	AConversableNPC* conversableNpc = instanceData.m_conversableNpc;
+
 	if (conversableNpc && playerCharacter)
 	{
 		playerCharacter->TryUnbindContextData(conversableNpc);
@@ -65,6 +61,11 @@ void FFocusedConversationTask::ExitState(
 	if (UConversationSubsystem* conversationSubsystem = world ? world->GetSubsystem<UConversationSubsystem>() : nullptr)
 	{
 		conversationSubsystem->SetCurrentConversableNpc(nullptr);
+	}
+
+	if (playerCharacter)
+	{
+		playerCharacter->ExitFocusedConvoMode();
 	}
 }
 EStateTreeRunStatus FFocusedConversationTask::Tick(FStateTreeExecutionContext& context, const float deltaTime) const

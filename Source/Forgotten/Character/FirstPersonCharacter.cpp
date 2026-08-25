@@ -158,14 +158,10 @@ bool AFirstPersonCharacter::TryUnbindContextData(UObject* data)
 }
 void AFirstPersonCharacter::EnterFocusedConvoMode()
 {
-	SetActorTickEnabled(true);
-
 	FocusChat();
 }
 void AFirstPersonCharacter::ExitFocusedConvoMode()
 {
-	SetActorTickEnabled(false);
-
 	m_chatWidget->UnfocusInput();
 }
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
