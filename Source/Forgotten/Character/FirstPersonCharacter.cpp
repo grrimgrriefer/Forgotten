@@ -116,26 +116,6 @@ void AFirstPersonCharacter::Tick(const float deltaTime)
 			context.Tick(deltaTime);
 		}
 	}
-
-	if (IsInFocusedConvo())
-	{
-		ASSERT_CHECK(m_cameraComponent);
-		const FVector cameraLoc = m_cameraComponent->GetComponentLocation();
-		const FVector targetLoc = m_focusedConversationNpc->GetActorLocation();
-		const FRotator targetRotation = (targetLoc - cameraLoc).Rotation();
-
-		APlayerController* playerController = Cast<APlayerController>(GetController());
-		ASSERT_CHECK(playerController);
-
-		const FRotator currentRotation = playerController->GetControlRotation();
-		const FRotator newRotation = FMath::RInterpTo(
-			currentRotation,
-			targetRotation,
-			deltaTime,
-			m_cameraInterpSpeed);
-
-		playerController->SetControlRotation(newRotation);
-	}
 }
 void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInputComponent)
 {
@@ -157,6 +137,14 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	ASSERT_CHECK(m_exitAction, TEXT("AFirstPersonCharacter: m_exitAction is not assigned, check the blueprint."));
 	enhancedInputComponent->BindAction(m_exitAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ExitCurrentActivity);
 }
+bool AFirstPersonCharacter::TryBindContextData(UObject* data)
+{
+	return m_contextBinder.TryBindContextData(data);
+}
+bool AFirstPersonCharacter::TryUnbindContextData(UObject* data)
+{
+	return m_contextBinder.TryUnbindContextData(data);
+}
 void AFirstPersonCharacter::EnterFocusedConvoMode(AConversableNPC* conversableNpc)
 {
 	ASSERT_CHECK(conversableNpc);
@@ -171,14 +159,6 @@ void AFirstPersonCharacter::ExitFocusedConvoMode()
 	SetActorTickEnabled(false);
 
 	m_chatWidget->UnfocusInput();
-}
-bool AFirstPersonCharacter::TryBindContextData(UObject* data)
-{
-	return m_contextBinder.TryBindContextData(data);
-}
-bool AFirstPersonCharacter::TryUnbindContextData(UObject* data)
-{
-	return m_contextBinder.TryUnbindContextData(data);
 }
 bool AFirstPersonCharacter::IsInFocusedConvo() const
 {

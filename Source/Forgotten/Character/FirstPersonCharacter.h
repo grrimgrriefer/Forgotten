@@ -24,6 +24,8 @@ class FORGOTTEN_API AFirstPersonCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	friend struct FFocusedConversationTask;
+
 public:
 	AFirstPersonCharacter();
 
@@ -32,10 +34,6 @@ public:
 	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
 
-	void EnterFocusedConvoMode(AConversableNPC* conversableNpc);
-	void ExitFocusedConvoMode();
-	bool TryBindContextData(UObject* data);
-	bool TryUnbindContextData(UObject* data);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -74,6 +72,12 @@ protected:
 
 private:
 	bool IsInFocusedConvo() const;
+	void EnterFocusedConvoMode(AConversableNPC* conversableNpc);
+	void ExitFocusedConvoMode();
+
+	bool TryBindContextData(UObject* data);
+	bool TryUnbindContextData(UObject* data);
+
 	void Move(const FInputActionValue& value);
 	void Look(const FInputActionValue& value);
 	void AttemptInteraction();

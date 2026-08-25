@@ -3,6 +3,7 @@
 #include "FocusedConversationTask.h"
 #include "StateTreeExecutionContext.h"
 #include "StateTreeLinker.h"
+#include "Camera/CameraComponent.h"
 #include "Engine/World.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Character/ConversableNPC.h"
@@ -11,7 +12,7 @@
 
 FFocusedConversationTask::FFocusedConversationTask()
 {
-	bShouldCallTick = false;
+	bShouldCallTick = true;
 }
 const UScriptStruct* FFocusedConversationTask::GetInstanceDataType() const
 {
@@ -57,4 +58,30 @@ void FFocusedConversationTask::ExitState(
 	{
 		playerCharacter->TryUnbindContextData(conversableNpc);
 	}
+}
+EStateTreeRunStatus FFocusedConversationTask::Tick(FStateTreeExecutionContext& context, const float deltaTime) const
+{
+	const AFirstPersonCharacter* player = context.GetExternalDataPtr(m_PlayerCharacterHandle);
+	const AConversableNPC* npc = context.GetExternalDataPtr(m_ConversableNpcHandle);
+
+	if (player && npc)
+	{
+		if (APlayerController* playerController = Cast<APlayerController>(player->GetController()))
+		{
+			const FVector cameraLoc = player->m_cameraComponent->GetComponentLocation();
+			const FVector targetLoc = npc->GetActorLocation();
+			const FRotator targetRotation = (targetLoc - cameraLoc).Rotation();
+
+			const FRotator currentRotation = playerController->GetControlRotation();
+			const FRotator newRotation = FMath::RInterpTo(
+				currentRotation,
+				targetRotation,
+				deltaTime,
+				player->m_cameraInterpSpeed);
+
+			playerController->SetControlRotation(newRotation);
+		}
+	}
+
+	return EStateTreeRunStatus::Running;
 }

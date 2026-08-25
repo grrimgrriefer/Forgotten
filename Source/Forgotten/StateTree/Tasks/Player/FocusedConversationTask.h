@@ -37,6 +37,7 @@ public:
 	virtual void ExitState(
 		FStateTreeExecutionContext& context,
 		const FStateTreeTransitionResult& transitions) const override;
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& context, const float deltaTime) const override;
 
 	TStateTreeExternalDataHandle<AFirstPersonCharacter> m_PlayerCharacterHandle;
 	TStateTreeExternalDataHandle<AConversableNPC, EStateTreeExternalDataRequirement::Optional> m_ConversableNpcHandle;

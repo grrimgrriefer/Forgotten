@@ -26,6 +26,7 @@ Mostly follows UE's condings standards with the following exceptions:
 * Includes
 * Forward declarations
 * Class summary
+* Friend declarations
 * Public
   * Using-declarations
   * Constructor
