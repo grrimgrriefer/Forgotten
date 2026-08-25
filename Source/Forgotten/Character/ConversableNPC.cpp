@@ -2,8 +2,7 @@
 
 #include "ConversableNPC.h"
 #include "Components/StaticMeshComponent.h"
-#include "Engine/GameInstance.h"
-#include "Forgotten/CustomGameplayTags.h"
+#include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Utils/AssertMacros.h"
 
 AConversableNPC::AConversableNPC()
@@ -12,12 +11,35 @@ AConversableNPC::AConversableNPC()
 
 	m_placeholderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlaceholderMesh"));
 	m_placeholderMesh->SetupAttachment(RootComponent);
+	m_interactionUiMessage = NSLOCTEXT("NPC", "TalkPrompt", "Talk");
 }
-FText AConversableNPC::GetSpeakerName() const
+
+#pragma region IInteractableInterface
+bool AConversableNPC::CanInteract(ACharacter* instigator) const
 {
-	return m_characterName;
+	return IsValid(instigator) && instigator != this;
 }
-FVector AConversableNPC::GetLocation() const
+
+void AConversableNPC::Interact(ACharacter* instigator)
 {
-	return GetActorLocation();
+	if (!CanInteract(instigator))
+	{
+		return;
+	}
+
+	if (AFirstPersonCharacter* player = Cast<AFirstPersonCharacter>(instigator))
+	{
+		player->StartFocusedConversation(this);
+	}
 }
+
+FText AConversableNPC::GetInteractionUiMessage(ACharacter* instigator) const
+{
+	return m_interactionUiMessage;
+}
+
+USceneComponent* AConversableNPC::GetInteractionPoint() const
+{
+	return GetRootComponent();
+}
+#pragma endregion IInteractableInterface

@@ -34,6 +34,7 @@ public:
 	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
 
+	void StartFocusedConversation(AConversableNPC* conversableNpc);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -67,11 +68,8 @@ protected:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;
-	UPROPERTY(Transient)
-	TObjectPtr<AConversableNPC> m_focusedConversationNpc = nullptr;
 
 private:
-	bool IsInFocusedConvo() const;
 	void EnterFocusedConvoMode(AConversableNPC* conversableNpc);
 	void ExitFocusedConvoMode();
 
