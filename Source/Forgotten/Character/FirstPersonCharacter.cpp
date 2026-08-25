@@ -15,6 +15,7 @@
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
 #include "StateTreeExecutionContext.h"
+#include "Forgotten/StateTree/EventPayloads/FocusedConversationPayload.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
@@ -56,14 +57,11 @@ void AFirstPersonCharacter::BeginPlay()
 	m_chatWidget->AddToViewport();
 	m_chatWidget->m_OnChatFocusLost.AddUObject(this, &AFirstPersonCharacter::OnChatFocusLost);
 
-	const UWorld* world = GetWorld();
-	ASSERT_CHECK(world);
-	UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
-	ASSERT_CHECK(conversationSubSystem);
+	UConversationSubsystem* conversationSubSystem = GetConversationSubsystem();
 	m_chatWidget->m_OnTextSubmitted.AddUObject(conversationSubSystem, &UConversationSubsystem::SubmitPlayerMessage);
 	conversationSubSystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
 
-	m_contextBinder.TryBindContextData(this);
+	TryBindContextData(this);
 
 	ASSERT_CHECK(m_stateTreeAsset);
 	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
@@ -85,17 +83,15 @@ void AFirstPersonCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 			context.Stop();
 		}
 		m_isStateTreeRunning = false;
+		TryUnbindContextData(this);
 	}
 
 	if (m_chatWidget)
 	{
-		if (const UWorld* world = GetWorld())
+		if (UConversationSubsystem* conversationSubSystem = GetConversationSubsystem(true))
 		{
-			if (UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>())
-			{
-				conversationSubSystem->m_OnTranscriptEntryAdded.RemoveAll(m_chatWidget.Get());
-				m_chatWidget->m_OnTextSubmitted.RemoveAll(conversationSubSystem);
-			}
+			conversationSubSystem->m_OnTranscriptEntryAdded.RemoveAll(m_chatWidget.Get());
+			m_chatWidget->m_OnTextSubmitted.RemoveAll(conversationSubSystem);
 		}
 
 		m_chatWidget->RemoveFromParent();
@@ -139,14 +135,17 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 }
 void AFirstPersonCharacter::StartFocusedConversation(AConversableNPC* conversableNpc)
 {
-	if (m_isStateTreeRunning)
+	if (!m_isStateTreeRunning || !IsValid(conversableNpc))
 	{
-		TryBindContextData(conversableNpc);
-		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
-		if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
-		{
-			context.SendEvent(TAG_State_FocusedConversation_Start);
-		}
+		return;
+	}
+
+	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+	{
+		FFocusedConversationPayload payload;
+		payload.ConversableNpc = conversableNpc;
+		context.SendEvent(TAG_State_FocusedConversation_Start, FConstStructView::Make(payload));
 	}
 }
 bool AFirstPersonCharacter::TryBindContextData(UObject* data)
@@ -157,9 +156,8 @@ bool AFirstPersonCharacter::TryUnbindContextData(UObject* data)
 {
 	return m_contextBinder.TryUnbindContextData(data);
 }
-void AFirstPersonCharacter::EnterFocusedConvoMode(AConversableNPC* conversableNpc)
+void AFirstPersonCharacter::EnterFocusedConvoMode()
 {
-	ASSERT_CHECK(conversableNpc);
 	SetActorTickEnabled(true);
 
 	FocusChat();
@@ -267,12 +265,8 @@ void AFirstPersonCharacter::UpdateInputState() const
 
 	const bool isChatFocused = IsValid(m_chatWidget) && m_chatWidget->IsInputFocused();
 
-	// TODO refactor all of this away, the Task should take care of its own input blocking
-	const UWorld* world = GetWorld();
-	ASSERT_CHECK(world);
-	const UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
-	ASSERT_CHECK(conversationSubSystem);
-	const bool inFocusedConvo = conversationSubSystem->HasCurrentConversableNpc();
+	// TODO refactor this away, the Task should take care of its own input blocking
+	const bool inFocusedConvo = GetConversationSubsystem()->HasCurrentConversableNpc();
 
 	if (isChatFocused || inFocusedConvo)
 	{
@@ -294,4 +288,20 @@ void AFirstPersonCharacter::UpdateInputState() const
 		const FInputModeGameOnly gameMode;
 		playerController->SetInputMode(gameMode);
 	}
+}
+UConversationSubsystem* AFirstPersonCharacter::GetConversationSubsystem(const bool allowNullptr) const
+{
+	const UWorld* world = GetWorld();
+	if (allowNullptr && !IsValid(world))
+	{
+		return nullptr;
+	}
+	ASSERT_CHECK_RETURN(world, nullptr);
+	UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
+	if (allowNullptr && !IsValid(conversationSubSystem))
+	{
+		return nullptr;
+	}
+	ASSERT_CHECK_RETURN(conversationSubSystem, nullptr);
+	return conversationSubSystem;
 }

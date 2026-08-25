@@ -45,7 +45,4 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	FText m_interactionPrompt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
-	bool m_bCanBeInteractedWith = true;
 };

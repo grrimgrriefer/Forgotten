@@ -10,7 +10,16 @@ bool StateTreeContextBinder::TryBindContextData(UObject* data)
 		return false;
 	}
 
-	m_contextObjects.RemoveAll([](const TWeakObjectPtr<UObject>& weakObj) { return !weakObj.IsValid(); });
+	m_contextObjects.RemoveAll([data](const TWeakObjectPtr<UObject>& weakObj)
+	{
+		if (!weakObj.IsValid())
+		{
+			return true;
+		}
+		const UObject* obj = weakObj.Get();
+		return !obj || obj->GetClass() == data->GetClass();
+	});
+
 	m_contextObjects.AddUnique(data);
 	return true;
 }

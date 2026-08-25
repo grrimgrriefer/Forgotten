@@ -9,6 +9,7 @@
 #include "StateTreeInstanceData.h"
 #include "FirstPersonCharacter.generated.h"
 
+class UConversationSubsystem;
 class AConversableNPC;
 class UCameraComponent;
 class UInputMappingContext;
@@ -70,7 +71,7 @@ protected:
 	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;
 
 private:
-	void EnterFocusedConvoMode(AConversableNPC* conversableNpc);
+	void EnterFocusedConvoMode();
 	void ExitFocusedConvoMode();
 
 	bool TryBindContextData(UObject* data);
@@ -84,6 +85,8 @@ private:
 	void OnChatFocusLost();
 	void ExitCurrentActivity();
 	void UpdateInputState() const;
+
+	UConversationSubsystem* GetConversationSubsystem(const bool allowNullptr = false) const;
 
 	UPROPERTY()
 	FStateTreeInstanceData m_stateTreeInstanceData;

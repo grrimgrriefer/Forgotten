@@ -25,7 +25,7 @@ AInteractable::AInteractable()
 #pragma region IInteractableInterface
 bool AInteractable::CanInteract(ACharacter* instigator) const
 {
-	return m_bCanBeInteractedWith && IsValid(instigator);
+	return IsValid(instigator);
 }
 
 void AInteractable::Interact(ACharacter* instigator)

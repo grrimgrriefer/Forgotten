@@ -21,7 +21,6 @@ const UScriptStruct* FFocusedConversationTask::GetInstanceDataType() const
 bool FFocusedConversationTask::Link(FStateTreeLinker& Linker)
 {
 	Linker.LinkExternalData(m_PlayerCharacterHandle);
-	Linker.LinkExternalData(m_ConversableNpcHandle);
 	return true;
 }
 EStateTreeRunStatus FFocusedConversationTask::EnterState(
@@ -29,17 +28,19 @@ EStateTreeRunStatus FFocusedConversationTask::EnterState(
 	const FStateTreeTransitionResult& transitions) const
 {
 	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
-	AConversableNPC* conversableNpc = context.GetExternalDataPtr(m_ConversableNpcHandle);
+	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
+	AConversableNPC* conversableNpc = instanceData.m_conversableNpc;
 
 	ASSERT_CHECK_RETURN(playerCharacter, EStateTreeRunStatus::Failed);
 	ASSERT_CHECK_RETURN(conversableNpc, EStateTreeRunStatus::Failed);
+	playerCharacter->TryBindContextData(conversableNpc);
 
 	const UWorld* world = context.GetWorld();
 	UConversationSubsystem* conversationSubsystem = world->GetSubsystem<UConversationSubsystem>();
 
 	ASSERT_CHECK_RETURN(conversationSubsystem, EStateTreeRunStatus::Failed);
 	conversationSubsystem->SetCurrentConversableNpc(conversableNpc);
-	playerCharacter->EnterFocusedConvoMode(conversableNpc);
+	playerCharacter->EnterFocusedConvoMode();
 
 	return EStateTreeRunStatus::Running;
 }
@@ -53,16 +54,24 @@ void FFocusedConversationTask::ExitState(
 		playerCharacter->ExitFocusedConvoMode();
 	}
 
-	AConversableNPC* conversableNpc = context.GetExternalDataPtr(m_ConversableNpcHandle);
+	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
+	AConversableNPC* conversableNpc = instanceData.m_conversableNpc;
 	if (conversableNpc && playerCharacter)
 	{
 		playerCharacter->TryUnbindContextData(conversableNpc);
+	}
+
+	const UWorld* world = context.GetWorld();
+	if (UConversationSubsystem* conversationSubsystem = world ? world->GetSubsystem<UConversationSubsystem>() : nullptr)
+	{
+		conversationSubsystem->SetCurrentConversableNpc(nullptr);
 	}
 }
 EStateTreeRunStatus FFocusedConversationTask::Tick(FStateTreeExecutionContext& context, const float deltaTime) const
 {
 	const AFirstPersonCharacter* player = context.GetExternalDataPtr(m_PlayerCharacterHandle);
-	const AConversableNPC* npc = context.GetExternalDataPtr(m_ConversableNpcHandle);
+	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
+	const AConversableNPC* npc = instanceData.m_conversableNpc;
 
 	if (player && npc)
 	{

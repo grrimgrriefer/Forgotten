@@ -13,6 +13,9 @@ USTRUCT()
 struct FConversationTaskInstanceData
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<AConversableNPC> m_conversableNpc = nullptr;
 };
 
 /**
@@ -40,5 +43,4 @@ public:
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& context, const float deltaTime) const override;
 
 	TStateTreeExternalDataHandle<AFirstPersonCharacter> m_PlayerCharacterHandle;
-	TStateTreeExternalDataHandle<AConversableNPC, EStateTreeExternalDataRequirement::Optional> m_ConversableNpcHandle;
 };
