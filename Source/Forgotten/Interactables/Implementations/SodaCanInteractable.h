@@ -17,6 +17,8 @@ class FORGOTTEN_API ASodaCanInteractable : public AInteractable
 public:
 	ASodaCanInteractable();
 	virtual bool CanInteract(ACharacter* instigator) const override;
+	void SetIsBeingInspected(const bool isBeingInspected);
+	UStaticMesh* GetInspectMesh() const;
 
 protected:
 	virtual void OnPlayerInteract(AFirstPersonCharacter* player) override;

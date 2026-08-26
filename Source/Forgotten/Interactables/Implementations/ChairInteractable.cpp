@@ -22,16 +22,10 @@ void AChairInteractable::OnPlayerInteract(AFirstPersonCharacter* player)
 {
 	ASSERT_CHECK(player);
 
-	m_isOccupied = !m_isOccupied;
-
-	if (m_isOccupied)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Player sitting down on %s"), *GetName());
-		// TODO: Attach player to m_interactionPoint
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Player stood up from %s"), *GetName());
-		// TODO: Detach player
-	}
+	m_isOccupied = true;
+	player->SitDown(this);
+}
+void AChairInteractable::SetIsOccupied(const bool isOccupied)
+{
+	m_isOccupied = isOccupied;
 }

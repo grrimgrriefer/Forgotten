@@ -18,6 +18,7 @@ public:
 	AChairInteractable();
 	virtual bool CanInteract(ACharacter* instigator) const override;
 	virtual FText GetInteractionUiMessage(ACharacter* instigator) const override;
+	void SetIsOccupied(const bool isOccupied);
 
 protected:
 	virtual void OnPlayerInteract(AFirstPersonCharacter* player) override;

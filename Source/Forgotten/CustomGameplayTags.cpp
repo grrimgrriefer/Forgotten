@@ -2,5 +2,7 @@
 
 #include "CustomGameplayTags.h"
 
-UE_DEFINE_GAMEPLAY_TAG(TAG_State_FocusedConversation_Start, "State.Conversation.Start");
+UE_DEFINE_GAMEPLAY_TAG(TAG_State_Start_FocusedConversation, "State.Start.Conversation");
+UE_DEFINE_GAMEPLAY_TAG(TAG_State_Start_Seated, "State.Start.Seated");
+UE_DEFINE_GAMEPLAY_TAG(TAG_State_Start_Inspect, "State.Start.Inspect");
 UE_DEFINE_GAMEPLAY_TAG(TAG_State_Quit_CurrentActivity, "State.General.QuitCurrentActivity");

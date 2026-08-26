@@ -29,7 +29,7 @@ EStateTreeRunStatus FFocusedConversationTask::EnterState(
 {
 	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
-	AConversableNPC* conversableNpc = instanceData.m_conversableNpc;
+	AConversableNPC* conversableNpc = instanceData.m_ConversableNpc;
 
 	ASSERT_CHECK_RETURN(playerCharacter, EStateTreeRunStatus::Failed);
 	ASSERT_CHECK_RETURN(conversableNpc, EStateTreeRunStatus::Failed);
@@ -50,7 +50,7 @@ void FFocusedConversationTask::ExitState(
 {
 	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
-	AConversableNPC* conversableNpc = instanceData.m_conversableNpc;
+	AConversableNPC* conversableNpc = instanceData.m_ConversableNpc;
 
 	if (conversableNpc && playerCharacter)
 	{
@@ -72,13 +72,13 @@ EStateTreeRunStatus FFocusedConversationTask::Tick(FStateTreeExecutionContext& c
 {
 	const AFirstPersonCharacter* player = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
-	const AConversableNPC* npc = instanceData.m_conversableNpc;
+	const AConversableNPC* npc = instanceData.m_ConversableNpc;
 
 	if (player && npc)
 	{
 		if (APlayerController* playerController = Cast<APlayerController>(player->GetController()))
 		{
-			const FVector cameraLoc = player->m_cameraComponent->GetComponentLocation();
+			const FVector cameraLoc = player->GetCameraComponent()->GetComponentLocation();
 			const FVector targetLoc = npc->GetActorLocation();
 			const FRotator targetRotation = (targetLoc - cameraLoc).Rotation();
 

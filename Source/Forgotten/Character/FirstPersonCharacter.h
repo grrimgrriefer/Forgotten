@@ -7,6 +7,8 @@
 #include "InputActionValue.h"
 #include "Forgotten/StateTree/StateTreeContextBinder.h"
 #include "StateTreeInstanceData.h"
+#include "Forgotten/Interactables/Implementations/ChairInteractable.h"
+#include "Forgotten/Interactables/Implementations/SodaCanInteractable.h"
 #include "FirstPersonCharacter.generated.h"
 
 class UConversationSubsystem;
@@ -35,7 +37,10 @@ public:
 	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
 
+	UCameraComponent* GetCameraComponent() const;
 	void StartFocusedConversation(AConversableNPC* conversableNpc);
+	void SitDown(AChairInteractable* chairInteractable);
+	void Inspect3dInteractable(ASodaCanInteractable* sodaCanInteractable);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")

@@ -4,41 +4,41 @@
 
 #include "CoreMinimal.h"
 #include "StateTreeTaskBase.h"
-#include "FocusedConversationTask.generated.h"
+#include "SeatedTask.generated.h"
 
 class AFirstPersonCharacter;
-class AConversableNPC;
+class AChairInteractable;
 
 USTRUCT(BlueprintType)
-struct FFocusedConversationPayload
+struct FSeatedPayload
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	TObjectPtr<AConversableNPC> m_ConversableNpc = nullptr;
+	TObjectPtr<AChairInteractable> m_Chair = nullptr;
 };
 
 USTRUCT()
-struct FConversationTaskInstanceData
+struct FSeatedTaskInstanceData
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<AConversableNPC> m_ConversableNpc = nullptr;
+	TObjectPtr<AChairInteractable> m_Chair = nullptr;
 };
 
 /**
- * Handles the lifecycle of focused conversations. (i.e. face-to-face-, seated-, etc.)
- * Also takes care of notifying the NPC when entering & exiting.
+ * Handles the lifetime of the 'sitting down' state.
+ * Currently only for player. TODO: maybe generic for NPC too? Or separate variant maybe. Idk yet
  */
-USTRUCT(meta = (DisplayName = "Focused Conversation State", Category = "Gameplay"))
-struct FORGOTTEN_API FFocusedConversationTask : public FStateTreeTaskBase
+USTRUCT(meta = (DisplayName = "Seated State", Category = "Gameplay"))
+struct FORGOTTEN_API FSeatedTask : public FStateTreeTaskBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FConversationTaskInstanceData;
+	using FInstanceDataType = FSeatedTaskInstanceData;
 
-	FFocusedConversationTask();
+	FSeatedTask();
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;
 	virtual bool Link(FStateTreeLinker& Linker) override;

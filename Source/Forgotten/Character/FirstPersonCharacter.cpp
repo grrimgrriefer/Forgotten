@@ -15,7 +15,9 @@
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
 #include "StateTreeExecutionContext.h"
-#include "Forgotten/StateTree/EventPayloads/FocusedConversationPayload.h"
+#include "Forgotten/StateTree/Tasks/Player/FocusedConversationTask.h"
+#include "Forgotten/StateTree/Tasks/Player/Inspect3dTask.h"
+#include "Forgotten/StateTree/Tasks/Player/SeatedTask.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
@@ -38,8 +40,7 @@ void AFirstPersonCharacter::BeginPlay()
 	APlayerController* playerController = Cast<APlayerController>(GetController());
 	ASSERT_CHECK(playerController);
 
-	UEnhancedInputLocalPlayerSubsystem* inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
-		playerController->GetLocalPlayer());
+	UEnhancedInputLocalPlayerSubsystem* inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer());
 	ASSERT_CHECK(inputSubsystem);
 
 	ASSERT_CHECK(m_defaultMappingContext);
@@ -128,6 +129,10 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	ASSERT_CHECK(m_exitAction);
 	enhancedInputComponent->BindAction(m_exitAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ExitCurrentActivity);
 }
+UCameraComponent* AFirstPersonCharacter::GetCameraComponent() const
+{
+	return m_cameraComponent;
+}
 void AFirstPersonCharacter::StartFocusedConversation(AConversableNPC* conversableNpc)
 {
 	if (!m_isStateTreeRunning || !IsValid(conversableNpc))
@@ -139,8 +144,39 @@ void AFirstPersonCharacter::StartFocusedConversation(AConversableNPC* conversabl
 	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
 	{
 		FFocusedConversationPayload payload;
-		payload.ConversableNpc = conversableNpc;
-		context.SendEvent(TAG_State_FocusedConversation_Start, FConstStructView::Make(payload));
+		payload.m_ConversableNpc = conversableNpc;
+		context.SendEvent(TAG_State_Start_FocusedConversation, FConstStructView::Make(payload));
+	}
+}
+void AFirstPersonCharacter::SitDown(AChairInteractable* chairInteractable)
+{
+	if (!m_isStateTreeRunning || !IsValid(chairInteractable))
+	{
+		return;
+	}
+
+	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+	{
+		FSeatedPayload payload;
+		payload.m_Chair = chairInteractable;
+		context.SendEvent(TAG_State_Start_Seated, FConstStructView::Make(payload));
+	}
+}
+void AFirstPersonCharacter::Inspect3dInteractable(ASodaCanInteractable* sodaCanInteractable)
+{
+	if (!m_isStateTreeRunning || !IsValid(sodaCanInteractable))
+	{
+		return;
+	}
+
+	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+	{
+		FInspect3dPayload payload;
+		payload.m_Inspectable = sodaCanInteractable;
+		payload.m_PreviewOffset = FVector(45.0f, 0.0f, -8.0f);
+		context.SendEvent(TAG_State_Start_Inspect, FConstStructView::Make(payload));
 	}
 }
 bool AFirstPersonCharacter::TryBindContextData(UObject* data)
