@@ -17,7 +17,9 @@ inline void HandleAssertFailed(
 {
 	FString errorMessage = FString::Printf(
 		TEXT("Assertion Failed: %s\n\nFile: %s\nLine: %d"),
-		checkExpression, fileName, lineNumber
+		checkExpression,
+		fileName,
+		lineNumber
 	);
 
 	if (!customMessage.IsEmpty())

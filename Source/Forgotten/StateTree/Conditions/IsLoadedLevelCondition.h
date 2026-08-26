@@ -25,7 +25,6 @@ struct FORGOTTEN_API FIsLoadedLevelCondition : public FStateTreeConditionBase
 {
 	GENERATED_BODY()
 
-public:
 	using FInstanceDataType = FIsLoadedLevelConditionInstanceData;
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;

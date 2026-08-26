@@ -27,7 +27,6 @@ struct FORGOTTEN_API FFocusedConversationTask : public FStateTreeTaskBase
 {
 	GENERATED_BODY()
 
-public:
 	using FInstanceDataType = FConversationTaskInstanceData;
 
 	FFocusedConversationTask();

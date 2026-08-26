@@ -10,11 +10,12 @@
 const FName UPlayerStateTreeSchema::m_PlayerBindingName = FName(TEXT("Player"));
 const FName UPlayerStateTreeSchema::m_ConversableNpcBindingName = FName(TEXT("ConversableNpc"));
 
-UPlayerStateTreeSchema::UPlayerStateTreeSchema()
-	: m_playerData(m_PlayerBindingName, AFirstPersonCharacter::StaticClass(),
-		FGuid::NewDeterministicGuid(m_PlayerBindingName.ToString()))
-	, m_conversableNpcData(m_ConversableNpcBindingName, AConversableNPC::StaticClass(),
-		FGuid::NewDeterministicGuid(m_ConversableNpcBindingName.ToString()))
+UPlayerStateTreeSchema::UPlayerStateTreeSchema() : m_playerData(m_PlayerBindingName,
+																AFirstPersonCharacter::StaticClass(),
+																FGuid::NewDeterministicGuid(m_PlayerBindingName.ToString())),
+													m_conversableNpcData(m_ConversableNpcBindingName,
+																		AConversableNPC::StaticClass(),
+																		FGuid::NewDeterministicGuid(m_ConversableNpcBindingName.ToString()))
 {
 	m_playerData.Requirement = EStateTreeExternalDataRequirement::Required;
 	m_conversableNpcData.Requirement = EStateTreeExternalDataRequirement::Optional;

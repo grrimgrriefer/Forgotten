@@ -130,8 +130,11 @@ bool StateTreeContextBinder::CollectExternalData(
 
 		if (desc.Requirement == EStateTreeExternalDataRequirement::Required && !outDataViews[i].IsValid())
 		{
-			UE_LOG(LogStateTree, Error, TEXT("%s: Failed to provide required external data: %s"),
-			       owner ? *owner->GetName() : TEXT("ContextBinder"), *desc.Struct->GetName());
+			UE_LOG(LogStateTree,
+					Error,
+					TEXT("%s: Failed to provide required external data: %s"),
+					owner ? *owner->GetName() : TEXT("ContextBinder"),
+					*desc.Struct->GetName());
 			allRequirementsMet = false;
 		}
 	}

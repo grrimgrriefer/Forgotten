@@ -29,9 +29,10 @@ void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FTe
 void UConversationWidget::ToggleTranscriptVisibility()
 {
 	const ESlateVisibility currentVis = GetVisibility();
-	const ESlateVisibility newVis = (currentVis == ESlateVisibility::Collapsed || currentVis == ESlateVisibility::Hidden)
-		? ESlateVisibility::SelfHitTestInvisible
-		: ESlateVisibility::Collapsed;
+	const ESlateVisibility newVis = (currentVis == ESlateVisibility::Collapsed || currentVis ==
+										ESlateVisibility::Hidden)
+										? ESlateVisibility::SelfHitTestInvisible
+										: ESlateVisibility::Collapsed;
 
 	SetVisibility(newVis);
 }

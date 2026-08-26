@@ -8,9 +8,9 @@
 
 const FName UMainStateTreeSchema::m_SubsystemBindingName = FName(TEXT("Subsystem"));
 
-UMainStateTreeSchema::UMainStateTreeSchema()
-	: m_subsystemData(m_SubsystemBindingName, UMainStateTreeSubsystem::StaticClass(),
-		FGuid::NewDeterministicGuid(m_SubsystemBindingName.ToString()))
+UMainStateTreeSchema::UMainStateTreeSchema() : m_subsystemData(m_SubsystemBindingName,
+																UMainStateTreeSubsystem::StaticClass(),
+																FGuid::NewDeterministicGuid(m_SubsystemBindingName.ToString()))
 {
 	m_contextDescs = { m_subsystemData };
 }

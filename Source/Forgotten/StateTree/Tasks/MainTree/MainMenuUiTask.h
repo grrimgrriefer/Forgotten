@@ -33,7 +33,6 @@ struct FORGOTTEN_API FMainMenuUiTask : public FStateTreeTaskBase
 {
 	GENERATED_BODY()
 
-public:
 	using FInstanceDataType = FMainMenuUiTaskInstanceData;
 
 	FMainMenuUiTask();

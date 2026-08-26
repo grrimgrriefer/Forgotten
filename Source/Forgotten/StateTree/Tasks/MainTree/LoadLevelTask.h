@@ -23,7 +23,6 @@ struct FORGOTTEN_API FLoadLevelTask : public FStateTreeTaskBase
 {
 	GENERATED_BODY()
 
-public:
 	using FInstanceDataType = FLoadLevelTaskInstanceData;
 
 	FLoadLevelTask();

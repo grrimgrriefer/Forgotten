@@ -25,20 +25,20 @@ class FORGOTTEN_API UMainStateTreeSubsystem : public UGameInstanceSubsystem, pub
 	GENERATED_BODY()
 
 public:
-	#pragma region UGameInstanceSubsystem
-		virtual bool ShouldCreateSubsystem(UObject* outer) const override;
-		virtual void Initialize(FSubsystemCollectionBase& collection) override;
-		virtual void Deinitialize() override;
-	#pragma endregion UGameInstanceSubsystem
+#pragma region UGameInstanceSubsystem
+	virtual bool ShouldCreateSubsystem(UObject* outer) const override;
+	virtual void Initialize(FSubsystemCollectionBase& collection) override;
+	virtual void Deinitialize() override;
+#pragma endregion UGameInstanceSubsystem
 
-	#pragma region FTickableGameObject
-		virtual void Tick(const float deltaTime) override;
-		virtual ETickableTickType GetTickableTickType() const override;
-		virtual TStatId GetStatId() const override;
-		virtual bool IsTickableWhenPaused() const override;
-		virtual bool IsTickableInEditor() const override;
-		virtual bool IsTickable() const override;
-	#pragma endregion FTickableGameObject
+#pragma region FTickableGameObject
+	virtual void Tick(const float deltaTime) override;
+	virtual ETickableTickType GetTickableTickType() const override;
+	virtual TStatId GetStatId() const override;
+	virtual bool IsTickableWhenPaused() const override;
+	virtual bool IsTickableInEditor() const override;
+	virtual bool IsTickable() const override;
+#pragma endregion FTickableGameObject
 
 	bool TrySendFlowEvent(const FGameplayTag tag);
 	bool TryBindContextData(UObject* data);

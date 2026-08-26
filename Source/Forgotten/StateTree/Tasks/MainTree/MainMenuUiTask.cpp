@@ -26,8 +26,7 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 	APlayerController* playerController = world->GetFirstPlayerController();
 
 	ASSERT_CHECK_RETURN(playerController, EStateTreeRunStatus::Failed);
-	ASSERT_CHECK_RETURN(m_MenuWidgetClass, EStateTreeRunStatus::Failed,
-		TEXT("MainMenuUiTask: m_MenuWidgetClass is not assigned, check the StateTree."));
+	ASSERT_CHECK_RETURN(m_MenuWidgetClass, EStateTreeRunStatus::Failed);
 	UMainMenuWidget* mainMenuWidget = CreateWidget<UMainMenuWidget>(playerController, m_MenuWidgetClass);
 
 	ASSERT_CHECK_RETURN(mainMenuWidget, EStateTreeRunStatus::Failed);

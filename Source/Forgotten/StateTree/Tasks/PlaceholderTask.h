@@ -21,7 +21,6 @@ struct FORGOTTEN_API FPlaceholderTask : public FStateTreeTaskBase
 {
 	GENERATED_BODY()
 
-public:
 	using FInstanceDataType = FPlaceholderTaskInstanceData;
 
 	FPlaceholderTask();
