@@ -25,7 +25,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	FText m_itemName;
-
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = "Interaction")
 	bool m_isBeingInspected = false;
 };

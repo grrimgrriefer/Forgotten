@@ -27,7 +27,6 @@ public:
 	void SetCurrentConversableNpc(AConversableNPC* npc);
 	AConversableNPC* GetCurrentConversableNpc() const;
 	bool HasCurrentConversableNpc() const;
-
 	void SubmitPlayerMessage(const FText& messageText);
 
 private:

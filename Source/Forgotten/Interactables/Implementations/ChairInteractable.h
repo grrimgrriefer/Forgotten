@@ -25,7 +25,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	FText m_sitUserPrompt;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	FText m_standUserPrompt;
 

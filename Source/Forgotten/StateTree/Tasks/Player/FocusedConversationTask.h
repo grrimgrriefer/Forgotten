@@ -41,13 +41,9 @@ struct FORGOTTEN_API FFocusedConversationTask : public FStateTreeTaskBase
 	FFocusedConversationTask();
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;
-	virtual bool Link(FStateTreeLinker& Linker) override;
-	virtual EStateTreeRunStatus EnterState(
-		FStateTreeExecutionContext& context,
-		const FStateTreeTransitionResult& transitions) const override;
-	virtual void ExitState(
-		FStateTreeExecutionContext& context,
-		const FStateTreeTransitionResult& transitions) const override;
+	virtual bool Link(FStateTreeLinker& linker) override;
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const override;
+	virtual void ExitState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const override;
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& context, const float deltaTime) const override;
 
 	TStateTreeExternalDataHandle<AFirstPersonCharacter> m_PlayerCharacterHandle;

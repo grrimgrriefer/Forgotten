@@ -43,6 +43,9 @@ public:
 	void Inspect3dInteractable(ASodaCanInteractable* sodaCanInteractable);
 
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "StateTree", meta = (RequiredAssetDataTags = "Schema=UPlayerStateTreeSchema"))
+	TObjectPtr<UStateTree> m_stateTreeAsset;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<UCameraComponent> m_cameraComponent;
 	UPROPERTY(EditAnywhere, Category = "UI")
@@ -68,9 +71,6 @@ protected:
 	float m_interactionDistance = 250.0f;
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	float m_cameraInterpSpeed = 5.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "StateTree", meta = (RequiredAssetDataTags = "Schema=UPlayerStateTreeSchema"))
-	TObjectPtr<UStateTree> m_stateTreeAsset;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;

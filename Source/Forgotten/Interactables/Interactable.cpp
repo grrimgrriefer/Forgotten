@@ -22,12 +22,12 @@ AInteractable::AInteractable()
 	m_interactionPrompt = NSLOCTEXT("Interactable", "DefaultPrompt", "Interact");
 }
 
+
 #pragma region IInteractableInterface
 bool AInteractable::CanInteract(ACharacter* instigator) const
 {
 	return IsValid(instigator);
 }
-
 void AInteractable::Interact(ACharacter* instigator)
 {
 	if (!CanInteract(instigator))
@@ -44,17 +44,16 @@ void AInteractable::Interact(ACharacter* instigator)
 		OnNpcInteract(npc);
 	}
 }
-
 FText AInteractable::GetInteractionUiMessage(ACharacter* instigator) const
 {
 	return m_interactionPrompt;
 }
-
 USceneComponent* AInteractable::GetInteractionPoint() const
 {
 	return m_interactionPoint;
 }
 #pragma endregion IInteractableInterface
+
 
 void AInteractable::OnPlayerInteract(AFirstPersonCharacter* player)
 {

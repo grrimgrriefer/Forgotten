@@ -11,10 +11,7 @@
 
 void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FText& messageText) const
 {
-	const FText formattedText = FText::Format(
-		NSLOCTEXT("Conversation", "TranscriptFormat", "{0}: {1}"),
-		speakerName,
-		messageText);
+	const FText formattedText = FText::Format(NSLOCTEXT("Conversation", "TranscriptFormat", "{0}: {1}"), speakerName, messageText);
 
 	UTextBlock* newEntry = WidgetTree->ConstructWidget<UTextBlock>();
 

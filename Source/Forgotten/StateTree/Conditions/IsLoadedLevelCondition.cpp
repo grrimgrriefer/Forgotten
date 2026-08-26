@@ -52,9 +52,9 @@ FText FIsLoadedLevelCondition::GetDescription(
 	const FText invertPrefix = (instanceData && instanceData->m_Invert)
 									? NSLOCTEXT("StateTree", "InvertPrefix", "NOT ")
 									: FText::GetEmpty();
-	return FText::Format(NSLOCTEXT("StateTree", "IsLoadedLevelCondition_CombinedDesc", "{0} Is Loaded Level ({1})"),
-						invertPrefix,
-						FText::FromString(levelName)
-	);
+	return FText::Format(
+		NSLOCTEXT("StateTree", "IsLoadedLevelCondition_CombinedDesc", "{0} Is Loaded Level ({1})"),
+		invertPrefix,
+		FText::FromString(levelName));
 }
 #endif

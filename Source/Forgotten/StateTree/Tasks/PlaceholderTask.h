@@ -26,7 +26,5 @@ struct FORGOTTEN_API FPlaceholderTask : public FStateTreeTaskBase
 	FPlaceholderTask();
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;
-	virtual EStateTreeRunStatus EnterState(
-		FStateTreeExecutionContext& context,
-		const FStateTreeTransitionResult& transitions) const override;
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const override;
 };

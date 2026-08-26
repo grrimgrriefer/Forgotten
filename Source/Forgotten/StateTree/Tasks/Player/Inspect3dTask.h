@@ -18,7 +18,6 @@ struct FInspect3dPayload
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inspect3d")
 	TObjectPtr<ASodaCanInteractable> m_Inspectable = nullptr;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inspect3d")
 	FVector m_PreviewOffset = FVector(50.0f, 0.0f, -10.0f);
 };
@@ -30,7 +29,6 @@ struct FInspect3dTaskInstanceData
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<ASodaCanInteractable> m_Inspectable = nullptr;
-
 	UPROPERTY(EditAnywhere, Category = "Input")
 	FVector m_PreviewOffset = FVector(50.0f, 0.0f, -10.0f);
 
@@ -49,19 +47,14 @@ struct FORGOTTEN_API FInspect3dTask : public FStateTreeTaskBase
 {
 	GENERATED_BODY()
 
-public:
 	using FInstanceDataType = FInspect3dTaskInstanceData;
 
 	FInspect3dTask();
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;
-	virtual bool Link(FStateTreeLinker& Linker) override;
-	virtual EStateTreeRunStatus EnterState(
-		FStateTreeExecutionContext& context,
-		const FStateTreeTransitionResult& transitions) const override;
-	virtual void ExitState(
-		FStateTreeExecutionContext& context,
-		const FStateTreeTransitionResult& transitions) const override;
+	virtual bool Link(FStateTreeLinker& linker) override;
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const override;
+	virtual void ExitState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const override;
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& context, const float deltaTime) const override;
 
 	TStateTreeExternalDataHandle<AFirstPersonCharacter> m_PlayerCharacterHandle;

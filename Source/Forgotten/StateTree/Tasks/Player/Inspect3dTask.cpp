@@ -17,14 +17,12 @@ const UScriptStruct* FInspect3dTask::GetInstanceDataType() const
 {
 	return FInstanceDataType::StaticStruct();
 }
-bool FInspect3dTask::Link(FStateTreeLinker& Linker)
+bool FInspect3dTask::Link(FStateTreeLinker& linker)
 {
-	Linker.LinkExternalData(m_PlayerCharacterHandle);
+	linker.LinkExternalData(m_PlayerCharacterHandle);
 	return true;
 }
-EStateTreeRunStatus FInspect3dTask::EnterState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+EStateTreeRunStatus FInspect3dTask::EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	AFirstPersonCharacter* player = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
@@ -51,9 +49,7 @@ EStateTreeRunStatus FInspect3dTask::EnterState(
 	previewComp->RegisterComponent();
 	previewComp->SetStaticMesh(inspectMesh);
 	previewComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	previewComp->AttachToComponent(
-		player->GetCameraComponent(),
-		FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	previewComp->AttachToComponent(player->GetCameraComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 	previewComp->SetRelativeLocation(instanceData.m_PreviewOffset);
 	previewComp->SetRelativeRotation(FRotator::ZeroRotator);
@@ -62,9 +58,7 @@ EStateTreeRunStatus FInspect3dTask::EnterState(
 
 	return EStateTreeRunStatus::Running;
 }
-void FInspect3dTask::ExitState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+void FInspect3dTask::ExitState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	const AFirstPersonCharacter* player = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
@@ -107,7 +101,7 @@ EStateTreeRunStatus FInspect3dTask::Tick(FStateTreeExecutionContext& context, co
 			float mouseY = 0.0f;
 			pc->GetInputMouseDelta(mouseX, mouseY);
 
-			const float rotationSpeed = 2.0f;
+			constexpr float rotationSpeed = 2.0f;
 			instanceData.m_PreviewMeshComp->AddLocalRotation(FRotator(-mouseY * rotationSpeed, -mouseX * rotationSpeed, 0.0f));
 		}
 	}

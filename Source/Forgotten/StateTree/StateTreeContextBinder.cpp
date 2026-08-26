@@ -37,10 +37,7 @@ bool StateTreeContextBinder::TryUnbindContextData(UObject* data)
 
 	return removedCount > 0;
 }
-bool StateTreeContextBinder::SetContextRequirements(
-	FStateTreeExecutionContext& context,
-	const UStateTree* stateTreeAsset,
-	UObject* owner)
+bool StateTreeContextBinder::SetContextRequirements(FStateTreeExecutionContext& context, const UStateTree* stateTreeAsset, UObject* owner)
 {
 	if (!context.IsValid() || !stateTreeAsset)
 	{
@@ -83,11 +80,7 @@ bool StateTreeContextBinder::SetContextRequirements(
 			}
 		}
 	}
-
-	context.SetCollectExternalDataCallback(FOnCollectStateTreeExternalData::CreateRaw(
-		this,
-		&StateTreeContextBinder::CollectExternalData,
-		owner));
+	context.SetCollectExternalDataCallback(FOnCollectStateTreeExternalData::CreateRaw(this, &StateTreeContextBinder::CollectExternalData, owner));
 
 	return context.AreContextDataViewsValid();
 }

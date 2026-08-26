@@ -15,9 +15,7 @@ const UScriptStruct* FMainMenuUiTask::GetInstanceDataType() const
 {
 	return FInstanceDataType::StaticStruct();
 }
-EStateTreeRunStatus FMainMenuUiTask::EnterState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+EStateTreeRunStatus FMainMenuUiTask::EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	const UWorld* world = context.GetWorld();
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
@@ -52,11 +50,7 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 			if (action == EMainMenuAction::Quit)
 			{
 				const UObject* owner = strongContext.GetOwner().Get();
-				UKismetSystemLibrary::QuitGame(
-					owner ? owner->GetWorld() : nullptr,
-					nullptr,
-					EQuitPreference::Quit,
-					false);
+				UKismetSystemLibrary::QuitGame(owner ? owner->GetWorld() : nullptr, nullptr, EQuitPreference::Quit, false);
 			}
 			else if (action == EMainMenuAction::Continue)
 			{
@@ -65,9 +59,7 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 		});
 	return EStateTreeRunStatus::Running;
 }
-void FMainMenuUiTask::ExitState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+void FMainMenuUiTask::ExitState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
 

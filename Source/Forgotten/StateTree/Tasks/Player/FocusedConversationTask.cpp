@@ -18,14 +18,12 @@ const UScriptStruct* FFocusedConversationTask::GetInstanceDataType() const
 {
 	return FInstanceDataType::StaticStruct();
 }
-bool FFocusedConversationTask::Link(FStateTreeLinker& Linker)
+bool FFocusedConversationTask::Link(FStateTreeLinker& linker)
 {
-	Linker.LinkExternalData(m_PlayerCharacterHandle);
+	linker.LinkExternalData(m_PlayerCharacterHandle);
 	return true;
 }
-EStateTreeRunStatus FFocusedConversationTask::EnterState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+EStateTreeRunStatus FFocusedConversationTask::EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
@@ -44,9 +42,7 @@ EStateTreeRunStatus FFocusedConversationTask::EnterState(
 
 	return EStateTreeRunStatus::Running;
 }
-void FFocusedConversationTask::ExitState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+void FFocusedConversationTask::ExitState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);

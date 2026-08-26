@@ -17,14 +17,12 @@ const UScriptStruct* FSeatedTask::GetInstanceDataType() const
 {
 	return FInstanceDataType::StaticStruct();
 }
-bool FSeatedTask::Link(FStateTreeLinker& Linker)
+bool FSeatedTask::Link(FStateTreeLinker& linker)
 {
-	Linker.LinkExternalData(m_PlayerCharacterHandle);
+	linker.LinkExternalData(m_PlayerCharacterHandle);
 	return true;
 }
-EStateTreeRunStatus FSeatedTask::EnterState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+EStateTreeRunStatus FSeatedTask::EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	const AFirstPersonCharacter* player = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
@@ -35,18 +33,15 @@ EStateTreeRunStatus FSeatedTask::EnterState(
 
 	chair->SetIsOccupied(true);
 
-	if (UCharacterMovementComponent* moveComp = player->GetCharacterMovement())
-	{
-		moveComp->SetMovementMode(MOVE_None);
-	}
+	UCharacterMovementComponent* moveComp = player->GetCharacterMovement();
+	ASSERT_CHECK_RETURN(moveComp, EStateTreeRunStatus::Failed);
+	moveComp->SetMovementMode(MOVE_None);
 
 	player->GetCapsuleComponent()->IgnoreActorWhenMoving(chair, true);
 
 	return EStateTreeRunStatus::Running;
 }
-void FSeatedTask::ExitState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+void FSeatedTask::ExitState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	AFirstPersonCharacter* player = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
