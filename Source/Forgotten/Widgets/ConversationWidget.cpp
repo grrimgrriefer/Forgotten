@@ -11,10 +11,7 @@
 
 void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FText& messageText) const
 {
-	const FText formattedText = FText::Format(
-		NSLOCTEXT("Conversation", "TranscriptFormat", "{0}: {1}"),
-		speakerName,
-		messageText);
+	const FText formattedText = FText::Format(NSLOCTEXT("Conversation", "TranscriptFormat", "{0}: {1}"), speakerName, messageText);
 
 	UTextBlock* newEntry = WidgetTree->ConstructWidget<UTextBlock>();
 
@@ -30,8 +27,8 @@ void UConversationWidget::ToggleTranscriptVisibility()
 {
 	const ESlateVisibility currentVis = GetVisibility();
 	const ESlateVisibility newVis = (currentVis == ESlateVisibility::Collapsed || currentVis == ESlateVisibility::Hidden)
-		? ESlateVisibility::SelfHitTestInvisible
-		: ESlateVisibility::Collapsed;
+										? ESlateVisibility::SelfHitTestInvisible
+										: ESlateVisibility::Collapsed;
 
 	SetVisibility(newVis);
 }

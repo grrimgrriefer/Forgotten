@@ -15,10 +15,7 @@ class FORGOTTEN_API StateTreeContextBinder
 public:
 	bool TryBindContextData(UObject* data);
 	bool TryUnbindContextData(UObject* data);
-	bool SetContextRequirements(
-		FStateTreeExecutionContext& context,
-		const UStateTree* stateTreeAsset,
-		UObject* owner);
+	bool SetContextRequirements(FStateTreeExecutionContext& context, const UStateTree* stateTreeAsset, UObject* owner);
 
 private:
 	bool CollectExternalData(

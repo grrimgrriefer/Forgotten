@@ -16,7 +16,7 @@ Mostly follows UE's condings standards with the following exceptions:
 * Local variables & parameters always are camelCase.
 * When using multiple inheritance, all overrides must be grouped in `#pragma region basename` blocks
 * Header files cannot contain function definitions.
-* Lines cannot extend 120 chars
+* Lines cannot extend 130 chars
   * When parameters have to be split, every parameter must be on a newline in both .h and .cpp files.
 * Virtual private functions should be avoided.
 * Global using-declarations should be avoided.

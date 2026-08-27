@@ -1,6 +1,8 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
 #include "SodaCanInteractable.h"
+
+#include "Components/StaticMeshComponent.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Utils/AssertMacros.h"
 
@@ -17,12 +19,20 @@ void ASodaCanInteractable::OnPlayerInteract(AFirstPersonCharacter* player)
 {
 	ASSERT_CHECK(player);
 
-	if (!m_isBeingInspected)
-	{
-		m_isBeingInspected = true;
-
-		UE_LOG(LogTemp, Log, TEXT("Player picked up %s for inspection!"), *m_itemName.ToString());
-
-		// TODO: 3D inspection state event trigger
-	}
+	m_isBeingInspected = true;
+	player->Inspect3dInteractable(this);
+}
+void ASodaCanInteractable::SetIsBeingInspected(const bool isBeingInspected)
+{
+	m_isBeingInspected = isBeingInspected;
+}
+UStaticMesh* ASodaCanInteractable::GetInspectMesh() const
+{
+	ASSERT_CHECK_RETURN(m_isBeingInspected, nullptr);
+	return m_meshComp->GetStaticMesh();
+}
+FVector ASodaCanInteractable::GetInspectScale() const
+{
+	ASSERT_CHECK_RETURN(m_meshComp, FVector::OneVector);
+	return m_meshComp->GetComponentScale();
 }

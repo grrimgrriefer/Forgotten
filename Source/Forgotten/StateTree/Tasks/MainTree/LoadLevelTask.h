@@ -23,13 +23,10 @@ struct FORGOTTEN_API FLoadLevelTask : public FStateTreeTaskBase
 {
 	GENERATED_BODY()
 
-public:
 	using FInstanceDataType = FLoadLevelTaskInstanceData;
 
 	FLoadLevelTask();
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;
-	virtual EStateTreeRunStatus EnterState(
-		FStateTreeExecutionContext& context,
-		const FStateTreeTransitionResult& transitions) const override;
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const override;
 };

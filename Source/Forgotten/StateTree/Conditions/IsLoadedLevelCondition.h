@@ -25,16 +25,14 @@ struct FORGOTTEN_API FIsLoadedLevelCondition : public FStateTreeConditionBase
 {
 	GENERATED_BODY()
 
-public:
 	using FInstanceDataType = FIsLoadedLevelConditionInstanceData;
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;
 	virtual bool TestCondition(FStateTreeExecutionContext& context) const override;
 #if WITH_EDITOR
-	virtual FText GetDescription(
-		const FGuid& id,
-		FStateTreeDataView instanceDataView,
-		const IStateTreeBindingLookup& bindingLookup,
-		EStateTreeNodeFormatting formatting) const override;
+	virtual FText GetDescription(const FGuid& id,
+								FStateTreeDataView instanceDataView,
+								const IStateTreeBindingLookup& bindingLookup,
+								EStateTreeNodeFormatting formatting) const override;
 #endif
 };

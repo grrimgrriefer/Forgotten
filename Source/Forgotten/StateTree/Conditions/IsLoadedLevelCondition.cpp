@@ -17,8 +17,7 @@ bool FIsLoadedLevelCondition::TestCondition(FStateTreeExecutionContext& context)
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
 
 	ASSERT_CHECK_RETURN(world, false);
-	ASSERT_CHECK_RETURN(!instanceData.m_LevelToCheck.IsNull(), false, TEXT("FIsLoadedLevelCondition: "
-														"m_LevelToCheck is not assigned, check the StateTree."));
+	ASSERT_CHECK_RETURN(!instanceData.m_LevelToCheck.IsNull(), false, TEXT("FIsLoadedLevelCondition: m_LevelToCheck is not assigned, check the StateTree."));
 	if (instanceData.m_LevelToCheck.IsNull())
 	{
 		return false;
@@ -47,16 +46,15 @@ FText FIsLoadedLevelCondition::GetDescription(
 {
 	const FInstanceDataType* instanceData = instanceDataView.GetPtr<FInstanceDataType>();
 	const FString levelName = (instanceData && !instanceData->m_LevelToCheck.IsNull())
-		                          ? instanceData->m_LevelToCheck.GetAssetName()
-		                          : TEXT("None");
+								? instanceData->m_LevelToCheck.GetAssetName()
+								: TEXT("None");
 
 	const FText invertPrefix = (instanceData && instanceData->m_Invert)
-		                           ? NSLOCTEXT("StateTree", "InvertPrefix", "NOT ")
-		                           : FText::GetEmpty();
+									? NSLOCTEXT("StateTree", "InvertPrefix", "NOT ")
+									: FText::GetEmpty();
 	return FText::Format(
 		NSLOCTEXT("StateTree", "IsLoadedLevelCondition_CombinedDesc", "{0} Is Loaded Level ({1})"),
 		invertPrefix,
-		FText::FromString(levelName)
-	);
+		FText::FromString(levelName));
 }
 #endif

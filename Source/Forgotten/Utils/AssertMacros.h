@@ -9,15 +9,13 @@
 #include "Editor.h"
 #endif
 
-inline void HandleAssertFailed(
-	const TCHAR* checkExpression,
-	const TCHAR* fileName,
-	int32 lineNumber,
-	const FString& customMessage = FString())
+inline void HandleAssertFailed(const TCHAR* checkExpression, const TCHAR* fileName, int32 lineNumber, const FString& customMessage = FString())
 {
 	FString errorMessage = FString::Printf(
 		TEXT("Assertion Failed: %s\n\nFile: %s\nLine: %d"),
-		checkExpression, fileName, lineNumber
+		checkExpression,
+		fileName,
+		lineNumber
 	);
 
 	if (!customMessage.IsEmpty())
@@ -32,10 +30,9 @@ inline void HandleAssertFailed(
 	{
 		GEditor->SetPIEWorldsPaused(true);
 
-		FMessageDialog::Open(
-			EAppMsgType::Ok,
-			FText::FromString(errorMessage),
-			FText::FromString("Assert Failure Triggered")
+		FMessageDialog::Open(EAppMsgType::Ok,
+							FText::FromString(errorMessage),
+							FText::FromString("Assert Failure Triggered")
 		);
 	}
 #endif

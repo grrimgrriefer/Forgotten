@@ -7,6 +7,8 @@
 #include "InputActionValue.h"
 #include "Forgotten/StateTree/StateTreeContextBinder.h"
 #include "StateTreeInstanceData.h"
+#include "Forgotten/Interactables/Implementations/ChairInteractable.h"
+#include "Forgotten/Interactables/Implementations/SodaCanInteractable.h"
 #include "FirstPersonCharacter.generated.h"
 
 class UConversationSubsystem;
@@ -35,9 +37,15 @@ public:
 	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
 
+	UCameraComponent* GetCameraComponent() const;
 	void StartFocusedConversation(AConversableNPC* conversableNpc);
+	void SitDown(AChairInteractable* chairInteractable);
+	void Inspect3dInteractable(ASodaCanInteractable* sodaCanInteractable);
 
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "StateTree", meta = (RequiredAssetDataTags = "Schema=UPlayerStateTreeSchema"))
+	TObjectPtr<UStateTree> m_stateTreeAsset;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<UCameraComponent> m_cameraComponent;
 	UPROPERTY(EditAnywhere, Category = "UI")
@@ -63,9 +71,6 @@ protected:
 	float m_interactionDistance = 250.0f;
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	float m_cameraInterpSpeed = 5.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "StateTree", meta = (RequiredAssetDataTags = "Schema=UPlayerStateTreeSchema"))
-	TObjectPtr<UStateTree> m_stateTreeAsset;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;

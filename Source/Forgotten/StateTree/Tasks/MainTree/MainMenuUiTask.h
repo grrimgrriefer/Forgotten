@@ -33,18 +33,13 @@ struct FORGOTTEN_API FMainMenuUiTask : public FStateTreeTaskBase
 {
 	GENERATED_BODY()
 
-public:
 	using FInstanceDataType = FMainMenuUiTaskInstanceData;
 
 	FMainMenuUiTask();
 
 	virtual const UScriptStruct* GetInstanceDataType() const override;
-	virtual EStateTreeRunStatus EnterState(
-		FStateTreeExecutionContext& context,
-		const FStateTreeTransitionResult& transitions) const override;
-	virtual void ExitState(
-		FStateTreeExecutionContext& context,
-		const FStateTreeTransitionResult& transitions) const override;
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const override;
+	virtual void ExitState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const override;
 
 	UPROPERTY(EditAnywhere, Category = "Main Menu UI")
 	TSubclassOf<UMainMenuWidget> m_MenuWidgetClass;

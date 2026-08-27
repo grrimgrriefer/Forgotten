@@ -19,7 +19,6 @@ bool AConversableNPC::CanInteract(ACharacter* instigator) const
 {
 	return IsValid(instigator) && instigator != this;
 }
-
 void AConversableNPC::Interact(ACharacter* instigator)
 {
 	if (!CanInteract(instigator))
@@ -32,12 +31,10 @@ void AConversableNPC::Interact(ACharacter* instigator)
 		player->StartFocusedConversation(this);
 	}
 }
-
 FText AConversableNPC::GetInteractionUiMessage(ACharacter* instigator) const
 {
 	return m_interactionUiMessage;
 }
-
 USceneComponent* AConversableNPC::GetInteractionPoint() const
 {
 	return GetRootComponent();

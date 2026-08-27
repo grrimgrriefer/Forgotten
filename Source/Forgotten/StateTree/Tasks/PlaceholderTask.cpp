@@ -13,9 +13,7 @@ const UScriptStruct* FPlaceholderTask::GetInstanceDataType() const
 {
 	return FInstanceDataType::StaticStruct();
 }
-EStateTreeRunStatus FPlaceholderTask::EnterState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+EStateTreeRunStatus FPlaceholderTask::EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	return EStateTreeRunStatus::Running;
 }

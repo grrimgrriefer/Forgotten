@@ -33,7 +33,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CharacterInfo")
 	FText m_characterName;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CharacterInfo")
 	FText m_interactionUiMessage;
 };

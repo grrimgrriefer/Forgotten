@@ -15,7 +15,9 @@
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
 #include "StateTreeExecutionContext.h"
-#include "Forgotten/StateTree/EventPayloads/FocusedConversationPayload.h"
+#include "Forgotten/StateTree/Tasks/Player/FocusedConversationTask.h"
+#include "Forgotten/StateTree/Tasks/Player/Inspect3dTask.h"
+#include "Forgotten/StateTree/Tasks/Player/SeatedTask.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
@@ -33,24 +35,18 @@ void AFirstPersonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ASSERT_CHECK(m_cameraComponent, TEXT("AFirstPersonCharacter: "
-									  "m_cameraComponent has been removed? Check the blueprint."));
+	ASSERT_CHECK(m_cameraComponent);
 
 	APlayerController* playerController = Cast<APlayerController>(GetController());
 	ASSERT_CHECK(playerController);
 
-	UEnhancedInputLocalPlayerSubsystem* inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
-		playerController->GetLocalPlayer());
+	UEnhancedInputLocalPlayerSubsystem* inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer());
 	ASSERT_CHECK(inputSubsystem);
 
-	ASSERT_CHECK(m_defaultMappingContext, TEXT("AFirstPersonCharacter: m_defaultMappingContext is not assigned, "
-										  "check the blueprint."));
+	ASSERT_CHECK(m_defaultMappingContext);
 	inputSubsystem->AddMappingContext(m_defaultMappingContext, 0);
 
-
-	ASSERT_CHECK(m_chatWidgetClass, TEXT("AFirstPersonCharacter: m_chatWidgetClass has not been assigned, "
-									  "check the blueprint."));
-
+	ASSERT_CHECK(m_chatWidgetClass);
 	m_chatWidget = CreateWidget<UConversationWidget>(playerController, m_chatWidgetClass);
 	ASSERT_CHECK(m_chatWidget);
 
@@ -120,18 +116,22 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	UEnhancedInputComponent* enhancedInputComponent = Cast<UEnhancedInputComponent>(playerInputComponent);
 	ASSERT_CHECK(enhancedInputComponent);
 
-	ASSERT_CHECK(m_moveAction, TEXT("AFirstPersonCharacter: m_moveAction is not assigned, check the blueprint."));
+	ASSERT_CHECK(m_moveAction);
 	enhancedInputComponent->BindAction(m_moveAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Move);
-	ASSERT_CHECK(m_lookAction, TEXT("AFirstPersonCharacter: m_lookAction is not assigned, check the blueprint."));
+	ASSERT_CHECK(m_lookAction);
 	enhancedInputComponent->BindAction(m_lookAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Look);
-	ASSERT_CHECK(m_interactAction, TEXT("AFirstPersonCharacter: m_interactAction is not assigned, check the blueprint."));
+	ASSERT_CHECK(m_interactAction);
 	enhancedInputComponent->BindAction(m_interactAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::AttemptInteraction);
-	ASSERT_CHECK(m_toggleChatAction, TEXT("AFirstPersonCharacter: m_toggleChatAction is not assigned, check the blueprint."));
+	ASSERT_CHECK(m_toggleChatAction);
 	enhancedInputComponent->BindAction(m_toggleChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ToggleChat);
-	ASSERT_CHECK(m_focusChatAction, TEXT("AFirstPersonCharacter: m_focusChatAction is not assigned, check the blueprint."));
+	ASSERT_CHECK(m_focusChatAction);
 	enhancedInputComponent->BindAction(m_focusChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::FocusChat);
-	ASSERT_CHECK(m_exitAction, TEXT("AFirstPersonCharacter: m_exitAction is not assigned, check the blueprint."));
+	ASSERT_CHECK(m_exitAction);
 	enhancedInputComponent->BindAction(m_exitAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ExitCurrentActivity);
+}
+UCameraComponent* AFirstPersonCharacter::GetCameraComponent() const
+{
+	return m_cameraComponent;
 }
 void AFirstPersonCharacter::StartFocusedConversation(AConversableNPC* conversableNpc)
 {
@@ -144,8 +144,39 @@ void AFirstPersonCharacter::StartFocusedConversation(AConversableNPC* conversabl
 	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
 	{
 		FFocusedConversationPayload payload;
-		payload.ConversableNpc = conversableNpc;
-		context.SendEvent(TAG_State_FocusedConversation_Start, FConstStructView::Make(payload));
+		payload.m_ConversableNpc = conversableNpc;
+		context.SendEvent(TAG_State_Start_FocusedConversation, FConstStructView::Make(payload));
+	}
+}
+void AFirstPersonCharacter::SitDown(AChairInteractable* chairInteractable)
+{
+	if (!m_isStateTreeRunning || !IsValid(chairInteractable))
+	{
+		return;
+	}
+
+	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+	{
+		FSeatedPayload payload;
+		payload.m_Chair = chairInteractable;
+		context.SendEvent(TAG_State_Start_Seated, FConstStructView::Make(payload));
+	}
+}
+void AFirstPersonCharacter::Inspect3dInteractable(ASodaCanInteractable* sodaCanInteractable)
+{
+	if (!m_isStateTreeRunning || !IsValid(sodaCanInteractable))
+	{
+		return;
+	}
+
+	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
+	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
+	{
+		FInspect3dPayload payload;
+		payload.m_Inspectable = sodaCanInteractable;
+		payload.m_PreviewOffset = FVector(45.0f, 0.0f, -8.0f);
+		context.SendEvent(TAG_State_Start_Inspect3d, FConstStructView::Make(payload));
 	}
 }
 bool AFirstPersonCharacter::TryBindContextData(UObject* data)

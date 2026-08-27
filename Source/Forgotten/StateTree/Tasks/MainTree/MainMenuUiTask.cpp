@@ -15,9 +15,7 @@ const UScriptStruct* FMainMenuUiTask::GetInstanceDataType() const
 {
 	return FInstanceDataType::StaticStruct();
 }
-EStateTreeRunStatus FMainMenuUiTask::EnterState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+EStateTreeRunStatus FMainMenuUiTask::EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	const UWorld* world = context.GetWorld();
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
@@ -26,8 +24,7 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 	APlayerController* playerController = world->GetFirstPlayerController();
 
 	ASSERT_CHECK_RETURN(playerController, EStateTreeRunStatus::Failed);
-	ASSERT_CHECK_RETURN(m_MenuWidgetClass, EStateTreeRunStatus::Failed,
-		TEXT("MainMenuUiTask: m_MenuWidgetClass is not assigned, check the StateTree."));
+	ASSERT_CHECK_RETURN(m_MenuWidgetClass, EStateTreeRunStatus::Failed);
 	UMainMenuWidget* mainMenuWidget = CreateWidget<UMainMenuWidget>(playerController, m_MenuWidgetClass);
 
 	ASSERT_CHECK_RETURN(mainMenuWidget, EStateTreeRunStatus::Failed);
@@ -53,11 +50,7 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 			if (action == EMainMenuAction::Quit)
 			{
 				const UObject* owner = strongContext.GetOwner().Get();
-				UKismetSystemLibrary::QuitGame(
-					owner ? owner->GetWorld() : nullptr,
-					nullptr,
-					EQuitPreference::Quit,
-					false);
+				UKismetSystemLibrary::QuitGame(owner ? owner->GetWorld() : nullptr, nullptr, EQuitPreference::Quit, false);
 			}
 			else if (action == EMainMenuAction::Continue)
 			{
@@ -66,9 +59,7 @@ EStateTreeRunStatus FMainMenuUiTask::EnterState(
 		});
 	return EStateTreeRunStatus::Running;
 }
-void FMainMenuUiTask::ExitState(
-	FStateTreeExecutionContext& context,
-	const FStateTreeTransitionResult& transitions) const
+void FMainMenuUiTask::ExitState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
 

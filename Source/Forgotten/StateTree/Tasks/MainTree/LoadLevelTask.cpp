@@ -24,9 +24,10 @@ EStateTreeRunStatus FLoadLevelTask::EnterState(
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
 
 	ASSERT_CHECK_RETURN(world, EStateTreeRunStatus::Failed);
-	ASSERT_CHECK_RETURN(!instanceData.m_LevelToLoad.IsNull(), EStateTreeRunStatus::Failed,
-		TEXT("FLoadLevelTask: m_LevelToLoad is not assigned, check the StateTree."));
+	ASSERT_CHECK_RETURN(!instanceData.m_LevelToLoad.IsNull(),
+						EStateTreeRunStatus::Failed,
+						TEXT("FLoadLevelTask: m_LevelToLoad is not assigned, check the StateTree."));
 	UGameplayStatics::OpenLevelBySoftObjectPtr(world, instanceData.m_LevelToLoad);
 
-    return EStateTreeRunStatus::Running;
+	return EStateTreeRunStatus::Running;
 }
