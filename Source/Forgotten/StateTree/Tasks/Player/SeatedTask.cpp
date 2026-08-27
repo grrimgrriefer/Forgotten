@@ -81,7 +81,20 @@ EStateTreeRunStatus FSeatedTask::Tick(FStateTreeExecutionContext& context, const
 
 		if (APlayerController* playerController = Cast<APlayerController>(player->GetController()))
 		{
-			const FRotator newRot = FMath::RInterpTo(playerController->GetControlRotation(), targetRot, deltaTime, 8.0f);
+			const FRotator currentRot = playerController->GetControlRotation();
+
+			const float yawDelta = FMath::FindDeltaAngleDegrees(targetRot.Yaw, currentRot.Yaw);
+			const float clampedYawDelta = FMath::Clamp(yawDelta, -instanceData.m_MaxYawAngle, instanceData.m_MaxYawAngle);
+
+			const float pitchDelta = FMath::FindDeltaAngleDegrees(targetRot.Pitch, currentRot.Pitch);
+			const float clampedPitchDelta = FMath::Clamp(pitchDelta, -instanceData.m_MaxPitchAngle, instanceData.m_MaxPitchAngle);
+
+			const FRotator newRot(
+				FRotator::NormalizeAxis(targetRot.Pitch + clampedPitchDelta),
+				FRotator::NormalizeAxis(targetRot.Yaw + clampedYawDelta),
+				currentRot.Roll
+			);
+
 			playerController->SetControlRotation(newRot);
 		}
 	}

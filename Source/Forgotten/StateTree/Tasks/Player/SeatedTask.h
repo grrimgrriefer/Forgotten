@@ -25,6 +25,11 @@ struct FSeatedTaskInstanceData
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<AChairInteractable> m_Chair = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Settings", meta = (ClampMin = "0.0", ClampMax = "180.0"))
+	float m_MaxYawAngle = 80.0f;
+	UPROPERTY(EditAnywhere, Category = "Settings", meta = (ClampMin = "0.0", ClampMax = "90.0"))
+	float m_MaxPitchAngle = 60.0f;
 };
 
 /**
