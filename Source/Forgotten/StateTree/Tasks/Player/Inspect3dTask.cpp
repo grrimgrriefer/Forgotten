@@ -53,6 +53,7 @@ EStateTreeRunStatus FInspect3dTask::EnterState(FStateTreeExecutionContext& conte
 
 	previewComp->SetRelativeLocation(instanceData.m_PreviewOffset);
 	previewComp->SetRelativeRotation(FRotator::ZeroRotator);
+	previewComp->SetRelativeScale3D(interactable->GetInspectScale());
 
 	instanceData.m_PreviewMeshComp = previewComp;
 
@@ -101,8 +102,18 @@ EStateTreeRunStatus FInspect3dTask::Tick(FStateTreeExecutionContext& context, co
 			float mouseY = 0.0f;
 			pc->GetInputMouseDelta(mouseX, mouseY);
 
-			constexpr float rotationSpeed = 2.0f;
-			instanceData.m_PreviewMeshComp->AddLocalRotation(FRotator(-mouseY * rotationSpeed, -mouseX * rotationSpeed, 0.0f));
+			if (!FMath::IsNearlyZero(mouseX) || !FMath::IsNearlyZero(mouseY))
+			{
+				constexpr float rotationSpeed = 2.0f;
+				const FQuat pitchDelta(FVector::RightVector, FMath::DegreesToRadians(mouseY * rotationSpeed));
+				const FQuat yawDelta(FVector::UpVector, FMath::DegreesToRadians(-mouseX * rotationSpeed));
+				const FQuat cameraSpaceDelta = pitchDelta * yawDelta;
+
+				const FQuat currentRelativeQuat = instanceData.m_PreviewMeshComp->GetRelativeRotation().Quaternion();
+				const FQuat newRelativeQuat = cameraSpaceDelta * currentRelativeQuat;
+
+				instanceData.m_PreviewMeshComp->SetRelativeRotation(newRelativeQuat);
+			}
 		}
 	}
 

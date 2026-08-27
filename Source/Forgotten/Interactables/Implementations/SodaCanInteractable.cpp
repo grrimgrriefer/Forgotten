@@ -31,3 +31,8 @@ UStaticMesh* ASodaCanInteractable::GetInspectMesh() const
 	ASSERT_CHECK_RETURN(m_isBeingInspected, nullptr);
 	return m_meshComp->GetStaticMesh();
 }
+FVector ASodaCanInteractable::GetInspectScale() const
+{
+	ASSERT_CHECK_RETURN(m_meshComp, FVector::OneVector);
+	return m_meshComp->GetComponentScale();
+}

@@ -19,6 +19,7 @@ public:
 	virtual bool CanInteract(ACharacter* instigator) const override;
 	void SetIsBeingInspected(const bool isBeingInspected);
 	UStaticMesh* GetInspectMesh() const;
+	FVector GetInspectScale() const;
 
 protected:
 	virtual void OnPlayerInteract(AFirstPersonCharacter* player) override;

@@ -56,9 +56,9 @@ void FSeatedTask::ExitState(FStateTreeExecutionContext& context, const FStateTre
 
 		if (chair)
 		{
-			player->GetCapsuleComponent()->IgnoreActorWhenMoving(chair, false);
 			const FVector standUpOffset = chair->GetActorForwardVector() * 60.0f + FVector(0, 0, 30.0f);
 			player->SetActorLocation(chair->GetActorLocation() + standUpOffset, true);
+			player->GetCapsuleComponent()->IgnoreActorWhenMoving(chair, false);
 
 			chair->SetIsOccupied(false);
 		}

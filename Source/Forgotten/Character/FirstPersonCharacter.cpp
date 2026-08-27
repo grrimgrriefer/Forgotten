@@ -176,7 +176,7 @@ void AFirstPersonCharacter::Inspect3dInteractable(ASodaCanInteractable* sodaCanI
 		FInspect3dPayload payload;
 		payload.m_Inspectable = sodaCanInteractable;
 		payload.m_PreviewOffset = FVector(45.0f, 0.0f, -8.0f);
-		context.SendEvent(TAG_State_Start_Inspect, FConstStructView::Make(payload));
+		context.SendEvent(TAG_State_Start_Inspect3d, FConstStructView::Make(payload));
 	}
 }
 bool AFirstPersonCharacter::TryBindContextData(UObject* data)
