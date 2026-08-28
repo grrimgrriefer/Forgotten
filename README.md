@@ -11,8 +11,9 @@ Voxta Plugin: https://github.com/grrimgrriefer/UnrealVoxta / https://dev.azure.c
 
 Mostly follows UE's condings standards with the following exceptions:
 
-* Member variables, always start with `m_`
-* Private & protected ones are camelCase, public ones are Pascal.
+* Member variables always start with `m_`.
+  * Private & protected members use `m_camelCase`.
+  * Public members use `m_PascalCase`.
 * Local variables & parameters always are camelCase.
 * When using multiple inheritance, all overrides must be grouped in `#pragma region basename` blocks
 * Header files cannot contain function definitions.
@@ -65,76 +66,94 @@ config:
   theme: dark
 ---
 stateDiagram-v2
-    state Main_Flow {
+    state Main_StateTree {
         state Menu {
-            Main_Menu --> Settings
-            Main_Menu --> Load_GameSave
-            Settings --> Main_Menu
-            Load_GameSave --> Main_Menu
-            Main_Menu --> [*] : Exit Game
+            Main_Menu --> Continue
+            Main_Menu --> [*] : Quit Game
         }
 
-        Menu --> Gameplay_State : Continue || New_Game || Load_Save
-
-        Intro --> Menu
-
-        state Gameplay_State {
-            state Player_Action {           
-                state Roaming {
-                    Walking --> Focus_Mode : Interact (Hallucinations)
-                    Focus_Mode --> Walking : Release
-                }
-                
-                state Conversation {
-                    Dialogue_Active --> Fail_State : Meter reaches 0/100
-                    Fail_State --> Dialogue_Active : Use Rewind
-                }
-                
-                state Notebook {
-                    Transcript --> Deduction_Board : Annotate Clue
-                    Deduction_Board --> Inquiry_Angles : Link Clues
-                    Transcript --> System_Rewind : Use Charge
-                }
-                
-                Roaming --> Notebook : Open
-                Notebook --> Roaming : Close
-                Roaming --> Conversation : Sit with Rain
-                Conversation --> Roaming : End Session
-                Conversation --> Notebook : Open
-                Notebook --> Conversation : Close
-            }
-
-            Player_Action --> Scripted_event : Event trigger
-            Scripted_event --> Player_Action : Event ended
-
-            state Scripted_event {
-                Cutscene
-            }
-            
-            Player_Action --> Evaluation_Phase : End the day
-            
-            state Evaluation_Phase {
-                Assemble_Report --> Submit_Report : Redact/Include Evidence
-            }
-            
-            Evaluation_Phase --> Player_Action : Next Day
-        }
+        Menu --> Gameplay_State : Continue
+        Gameplay_State --> Menu : Exit
     }
-    
-    state Voxta_Connection {
-        Voxta_Idle --> Voxta_Listening : Player Inputs
-        Voxta_Listening --> Voxta_Processing : Input Submitted
-        Voxta_Processing --> Voxta_Synthesizing : LLM Context Generated
-        Voxta_Synthesizing --> Voxta_Speaking : Audio Ready
-        Voxta_Speaking --> Voxta_Idle : Finished Speaking
+
+    state Player_StateTree {
+        Player_Spawn --> Player_Action
+
+        state Player_Action {
+            state Focused_Conversation {
+                Dialogue_Active --> Fail_State : Meter reaches 0/100
+                Fail_State --> Dialogue_Active : Use Rewind
+            }
+            
+            state Notebook {
+                Transcript --> Deduction_Board : Annotate Clue
+                Deduction_Board --> Inquiry_Angles : Link Clues (Correlation/Contradiction)
+                Transcript --> System_Rewind : Use Charge
+            }
+            
+            Freeroam --> Inspect_Object : Inspect 3D Object
+            Inspect_Object --> Freeroam : Release
+            Freeroam --> Focus_Mode : Focus (Hallucinations)
+            Focus_Mode --> Freeroam : Release
+
+            Freeroam --> Seated : Sit Down
+            Seated --> Freeroam : Stand Up
+            Freeroam --> Focused_Conversation : Focused Conversation
+            Focused_Conversation --> Freeroam : End Session
+            Focused_Conversation --> Notebook : Open
+            Notebook --> Focused_Conversation : Close
+            Freeroam --> Notebook : Open
+            Notebook --> Freeroam : Close
+        }
+
+        Player_Action --> Scripted_event : Event trigger
+        Scripted_event --> Player_Action : Event ended
+      
+        Player_Action --> Evaluation_Phase : End the day
         
-        Voxta_Processing --> Voxta_Error : Timeout
-        Voxta_Error --> Voxta_Idle : Mask/Recover
+        state Evaluation_Phase {
+            Assemble_Report --> Submit_Report : Redact/Include Evidence
+        }
+        
+        Evaluation_Phase --> Player_Action : Next Day
     }
     
-    state Narrative_Phase {
+    state NPC_StateTree {
+        NPC_Spawn --> NPC_Ambient_Behavior
+
+        state NPC_Ambient_Behavior {
+            NPC_Idle --> NPC_Room_Specific_Task : Perform Chore / Eerie Habit
+            NPC_Room_Specific_Task --> NPC_Idle : Finish Task
+        }
+        
+        state NPC_Interaction {
+            NPC_Proximity_Awareness --> NPC_Greet_Player : Player Enters Room
+            NPC_Greet_Player --> NPC_Conversation : Player Initiates
+        }
+        
+        NPC_Ambient_Behavior --> NPC_Interaction : Player Approaches
+        NPC_Interaction --> NPC_Ambient_Behavior : Player Leaves
+    }
+    
+    state Voxta_StateTree {
+        Voxta_Disconnected --> Voxta_AttemptingToConnect : Start handshake
+        Voxta_AttemptingToConnect --> Voxta_Idle : Handshake successful
+        Voxta_Idle --> Voxta_Chatting : User or NPC initiated chat
+        Voxta_Chatting --> Voxta_Idle : User or NPC ended chat
+        Voxta_Chatting --> Voxta_Disconnected : Error or connection loss
+        Voxta_Idle --> Voxta_Disconnected : Error or connection loss
+
+        state Voxta_Chatting {
+            Voxta_GeneratingReply --> Voxta_AudioPlayback : Audio generated and imported into UE
+            Voxta_AudioPlayback --> Voxta_WaitingForUserResponse : Audio finished & Mic is activated
+            Voxta_GeneratingReply --> Voxta_WaitingForUserResponse : Reply was text-only
+            Voxta_WaitingForUserResponse --> Voxta_GeneratingReply : Speech started & completed events triggered
+        }
+    }
+    
+    state Narrative_StateTree {
         Phase_1_Arrival --> Phase_2_Exploring : Sleep / End Day 1
-        Phase_2_Exploring --> Phase_3_Descent : 5 Clue Nodes Linked
+        Phase_2_Exploring --> Phase_3_Descent : Main Clue Nodes Linked
         Phase_3_Descent --> Phase_4_Awakening : Touch Artifact
         Phase_4_Awakening --> Endings : Final Clue Choice
     }
