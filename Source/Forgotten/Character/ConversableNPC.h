@@ -7,6 +7,7 @@
 #include "Forgotten/Interactables/InteractableInterface.h"
 #include "ConversableNPC.generated.h"
 
+class USphereComponent;
 class UStaticMeshComponent;
 
 /**
@@ -20,12 +21,22 @@ class FORGOTTEN_API AConversableNPC : public ACharacter, public IInteractableInt
 public:
 	AConversableNPC();
 
+#pragma region ACharacter
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
+#pragma endregion ACharacter
+
 #pragma region IInteractableInterface
 	virtual bool CanInteract(ACharacter* instigator) const override;
 	virtual void Interact(ACharacter* instigator) override;
 	virtual FText GetInteractionUiMessage(ACharacter* instigator) const override;
 	virtual USceneComponent* GetInteractionPoint() const override;
 #pragma endregion IInteractableInterface
+
+	bool IsInRangeForChat(const ACharacter* other) const;
+	float GetMaxChatDistance() const;
+	const FText& GetCharacterName() const;
+	void GreetPlayer() const;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -35,4 +46,21 @@ protected:
 	FText m_characterName;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CharacterInfo")
 	FText m_interactionUiMessage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CharacterInfo")
+	float m_maxChatDistance = 300.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CharacterInfo")
+	TObjectPtr<USphereComponent> m_chatRangeSphere;
+
+private:
+	UFUNCTION()
+	void OnChatRangeBeginOverlap(
+		UPrimitiveComponent* overlappedComp,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComp,
+		int32 otherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& sweepResult) const;
+
+	FText m_tempGreetingMessage; // TODO: deleteme
 };

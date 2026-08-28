@@ -54,7 +54,7 @@ void AFirstPersonCharacter::BeginPlay()
 	m_chatWidget->m_OnChatFocusLost.AddUObject(this, &AFirstPersonCharacter::OnChatFocusLost);
 
 	UConversationSubsystem* conversationSubSystem = GetConversationSubsystem();
-	m_chatWidget->m_OnTextSubmitted.AddUObject(conversationSubSystem, &UConversationSubsystem::SubmitPlayerMessage);
+	m_chatWidget->m_OnTextSubmitted.AddUObject(conversationSubSystem, &UConversationSubsystem::SubmitMessageFromPlayer);
 	conversationSubSystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
 
 	TryBindContextData(this);
@@ -122,8 +122,8 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	enhancedInputComponent->BindAction(m_lookAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Look);
 	ASSERT_CHECK(m_interactAction);
 	enhancedInputComponent->BindAction(m_interactAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::AttemptInteraction);
-	ASSERT_CHECK(m_toggleChatAction);
-	enhancedInputComponent->BindAction(m_toggleChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ToggleChat);
+	ASSERT_CHECK(m_triggerChatUiAction);
+	enhancedInputComponent->BindAction(m_triggerChatUiAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::TriggerChatUi);
 	ASSERT_CHECK(m_focusChatAction);
 	enhancedInputComponent->BindAction(m_focusChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::FocusChat);
 	ASSERT_CHECK(m_exitAction);
@@ -241,21 +241,39 @@ void AFirstPersonCharacter::AttemptInteraction()
 		}
 	}
 }
-void AFirstPersonCharacter::ToggleChat()
+void AFirstPersonCharacter::TriggerChatUi()
 {
 	ASSERT_CHECK(m_chatWidget);
-	m_chatWidget->ToggleTranscriptVisibility();
+
+	const UConversationSubsystem* conversationSubsystem = GetConversationSubsystem();
+	ASSERT_CHECK(conversationSubsystem);
+	const bool inRange = conversationSubsystem && conversationSubsystem->IsPlayerInRangeForChat(this);
+
+	m_chatWidget->SetOutOfRangeFeedbackVisibility(!inRange);
+	if (inRange)
+	{
+		m_chatWidget->SetTranscriptVisibility(true);
+	}
 }
 void AFirstPersonCharacter::FocusChat()
 {
+	ASSERT_CHECK(m_chatWidget);
 	if (m_chatWidget->IsInputFocused())
 	{
 		return;
 	}
 
-	ASSERT_CHECK(m_chatWidget);
-	m_chatWidget->FocusInput();
+	const UConversationSubsystem* conversationSubsystem = GetConversationSubsystem();
+	ASSERT_CHECK(conversationSubsystem);
+	const bool inRange = conversationSubsystem && conversationSubsystem->IsPlayerInRangeForChat(this);
 
+	if (!inRange)
+	{
+		m_chatWidget->SetOutOfRangeFeedbackVisibility(true);
+		return;
+	}
+
+	m_chatWidget->FocusInput();
 	UpdateInputState();
 }
 void AFirstPersonCharacter::OnChatFocusLost()
