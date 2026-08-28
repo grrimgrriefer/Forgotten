@@ -1,6 +1,8 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
 #include "ConversableNPC.h"
+
+#include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
@@ -14,6 +16,13 @@ AConversableNPC::AConversableNPC()
 	m_placeholderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlaceholderMesh"));
 	m_placeholderMesh->SetupAttachment(RootComponent);
 	m_interactionUiMessage = NSLOCTEXT("NPC", "TalkPrompt", "Talk");
+	m_tempGreetingMessage = NSLOCTEXT("NPC", "tempgreeting", "Hey there sweetheart");
+
+	m_chatRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("ChatRangeSphere"));
+	m_chatRangeSphere->SetupAttachment(RootComponent);
+	m_chatRangeSphere->SetSphereRadius(m_maxChatDistance);
+	m_chatRangeSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
+	m_chatRangeSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }
 
 
@@ -21,6 +30,10 @@ AConversableNPC::AConversableNPC()
 void AConversableNPC::BeginPlay()
 {
 	Super::BeginPlay();
+
+	ASSERT_CHECK(m_chatRangeSphere);
+	m_chatRangeSphere->SetSphereRadius(m_maxChatDistance);
+	m_chatRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AConversableNPC::OnChatRangeBeginOverlap);
 
 	const UWorld* world = GetWorld();
 	ASSERT_CHECK(world);
@@ -85,4 +98,30 @@ bool AConversableNPC::IsInRangeForChat(const ACharacter* other) const
 float AConversableNPC::GetMaxChatDistance() const
 {
 	return m_maxChatDistance;
+}
+const FText& AConversableNPC::GetCharacterName() const
+{
+	return m_characterName;
+}
+void AConversableNPC::GreetPlayer() const
+{
+	const UWorld* world = GetWorld();
+	ASSERT_CHECK(world);
+
+	const UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
+	ASSERT_CHECK(conversationSubSystem);
+	conversationSubSystem->SubmitMessageFromNPC(this, m_tempGreetingMessage);
+}
+void AConversableNPC::OnChatRangeBeginOverlap(
+	UPrimitiveComponent* overlappedComp,
+	AActor* otherActor,
+	UPrimitiveComponent* otherComp,
+	int32 otherBodyIndex,
+	bool bFromSweep,
+	const FHitResult& sweepResult) const
+{
+	if (AFirstPersonCharacter* player = Cast<AFirstPersonCharacter>(otherActor))
+	{
+		GreetPlayer();
+	}
 }

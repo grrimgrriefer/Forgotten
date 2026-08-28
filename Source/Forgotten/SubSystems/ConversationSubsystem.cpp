@@ -106,3 +106,12 @@ void UConversationSubsystem::SubmitMessageFromPlayer(const FText& messageText) c
 
 	// TODO: Forward input to Voxta
 }
+void UConversationSubsystem::SubmitMessageFromNPC(const AConversableNPC* npc, const FText& messageText) const
+{
+	if (messageText.IsEmptyOrWhitespace() || !IsValid(npc))
+	{
+		return;
+	}
+
+	m_OnTranscriptEntryAdded.Broadcast(npc->GetCharacterName(), messageText);
+}

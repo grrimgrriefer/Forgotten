@@ -37,6 +37,7 @@ public:
 	AConversableNPC* GetNearestConversableNPCInRange(const ACharacter* player) const;
 
 	void SubmitMessageFromPlayer(const FText& messageText) const;
+	void SubmitMessageFromNPC(const AConversableNPC* npc, const FText& messageText) const;
 
 private:
 	UPROPERTY(Transient)
