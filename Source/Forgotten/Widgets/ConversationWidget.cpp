@@ -10,36 +10,6 @@
 #include "Framework/Application/SlateApplication.h"
 #include "TimerManager.h"
 
-void UConversationWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-
-	ASSERT_CHECK(m_transcriptScrollBox);
-	ASSERT_CHECK(m_inputTextBox);
-
-	m_inputTextBox->SetRenderOpacity(m_unfocusedInputOpacity);
-	m_inputTextBox->OnTextCommitted.RemoveDynamic(this, &UConversationWidget::OnInputTextCommitted);
-	m_inputTextBox->OnTextCommitted.AddDynamic(this, &UConversationWidget::OnInputTextCommitted);
-
-	SetVisibility(ESlateVisibility::Collapsed);
-}
-void UConversationWidget::NativeDestruct()
-{
-	ClearFadeTimer();
-
-	if (m_inputTextBox)
-	{
-		m_inputTextBox->OnTextCommitted.RemoveAll(this);
-	}
-
-	Super::NativeDestruct();
-}
-void UConversationWidget::OnAnimationFinished_Implementation(const UWidgetAnimation* animation)
-{
-	Super::OnAnimationFinished_Implementation(animation);
-
-
-}
 void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FText& messageText)
 {
 	const FText formattedText = FText::Format(NSLOCTEXT("Conversation", "TranscriptFormat", "{0}: {1}"), speakerName, messageText);
@@ -82,6 +52,8 @@ void UConversationWidget::SetTranscriptVisibility(const bool isVisible)
 }
 void UConversationWidget::FocusInput()
 {
+	SetOutOfRangeFeedbackVisibility(false);
+
 	SetVisibility(m_visibleValue);
 
 	ClearFadeTimer();
@@ -94,9 +66,7 @@ void UConversationWidget::FocusInput()
 }
 void UConversationWidget::UnfocusInput()
 {
-	ASSERT_CHECK(m_inputTextBox);
-	m_inputTextBox->SetText(FText::GetEmpty());
-	m_inputTextBox->SetRenderOpacity(m_unfocusedInputOpacity);
+	ClearInputFieldAndSetLowOpacity();
 
 	if (FSlateApplication::IsInitialized())
 	{
@@ -109,6 +79,56 @@ void UConversationWidget::UnfocusInput()
 bool UConversationWidget::IsInputFocused() const
 {
 	return m_inputTextBox && m_inputTextBox->HasKeyboardFocus();
+}
+void UConversationWidget::SetOutOfRangeFeedbackVisibility(bool isVisible)
+{
+	if (isVisible)
+	{
+		SetTranscriptVisibility(true);
+		ClearInputFieldAndSetLowOpacity();
+
+		ASSERT_CHECK(m_outOfRangeTextBlock);
+		m_outOfRangeTextBlock->SetText(m_outOfRangeMessage);
+		m_outOfRangeTextBlock->SetVisibility(m_visibleValue);
+
+		StartFadeTimer();
+	}
+	else
+	{
+		ASSERT_CHECK(m_outOfRangeTextBlock);
+		m_outOfRangeTextBlock->SetVisibility(m_hiddenValue);
+	}
+}
+void UConversationWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	ASSERT_CHECK(m_transcriptScrollBox);
+	ASSERT_CHECK(m_inputTextBox);
+
+	m_outOfRangeMessage = NSLOCTEXT("Conversation", "OutOfRange", "You are out of range to talk.");
+
+	m_inputTextBox->SetRenderOpacity(m_unfocusedInputOpacity);
+	m_inputTextBox->OnTextCommitted.RemoveDynamic(this, &UConversationWidget::OnInputTextCommitted);
+	m_inputTextBox->OnTextCommitted.AddDynamic(this, &UConversationWidget::OnInputTextCommitted);
+
+	SetOutOfRangeFeedbackVisibility(false);
+	SetVisibility(m_hiddenValue);
+}
+void UConversationWidget::NativeDestruct()
+{
+	ClearFadeTimer();
+
+	if (m_inputTextBox)
+	{
+		m_inputTextBox->OnTextCommitted.RemoveAll(this);
+	}
+
+	Super::NativeDestruct();
+}
+void UConversationWidget::OnAnimationFinished_Implementation(const UWidgetAnimation* animation)
+{
+	Super::OnAnimationFinished_Implementation(animation);
 }
 void UConversationWidget::StartFadeTimer()
 {
@@ -147,6 +167,12 @@ void UConversationWidget::SubmitCurrentInputText(const FText& text)
 	}
 	m_inputTextBox->SetText(FText::GetEmpty());
 	UnfocusInput();
+}
+void UConversationWidget::ClearInputFieldAndSetLowOpacity() const
+{
+	ASSERT_CHECK(m_inputTextBox);
+	m_inputTextBox->SetText(FText::GetEmpty());
+	m_inputTextBox->SetRenderOpacity(m_unfocusedInputOpacity);
 }
 void UConversationWidget::OnInputTextCommitted(const FText& text, ETextCommit::Type commitMethod)
 {

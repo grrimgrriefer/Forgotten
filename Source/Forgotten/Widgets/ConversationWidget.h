@@ -10,6 +10,7 @@
 class UButton;
 class UEditableTextBox;
 class UScrollBox;
+class UTextBlock;
 class UWidgetAnimation;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnConversationTextSubmitted, const FText&);
@@ -33,6 +34,7 @@ public:
 	void FocusInput();
 	void UnfocusInput();
 	bool IsInputFocused() const;
+	void SetOutOfRangeFeedbackVisibility(bool isVisible);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -43,6 +45,9 @@ protected:
 	TObjectPtr<UScrollBox> m_transcriptScrollBox;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UEditableTextBox> m_inputTextBox;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> m_outOfRangeTextBlock;
+
 	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	TObjectPtr<UWidgetAnimation> m_fadeOutAnimation;
 	UPROPERTY(Transient, meta = (BindWidgetAnim))
@@ -53,6 +58,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "UI effects")
 	float m_unfocusedInputOpacity = 0.4f;
 
+	UPROPERTY(EditAnywhere, Category = "UI Localization")
+	FText m_outOfRangeMessage;
+
 private:
 	const ESlateVisibility m_visibleValue = ESlateVisibility::SelfHitTestInvisible;
 	const ESlateVisibility m_hiddenValue = ESlateVisibility::Collapsed;
@@ -61,6 +69,7 @@ private:
 	void ClearFadeTimer();
 	void OnFadeTimerExpired();
 	void SubmitCurrentInputText(const FText& text);
+	void ClearInputFieldAndSetLowOpacity() const;
 
 	UFUNCTION()
 	void OnInputTextCommitted(const FText& text, ETextCommit::Type commitMethod);
