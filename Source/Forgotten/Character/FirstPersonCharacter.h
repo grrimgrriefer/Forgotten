@@ -61,7 +61,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> m_interactAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputAction> m_toggleChatAction;
+	TObjectPtr<UInputAction> m_triggerChatUiAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> m_focusChatAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -85,7 +85,7 @@ private:
 	void Move(const FInputActionValue& value);
 	void Look(const FInputActionValue& value);
 	void AttemptInteraction();
-	void ToggleChat();
+	void TriggerChatUi();
 	void FocusChat();
 	void OnChatFocusLost();
 	void ExitCurrentActivity();

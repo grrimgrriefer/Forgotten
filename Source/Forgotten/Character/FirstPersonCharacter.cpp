@@ -122,8 +122,8 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	enhancedInputComponent->BindAction(m_lookAction, ETriggerEvent::Triggered, this, &AFirstPersonCharacter::Look);
 	ASSERT_CHECK(m_interactAction);
 	enhancedInputComponent->BindAction(m_interactAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::AttemptInteraction);
-	ASSERT_CHECK(m_toggleChatAction);
-	enhancedInputComponent->BindAction(m_toggleChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ToggleChat);
+	ASSERT_CHECK(m_triggerChatUiAction);
+	enhancedInputComponent->BindAction(m_triggerChatUiAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::TriggerChatUi);
 	ASSERT_CHECK(m_focusChatAction);
 	enhancedInputComponent->BindAction(m_focusChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::FocusChat);
 	ASSERT_CHECK(m_exitAction);
@@ -241,10 +241,10 @@ void AFirstPersonCharacter::AttemptInteraction()
 		}
 	}
 }
-void AFirstPersonCharacter::ToggleChat()
+void AFirstPersonCharacter::TriggerChatUi()
 {
 	ASSERT_CHECK(m_chatWidget);
-	m_chatWidget->ToggleTranscriptVisibility();
+	m_chatWidget->SetTranscriptVisibility(true);
 }
 void AFirstPersonCharacter::FocusChat()
 {

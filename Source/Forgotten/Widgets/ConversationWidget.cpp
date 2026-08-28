@@ -8,8 +8,39 @@
 #include "Components/TextBlock.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Framework/Application/SlateApplication.h"
+#include "TimerManager.h"
 
-void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FText& messageText) const
+void UConversationWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	ASSERT_CHECK(m_transcriptScrollBox);
+	ASSERT_CHECK(m_inputTextBox);
+
+	m_inputTextBox->SetRenderOpacity(m_unfocusedInputOpacity);
+	m_inputTextBox->OnTextCommitted.RemoveDynamic(this, &UConversationWidget::OnInputTextCommitted);
+	m_inputTextBox->OnTextCommitted.AddDynamic(this, &UConversationWidget::OnInputTextCommitted);
+
+	SetVisibility(ESlateVisibility::Collapsed);
+}
+void UConversationWidget::NativeDestruct()
+{
+	ClearFadeTimer();
+
+	if (m_inputTextBox)
+	{
+		m_inputTextBox->OnTextCommitted.RemoveAll(this);
+	}
+
+	Super::NativeDestruct();
+}
+void UConversationWidget::OnAnimationFinished_Implementation(const UWidgetAnimation* animation)
+{
+	Super::OnAnimationFinished_Implementation(animation);
+
+
+}
+void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FText& messageText)
 {
 	const FText formattedText = FText::Format(NSLOCTEXT("Conversation", "TranscriptFormat", "{0}: {1}"), speakerName, messageText);
 
@@ -22,54 +53,90 @@ void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FTe
 	ASSERT_CHECK(m_transcriptScrollBox);
 	m_transcriptScrollBox->AddChild(newEntry);
 	m_transcriptScrollBox->ScrollToEnd();
-}
-void UConversationWidget::ToggleTranscriptVisibility()
-{
-	const ESlateVisibility currentVis = GetVisibility();
-	const ESlateVisibility newVis = (currentVis == ESlateVisibility::Collapsed || currentVis == ESlateVisibility::Hidden)
-										? ESlateVisibility::SelfHitTestInvisible
-										: ESlateVisibility::Collapsed;
 
-	SetVisibility(newVis);
+	SetTranscriptVisibility(true);
+}
+void UConversationWidget::SetTranscriptVisibility(const bool isVisible)
+{
+	if (isVisible)
+	{
+		SetVisibility(m_visibleValue);
+		ASSERT_CHECK(m_fadeInAnimation);
+		PlayAnimation(m_fadeInAnimation);
+
+		if (IsInputFocused())
+		{
+			ClearFadeTimer();
+		}
+		else
+		{
+			StartFadeTimer();
+		}
+	}
+	else
+	{
+		ClearFadeTimer();
+		ASSERT_CHECK(m_fadeOutAnimation);
+		PlayAnimation(m_fadeOutAnimation);
+	}
 }
 void UConversationWidget::FocusInput()
 {
-	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	SetVisibility(m_visibleValue);
+
+	ClearFadeTimer();
+	ASSERT_CHECK(m_fadeInAnimation);
+	PlayAnimation(m_fadeInAnimation);
+
 	ASSERT_CHECK(m_inputTextBox);
+	m_inputTextBox->SetRenderOpacity(1.0f);
 	m_inputTextBox->SetKeyboardFocus();
 }
 void UConversationWidget::UnfocusInput()
 {
 	ASSERT_CHECK(m_inputTextBox);
 	m_inputTextBox->SetText(FText::GetEmpty());
+	m_inputTextBox->SetRenderOpacity(m_unfocusedInputOpacity);
+
 	if (FSlateApplication::IsInitialized())
 	{
 		FSlateApplication::Get().ClearUserFocus(0);
 	}
 	m_OnChatFocusLost.Broadcast();
+
+	StartFadeTimer();
 }
 bool UConversationWidget::IsInputFocused() const
 {
 	return m_inputTextBox && m_inputTextBox->HasKeyboardFocus();
 }
-void UConversationWidget::NativeConstruct()
+void UConversationWidget::StartFadeTimer()
 {
-	Super::NativeConstruct();
-
-	ASSERT_CHECK(m_transcriptScrollBox);
-	ASSERT_CHECK(m_inputTextBox);
-
-	m_inputTextBox->OnTextCommitted.RemoveDynamic(this, &UConversationWidget::OnInputTextCommitted);
-	m_inputTextBox->OnTextCommitted.AddDynamic(this, &UConversationWidget::OnInputTextCommitted);
-}
-void UConversationWidget::NativeDestruct()
-{
-	if (m_inputTextBox)
+	const UWorld* world = GetWorld();
+	if (!IsValid(world))
 	{
-		m_inputTextBox->OnTextCommitted.RemoveAll(this);
+		return;
 	}
 
-	Super::NativeDestruct();
+	world->GetTimerManager().SetTimer(
+		m_fadeTimerHandle,
+		this,
+		&UConversationWidget::OnFadeTimerExpired,
+		m_fadeDelay,
+		false
+	);
+}
+void UConversationWidget::ClearFadeTimer()
+{
+	const UWorld* world = GetWorld();
+	if (IsValid(world))
+	{
+		world->GetTimerManager().ClearTimer(m_fadeTimerHandle);
+	}
+}
+void UConversationWidget::OnFadeTimerExpired()
+{
+	SetTranscriptVisibility(false);
 }
 void UConversationWidget::SubmitCurrentInputText(const FText& text)
 {
