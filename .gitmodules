@@ -1,0 +1,3 @@
+[submodule "Plugins/UnrealVoxta"]
+	path = Plugins/UnrealVoxta
+	url = git@azure-grriefy:v3/grrimgrriefer/UnrealVoxta/UnrealVoxta
