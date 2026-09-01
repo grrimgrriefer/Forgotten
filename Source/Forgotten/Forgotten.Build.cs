@@ -4,7 +4,7 @@ using UnrealBuildTool;
 
 public class Forgotten : ModuleRules
 {
-	public Forgotten(ReadOnlyTargetRules Target) : base(Target)
+	public Forgotten(ReadOnlyTargetRules target) : base(target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
@@ -19,10 +19,11 @@ public class Forgotten : ModuleRules
 			"GameplayTags",
 			"UMG",
 			"Slate",
-			"SlateCore"
+			"SlateCore",
+			"UnrealVoxta"
 		]);
 
-		if (Target.bBuildEditor)
+		if (target.bBuildEditor)
         {
             PrivateDependencyModuleNames.AddRange(["UnrealEd"]);
         }

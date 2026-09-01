@@ -78,6 +78,7 @@ protected:
 private:
 	void EnterFocusedConvoMode();
 	void ExitFocusedConvoMode();
+	bool IsPlayerInRangeForChat();
 
 	bool TryBindContextData(UObject* data);
 	bool TryUnbindContextData(UObject* data);

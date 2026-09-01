@@ -1,7 +1,6 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
 #include "MainStateTreeSubsystem.h"
-
 #include "Forgotten/StateTree/Schemas/MainStateTreeSchema.h"
 #include "StateTreeExecutionContext.h"
 #include "Forgotten/Utils/AssertMacros.h"
@@ -62,7 +61,7 @@ void UMainStateTreeSubsystem::Tick(const float deltaTime)
 }
 ETickableTickType UMainStateTreeSubsystem::GetTickableTickType() const
 {
-	return ETickableTickType::Always;
+	return ETickableTickType::Conditional;
 }
 TStatId UMainStateTreeSubsystem::GetStatId() const
 {

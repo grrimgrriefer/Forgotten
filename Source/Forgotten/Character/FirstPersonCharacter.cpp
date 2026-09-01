@@ -10,7 +10,7 @@
 #include "Engine/World.h"
 #include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/Character/ConversableNPC.h"
-#include "Forgotten/SubSystems/ConversationSubsystem.h"
+#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/ConversationSubsystem.h"
 #include "Forgotten/SubSystems/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
@@ -179,6 +179,23 @@ void AFirstPersonCharacter::Inspect3dInteractable(ASodaCanInteractable* sodaCanI
 		context.SendEvent(TAG_State_Start_Inspect3d, FConstStructView::Make(payload));
 	}
 }
+bool AFirstPersonCharacter::IsPlayerInRangeForChat()
+{
+	const UConversationSubsystem* conversationSubsystem = GetConversationSubsystem();
+	const AConversableNPC* npc = Cast<AConversableNPC>(conversationSubsystem->GetCurrentConversationNpc());
+
+	if (!IsValid(npc))
+	{
+		npc = Cast<AConversableNPC>(conversationSubsystem->TryGetNearestNPC(this));
+	}
+
+	if (IsValid(npc))
+	{
+		return npc->IsInRangeForChat(this);
+	}
+
+	return false;
+}
 bool AFirstPersonCharacter::TryBindContextData(UObject* data)
 {
 	return m_contextBinder.TryBindContextData(data);
@@ -245,9 +262,7 @@ void AFirstPersonCharacter::TriggerChatUi()
 {
 	ASSERT_CHECK(m_chatWidget);
 
-	const UConversationSubsystem* conversationSubsystem = GetConversationSubsystem();
-	ASSERT_CHECK(conversationSubsystem);
-	const bool inRange = conversationSubsystem && conversationSubsystem->IsPlayerInRangeForChat(this);
+	const bool inRange = IsPlayerInRangeForChat();
 
 	m_chatWidget->SetOutOfRangeFeedbackVisibility(!inRange);
 	if (inRange)
@@ -263,9 +278,7 @@ void AFirstPersonCharacter::FocusChat()
 		return;
 	}
 
-	const UConversationSubsystem* conversationSubsystem = GetConversationSubsystem();
-	ASSERT_CHECK(conversationSubsystem);
-	const bool inRange = conversationSubsystem && conversationSubsystem->IsPlayerInRangeForChat(this);
+	const bool inRange = IsPlayerInRangeForChat();
 
 	if (!inRange)
 	{
@@ -311,7 +324,7 @@ void AFirstPersonCharacter::UpdateInputState() const
 	const bool isChatFocused = IsValid(m_chatWidget) && m_chatWidget->IsInputFocused();
 
 	// TODO refactor this away, the Task should take care of its own input blocking
-	const bool inFocusedConvo = GetConversationSubsystem()->HasCurrentConversableNpc();
+	const bool inFocusedConvo = GetConversationSubsystem()->IsInOngoingConversation();
 
 	if (isChatFocused || inFocusedConvo)
 	{

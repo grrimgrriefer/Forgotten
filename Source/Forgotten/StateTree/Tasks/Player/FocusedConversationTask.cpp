@@ -7,8 +7,8 @@
 #include "Engine/World.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Character/ConversableNPC.h"
-#include "Forgotten/SubSystems/ConversationSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
+#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/ConversationSubsystem.h"
 
 FFocusedConversationTask::FFocusedConversationTask()
 {
@@ -37,7 +37,7 @@ EStateTreeRunStatus FFocusedConversationTask::EnterState(FStateTreeExecutionCont
 	UConversationSubsystem* conversationSubsystem = world->GetSubsystem<UConversationSubsystem>();
 
 	ASSERT_CHECK_RETURN(conversationSubsystem, EStateTreeRunStatus::Failed);
-	conversationSubsystem->SetCurrentConversableNpc(conversableNpc);
+	conversationSubsystem->StartConversation(conversableNpc);
 	playerCharacter->EnterFocusedConvoMode();
 
 	return EStateTreeRunStatus::Running;
@@ -56,7 +56,7 @@ void FFocusedConversationTask::ExitState(FStateTreeExecutionContext& context, co
 	const UWorld* world = context.GetWorld();
 	if (UConversationSubsystem* conversationSubsystem = world ? world->GetSubsystem<UConversationSubsystem>() : nullptr)
 	{
-		conversationSubsystem->SetCurrentConversableNpc(nullptr);
+		conversationSubsystem->StartConversation(nullptr);
 	}
 
 	if (playerCharacter)

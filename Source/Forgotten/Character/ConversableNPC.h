@@ -36,7 +36,6 @@ public:
 	bool IsInRangeForChat(const ACharacter* other) const;
 	float GetMaxChatDistance() const;
 	const FText& GetCharacterName() const;
-	void GreetPlayer() const;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -60,7 +59,5 @@ private:
 		UPrimitiveComponent* otherComp,
 		int32 otherBodyIndex,
 		bool bFromSweep,
-		const FHitResult& sweepResult) const;
-
-	FText m_tempGreetingMessage; // TODO: deleteme
+		const FHitResult& sweepResult);
 };
