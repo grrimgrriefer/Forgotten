@@ -92,12 +92,7 @@ bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 						TEXT("UMainStateTreeSubsystem: Level is being changed while sending a flowevent, this should not happen."));
 	ASSERT_CHECK_RETURN(IsValid(m_stateTreeAsset), false);
 
-	if (world->IsPreparingMapChange() || !IsValid(m_stateTreeAsset))
-	{
-		return false;
-	}
-
-	if (m_isRunning)
+	if (m_isRunning && world && world->IsPreparingMapChange() && !IsValid(m_stateTreeAsset))
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
 		if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
