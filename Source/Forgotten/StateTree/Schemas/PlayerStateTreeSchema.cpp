@@ -7,15 +7,15 @@
 #include "Forgotten/Character/ConversableNPC.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
 
-const FName UPlayerStateTreeSchema::m_PlayerBindingName = FName(TEXT("Player"));
-const FName UPlayerStateTreeSchema::m_ConversableNpcBindingName = FName(TEXT("ConversableNpc"));
+const FName UPlayerStateTreeSchema::PLAYER_BINDING_NAME = TEXT("Player");
+const FName UPlayerStateTreeSchema::CONVERSATION_NPC_BINDING_NAME = TEXT("ConversableNpc");
 
-UPlayerStateTreeSchema::UPlayerStateTreeSchema() : m_playerData(m_PlayerBindingName,
+UPlayerStateTreeSchema::UPlayerStateTreeSchema() : m_playerData(PLAYER_BINDING_NAME,
 																AFirstPersonCharacter::StaticClass(),
-																FGuid::NewDeterministicGuid(m_PlayerBindingName.ToString())),
-													m_conversableNpcData(m_ConversableNpcBindingName,
+																FGuid::NewDeterministicGuid(PLAYER_BINDING_NAME.ToString())),
+													m_conversableNpcData(CONVERSATION_NPC_BINDING_NAME,
 																		AConversableNPC::StaticClass(),
-																		FGuid::NewDeterministicGuid(m_ConversableNpcBindingName.ToString()))
+																		FGuid::NewDeterministicGuid(CONVERSATION_NPC_BINDING_NAME.ToString()))
 {
 	m_playerData.Requirement = EStateTreeExternalDataRequirement::Required;
 	m_conversableNpcData.Requirement = EStateTreeExternalDataRequirement::Optional;

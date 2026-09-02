@@ -16,14 +16,14 @@ class FORGOTTEN_API UPlayerStateTreeSchema : public UStateTreeSchema
 	GENERATED_BODY()
 
 public:
+	static const FName PLAYER_BINDING_NAME;
+	static const FName CONVERSATION_NPC_BINDING_NAME;
+
 	UPlayerStateTreeSchema();
 
 	virtual TConstArrayView<FStateTreeExternalDataDesc> GetContextDataDescs() const override;
 	virtual bool IsStructAllowed(const UScriptStruct* inScriptStruct) const override;
 	virtual bool IsExternalItemAllowed(const UStruct& inStruct) const override;
-
-	static const FName m_PlayerBindingName;
-	static const FName m_ConversableNpcBindingName;
 
 protected:
 	UPROPERTY()

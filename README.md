@@ -29,6 +29,7 @@ Mostly follows UE's condings standards with the following exceptions:
 * Class summary
 * Friend declarations
 * Public
+  * Statics
   * Using-declarations
   * Constructor
   * Delegates (not delegathandles)

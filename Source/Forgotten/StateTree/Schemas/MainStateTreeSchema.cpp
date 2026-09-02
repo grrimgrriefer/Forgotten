@@ -6,7 +6,7 @@
 #include "StateTreeEvaluatorBase.h"
 #include "StateTreeTaskBase.h"
 
-const FName UMainStateTreeSchema::m_SubsystemBindingName = FName(TEXT("Subsystem"));
+const FName UMainStateTreeSchema::m_SubsystemBindingName = TEXT("Subsystem");
 
 UMainStateTreeSchema::UMainStateTreeSchema() : m_subsystemData(m_SubsystemBindingName,
 																UMainStateTreeSubsystem::StaticClass(),
