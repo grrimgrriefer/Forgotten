@@ -6,7 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
-#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/ConversationSubsystem.h"
+#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/VoxtaClient.h"
 #include "Forgotten/Utils/AssertMacros.h"
 
 AConversableNPC::AConversableNPC()
@@ -37,7 +37,7 @@ void AConversableNPC::BeginPlay()
 	const UWorld* world = GetWorld();
 	ASSERT_CHECK(world);
 
-	UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
+	UVoxtaClient* conversationSubSystem = world->GetSubsystem<UVoxtaClient>();
 	ASSERT_CHECK(conversationSubSystem);
 	conversationSubSystem->RegisterNPC(this);
 }
@@ -45,7 +45,7 @@ void AConversableNPC::EndPlay(const EEndPlayReason::Type endPlayReason)
 {
 	if (const UWorld* world = GetWorld())
 	{
-		if (UConversationSubsystem* conversationSubsystem = world->GetSubsystem<UConversationSubsystem>())
+		if (UVoxtaClient* conversationSubsystem = world->GetSubsystem<UVoxtaClient>())
 		{
 			conversationSubsystem->UnregisterNPC(this);
 		}
@@ -115,7 +115,7 @@ void AConversableNPC::OnChatRangeBeginOverlap(
 		const UWorld* world = GetWorld();
 		ASSERT_CHECK(world);
 
-		UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
+		UVoxtaClient* conversationSubSystem = world->GetSubsystem<UVoxtaClient>();
 		ASSERT_CHECK(conversationSubSystem);
 		conversationSubSystem->StartConversation(this);
 	}

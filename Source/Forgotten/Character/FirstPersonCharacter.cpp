@@ -10,7 +10,7 @@
 #include "Engine/World.h"
 #include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/Character/ConversableNPC.h"
-#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/ConversationSubsystem.h"
+#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/VoxtaClient.h"
 #include "Forgotten/SubSystems/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
@@ -53,8 +53,8 @@ void AFirstPersonCharacter::BeginPlay()
 	m_chatWidget->AddToViewport();
 	m_chatWidget->m_OnChatFocusLost.AddUObject(this, &AFirstPersonCharacter::OnChatFocusLost);
 
-	UConversationSubsystem* conversationSubSystem = GetConversationSubsystem();
-	m_chatWidget->m_OnTextSubmitted.AddUObject(conversationSubSystem, &UConversationSubsystem::SubmitMessageFromPlayer);
+	UVoxtaClient* conversationSubSystem = GetConversationSubsystem();
+	m_chatWidget->m_OnTextSubmitted.AddUObject(conversationSubSystem, &UVoxtaClient::SubmitMessageFromPlayer);
 	conversationSubSystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
 
 	TryBindContextData(this);
@@ -84,7 +84,7 @@ void AFirstPersonCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 
 	if (m_chatWidget)
 	{
-		if (UConversationSubsystem* conversationSubSystem = GetConversationSubsystem(true))
+		if (UVoxtaClient* conversationSubSystem = GetConversationSubsystem(true))
 		{
 			conversationSubSystem->m_OnTranscriptEntryAdded.RemoveAll(m_chatWidget.Get());
 			m_chatWidget->m_OnTextSubmitted.RemoveAll(conversationSubSystem);
@@ -181,7 +181,7 @@ void AFirstPersonCharacter::Inspect3dInteractable(ASodaCanInteractable* sodaCanI
 }
 bool AFirstPersonCharacter::IsPlayerInRangeForChat()
 {
-	const UConversationSubsystem* conversationSubsystem = GetConversationSubsystem();
+	const UVoxtaClient* conversationSubsystem = GetConversationSubsystem();
 	const AConversableNPC* npc = Cast<AConversableNPC>(conversationSubsystem->GetCurrentConversationNpc());
 
 	if (!IsValid(npc))
@@ -347,7 +347,7 @@ void AFirstPersonCharacter::UpdateInputState() const
 		playerController->SetInputMode(gameMode);
 	}
 }
-UConversationSubsystem* AFirstPersonCharacter::GetConversationSubsystem(const bool allowNullptr) const
+UVoxtaClient* AFirstPersonCharacter::GetConversationSubsystem(const bool allowNullptr) const
 {
 	const UWorld* world = GetWorld();
 	if (allowNullptr && !IsValid(world))
@@ -355,7 +355,7 @@ UConversationSubsystem* AFirstPersonCharacter::GetConversationSubsystem(const bo
 		return nullptr;
 	}
 	ASSERT_CHECK_RETURN(world, nullptr);
-	UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
+	UVoxtaClient* conversationSubSystem = world->GetSubsystem<UVoxtaClient>();
 	if (allowNullptr && !IsValid(conversationSubSystem))
 	{
 		return nullptr;
