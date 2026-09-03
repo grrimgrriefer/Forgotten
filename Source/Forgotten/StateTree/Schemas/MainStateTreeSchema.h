@@ -7,8 +7,6 @@
 #include "StateTreeSchema.h"
 #include "MainStateTreeSchema.generated.h"
 
-class UMainStateTreeSubsystem;
-
 /**
  * Custom schema for the main StateTree
  */
