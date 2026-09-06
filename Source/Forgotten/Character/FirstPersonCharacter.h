@@ -11,7 +11,7 @@
 #include "Forgotten/Interactables/Implementations/SodaCanInteractable.h"
 #include "FirstPersonCharacter.generated.h"
 
-class UVoxtaClient;
+class UCharacterSubsystem;
 class AConversableNPC;
 class UCameraComponent;
 class UInputMappingContext;
@@ -92,7 +92,7 @@ private:
 	void ExitCurrentActivity();
 	void UpdateInputState() const;
 
-	UVoxtaClient* GetConversationSubsystem(const bool allowNullptr = false) const;
+	UCharacterSubsystem* GetConversationSubsystem(const bool allowNullptr = false) const;
 
 	UPROPERTY()
 	FStateTreeInstanceData m_stateTreeInstanceData;

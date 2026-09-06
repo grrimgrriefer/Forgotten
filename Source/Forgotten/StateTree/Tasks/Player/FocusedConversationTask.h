@@ -14,7 +14,7 @@ struct FFocusedConversationPayload
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	UPROPERTY(BlueprintReadOnly, Category = "Data")
 	TObjectPtr<AConversableNPC> m_ConversableNpc = nullptr;
 };
 

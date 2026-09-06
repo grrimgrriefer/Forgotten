@@ -8,7 +8,7 @@
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Character/ConversableNPC.h"
 #include "Forgotten/Utils/AssertMacros.h"
-#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/VoxtaClient.h"
+#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/CharacterSubsystem.h"
 
 FFocusedConversationTask::FFocusedConversationTask()
 {
@@ -34,7 +34,7 @@ EStateTreeRunStatus FFocusedConversationTask::EnterState(FStateTreeExecutionCont
 	playerCharacter->TryBindContextData(conversableNpc);
 
 	const UWorld* world = context.GetWorld();
-	UVoxtaClient* conversationSubsystem = world->GetSubsystem<UVoxtaClient>();
+	UCharacterSubsystem* conversationSubsystem = world->GetSubsystem<UCharacterSubsystem>();
 
 	ASSERT_CHECK_RETURN(conversationSubsystem, EStateTreeRunStatus::Failed);
 	conversationSubsystem->StartConversation(conversableNpc);
@@ -54,7 +54,7 @@ void FFocusedConversationTask::ExitState(FStateTreeExecutionContext& context, co
 	}
 
 	const UWorld* world = context.GetWorld();
-	if (UVoxtaClient* conversationSubsystem = world ? world->GetSubsystem<UVoxtaClient>() : nullptr)
+	if (UCharacterSubsystem* conversationSubsystem = world ? world->GetSubsystem<UCharacterSubsystem>() : nullptr)
 	{
 		conversationSubsystem->StartConversation(nullptr);
 	}
