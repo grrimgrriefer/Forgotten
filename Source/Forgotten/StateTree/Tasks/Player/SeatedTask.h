@@ -14,7 +14,7 @@ struct FSeatedPayload
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, Category = "Data")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	TObjectPtr<AChairInteractable> m_Chair = nullptr;
 };
 

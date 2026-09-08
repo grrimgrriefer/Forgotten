@@ -16,10 +16,11 @@ struct FInspect3dPayload
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, Category = "Inspect3d")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inspect3d")
 	TObjectPtr<ASodaCanInteractable> m_Inspectable = nullptr;
-	UPROPERTY(BlueprintReadOnly, Category = "Inspect3d")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inspect3d")
 	FVector m_PreviewOffset = FVector(50.0f, 0.0f, -10.0f);
+
 };
 
 USTRUCT()
