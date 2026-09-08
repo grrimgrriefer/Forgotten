@@ -92,7 +92,7 @@ private:
 	void ExitCurrentActivity();
 	void UpdateInputState() const;
 
-	UCharacterSubsystem* GetConversationSubsystem(const bool allowNullptr = false) const;
+	UCharacterSubsystem* GetCharacterSubsystem(const bool allowNullptr = false) const;
 
 	UPROPERTY()
 	FStateTreeInstanceData m_stateTreeInstanceData;

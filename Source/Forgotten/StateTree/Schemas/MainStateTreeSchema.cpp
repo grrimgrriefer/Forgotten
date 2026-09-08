@@ -6,12 +6,13 @@
 #include "StateTreeEvaluatorBase.h"
 #include "StateTreeTaskBase.h"
 
-const FName UMainStateTreeSchema::m_SubsystemBindingName = TEXT("Subsystem");
+const FName UMainStateTreeSchema::MAIN_STATE_TREE_SUBSYSTEM_BINDING_NAME = TEXT("MAIN_STATE_TREE_SUBSYSTEM_BINDING");
 
-UMainStateTreeSchema::UMainStateTreeSchema() : m_subsystemData(m_SubsystemBindingName,
+UMainStateTreeSchema::UMainStateTreeSchema() : m_subsystemData(MAIN_STATE_TREE_SUBSYSTEM_BINDING_NAME,
 																UMainStateTreeSubsystem::StaticClass(),
-																FGuid::NewDeterministicGuid(m_SubsystemBindingName.ToString()))
+																FGuid::NewDeterministicGuid(MAIN_STATE_TREE_SUBSYSTEM_BINDING_NAME.ToString()))
 {
+	m_subsystemData.Requirement = EStateTreeExternalDataRequirement::Required;
 	m_contextDescs = { m_subsystemData };
 }
 TConstArrayView<FStateTreeExternalDataDesc> UMainStateTreeSchema::GetContextDataDescs() const

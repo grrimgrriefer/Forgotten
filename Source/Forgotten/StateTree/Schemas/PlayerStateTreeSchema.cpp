@@ -6,21 +6,28 @@
 #include "StateTreeTaskBase.h"
 #include "Forgotten/Character/ConversableNPC.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
+#include "SubSystems/CharacterSubsystem.h"
+#include "Subsystems/GameInstanceSubsystem.h"
 
-const FName UPlayerStateTreeSchema::PLAYER_BINDING_NAME = TEXT("Player");
-const FName UPlayerStateTreeSchema::CONVERSATION_NPC_BINDING_NAME = TEXT("ConversableNpc");
+const FName UPlayerStateTreeSchema::PLAYER_BINDING_NAME = TEXT("PLAYER_BINDING");
+const FName UPlayerStateTreeSchema::CONVERSATION_NPC_BINDING_NAME = TEXT("CONVERSATION_NPC_BINDING");
+const FName UPlayerStateTreeSchema::CHARACTER_SUBSYSTEM_BINDING_NAME = TEXT("CHARACTER_SUBSYSTEM_BINDING");
 
 UPlayerStateTreeSchema::UPlayerStateTreeSchema() : m_playerData(PLAYER_BINDING_NAME,
 																AFirstPersonCharacter::StaticClass(),
 																FGuid::NewDeterministicGuid(PLAYER_BINDING_NAME.ToString())),
 													m_conversableNpcData(CONVERSATION_NPC_BINDING_NAME,
 																		AConversableNPC::StaticClass(),
-																		FGuid::NewDeterministicGuid(CONVERSATION_NPC_BINDING_NAME.ToString()))
+																		FGuid::NewDeterministicGuid(CONVERSATION_NPC_BINDING_NAME.ToString())),
+													m_characterSubsystemData(CHARACTER_SUBSYSTEM_BINDING_NAME,
+																		UCharacterSubsystem::StaticClass(),
+																		FGuid::NewDeterministicGuid(CHARACTER_SUBSYSTEM_BINDING_NAME.ToString()))
 {
 	m_playerData.Requirement = EStateTreeExternalDataRequirement::Required;
 	m_conversableNpcData.Requirement = EStateTreeExternalDataRequirement::Optional;
+	m_characterSubsystemData.Requirement = EStateTreeExternalDataRequirement::Required;
 
-	m_contextDescs = { m_playerData, m_conversableNpcData };
+	m_contextDescs = { m_playerData, m_conversableNpcData, m_characterSubsystemData };
 }
 TConstArrayView<FStateTreeExternalDataDesc> UPlayerStateTreeSchema::GetContextDataDescs() const
 {
@@ -36,7 +43,8 @@ bool UPlayerStateTreeSchema::IsExternalItemAllowed(const UStruct& inStruct) cons
 {
 	if (const UClass* itemClass = Cast<const UClass>(&inStruct))
 	{
-		return itemClass->IsChildOf(ACharacter::StaticClass());
+		return itemClass->IsChildOf(ACharacter::StaticClass())
+			|| itemClass->IsChildOf(UCharacterSubsystem::StaticClass());
 	}
 	return false;
 }

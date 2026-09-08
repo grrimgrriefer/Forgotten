@@ -124,6 +124,7 @@ void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, 
 		return;
 	}
 
+	TryBindContextData(this);
 	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
 	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
 	{

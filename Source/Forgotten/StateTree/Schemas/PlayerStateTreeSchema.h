@@ -18,6 +18,7 @@ class FORGOTTEN_API UPlayerStateTreeSchema : public UStateTreeSchema
 public:
 	static const FName PLAYER_BINDING_NAME;
 	static const FName CONVERSATION_NPC_BINDING_NAME;
+	static const FName CHARACTER_SUBSYSTEM_BINDING_NAME;
 
 	UPlayerStateTreeSchema();
 
@@ -30,6 +31,8 @@ protected:
 	FStateTreeExternalDataDesc m_playerData;
 	UPROPERTY()
 	FStateTreeExternalDataDesc m_conversableNpcData;
+	UPROPERTY()
+	FStateTreeExternalDataDesc m_characterSubsystemData;
 
 	TArray<FStateTreeExternalDataDesc> m_contextDescs;
 };

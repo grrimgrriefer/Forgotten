@@ -37,17 +37,17 @@ void AConversableNPC::BeginPlay()
 	const UWorld* world = GetWorld();
 	ASSERT_CHECK(world);
 
-	UCharacterSubsystem* conversationSubSystem = world->GetSubsystem<UCharacterSubsystem>();
-	ASSERT_CHECK(conversationSubSystem);
-	conversationSubSystem->RegisterNPC(this);
+	UCharacterSubsystem* characterSubsystem = world->GetSubsystem<UCharacterSubsystem>();
+	ASSERT_CHECK(characterSubsystem);
+	characterSubsystem->RegisterNPC(this);
 }
 void AConversableNPC::EndPlay(const EEndPlayReason::Type endPlayReason)
 {
 	if (const UWorld* world = GetWorld())
 	{
-		if (UCharacterSubsystem* conversationSubsystem = world->GetSubsystem<UCharacterSubsystem>())
+		if (UCharacterSubsystem* characterSubsystem = world->GetSubsystem<UCharacterSubsystem>())
 		{
-			conversationSubsystem->UnregisterNPC(this);
+			characterSubsystem->UnregisterNPC(this);
 		}
 	}
 
@@ -115,8 +115,8 @@ void AConversableNPC::OnChatRangeBeginOverlap(
 		const UWorld* world = GetWorld();
 		ASSERT_CHECK(world);
 
-		UCharacterSubsystem* conversationSubSystem = world->GetSubsystem<UCharacterSubsystem>();
-		ASSERT_CHECK(conversationSubSystem);
-		conversationSubSystem->StartConversation(this);
+		UCharacterSubsystem* characterSubsystem = world->GetSubsystem<UCharacterSubsystem>();
+		ASSERT_CHECK(characterSubsystem);
+		characterSubsystem->StartConversation(this);
 	}
 }

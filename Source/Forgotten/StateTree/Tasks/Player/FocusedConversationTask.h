@@ -6,6 +6,7 @@
 #include "StateTreeTaskBase.h"
 #include "FocusedConversationTask.generated.h"
 
+class UCharacterSubsystem;
 class AFirstPersonCharacter;
 class AConversableNPC;
 
@@ -47,4 +48,5 @@ struct FORGOTTEN_API FFocusedConversationTask : public FStateTreeTaskBase
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& context, const float deltaTime) const override;
 
 	TStateTreeExternalDataHandle<AFirstPersonCharacter> m_PlayerCharacterHandle;
+	TStateTreeExternalDataHandle<UCharacterSubsystem> m_CharacterSubsystemHandle;
 };
