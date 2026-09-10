@@ -10,7 +10,6 @@
 #include "Engine/World.h"
 #include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/Character/ConversableNPC.h"
-#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/CharacterSubsystem.h"
 #include "Forgotten/SubSystems/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
@@ -18,6 +17,7 @@
 #include "Forgotten/StateTree/Tasks/Player/FocusedConversationTask.h"
 #include "Forgotten/StateTree/Tasks/Player/Inspect3dTask.h"
 #include "Forgotten/StateTree/Tasks/Player/SeatedTask.h"
+#include "SubSystems/CharacterSubsystem.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {

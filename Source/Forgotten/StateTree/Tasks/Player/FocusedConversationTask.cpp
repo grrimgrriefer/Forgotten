@@ -7,7 +7,7 @@
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Character/ConversableNPC.h"
 #include "Forgotten/Utils/AssertMacros.h"
-#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/CharacterSubsystem.h"
+#include "SubSystems/CharacterSubsystem.h"
 
 FFocusedConversationTask::FFocusedConversationTask()
 {

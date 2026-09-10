@@ -6,8 +6,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
-#include "../Plugins/UnrealVoxta/Source/UnrealVoxta/Public/SubSystems/CharacterSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
+#include "SubSystems/CharacterSubsystem.h"
 
 AConversableNPC::AConversableNPC()
 {
