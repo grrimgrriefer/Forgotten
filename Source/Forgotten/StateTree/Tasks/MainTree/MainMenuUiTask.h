@@ -9,9 +9,6 @@
 
 class UMainMenuWidget;
 
-/**
- * Holds a reference to the instantiated Main Menu widget
- */
 USTRUCT()
 struct FMainMenuUiTaskInstanceData
 {

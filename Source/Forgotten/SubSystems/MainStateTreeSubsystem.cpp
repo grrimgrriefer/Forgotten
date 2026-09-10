@@ -1,7 +1,6 @@
 // Copyright(c) 2026 grrimgrriefer & DZnnah, see LICENSE for details.
 
 #include "MainStateTreeSubsystem.h"
-
 #include "Forgotten/StateTree/Schemas/MainStateTreeSchema.h"
 #include "StateTreeExecutionContext.h"
 #include "Forgotten/Utils/AssertMacros.h"
@@ -62,7 +61,7 @@ void UMainStateTreeSubsystem::Tick(const float deltaTime)
 }
 ETickableTickType UMainStateTreeSubsystem::GetTickableTickType() const
 {
-	return ETickableTickType::Always;
+	return ETickableTickType::Conditional;
 }
 TStatId UMainStateTreeSubsystem::GetStatId() const
 {
@@ -93,12 +92,7 @@ bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 						TEXT("UMainStateTreeSubsystem: Level is being changed while sending a flowevent, this should not happen."));
 	ASSERT_CHECK_RETURN(IsValid(m_stateTreeAsset), false);
 
-	if (world->IsPreparingMapChange() || !IsValid(m_stateTreeAsset))
-	{
-		return false;
-	}
-
-	if (m_isRunning)
+	if (m_isRunning && world && !world->IsPreparingMapChange() && IsValid(m_stateTreeAsset))
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
 		if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
@@ -130,6 +124,7 @@ void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, 
 		return;
 	}
 
+	TryBindContextData(this);
 	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
 	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
 	{

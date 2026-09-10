@@ -4,11 +4,10 @@
 #include "StateTreeExecutionContext.h"
 #include "StateTreeLinker.h"
 #include "Camera/CameraComponent.h"
-#include "Engine/World.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Character/ConversableNPC.h"
-#include "Forgotten/SubSystems/ConversationSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
+#include "SubSystems/CharacterSubsystem.h"
 
 FFocusedConversationTask::FFocusedConversationTask()
 {
@@ -21,29 +20,28 @@ const UScriptStruct* FFocusedConversationTask::GetInstanceDataType() const
 bool FFocusedConversationTask::Link(FStateTreeLinker& linker)
 {
 	linker.LinkExternalData(m_PlayerCharacterHandle);
+	linker.LinkExternalData(m_CharacterSubsystemHandle);
 	return true;
 }
 EStateTreeRunStatus FFocusedConversationTask::EnterState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
+	UCharacterSubsystem* characterSubsystem = context.GetExternalDataPtr(m_CharacterSubsystemHandle);
 	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
 	AConversableNPC* conversableNpc = instanceData.m_ConversableNpc;
 
+	ASSERT_CHECK_RETURN(characterSubsystem, EStateTreeRunStatus::Failed);
 	ASSERT_CHECK_RETURN(playerCharacter, EStateTreeRunStatus::Failed);
 	ASSERT_CHECK_RETURN(conversableNpc, EStateTreeRunStatus::Failed);
 	playerCharacter->TryBindContextData(conversableNpc);
-
-	const UWorld* world = context.GetWorld();
-	UConversationSubsystem* conversationSubsystem = world->GetSubsystem<UConversationSubsystem>();
-
-	ASSERT_CHECK_RETURN(conversationSubsystem, EStateTreeRunStatus::Failed);
-	conversationSubsystem->SetCurrentConversableNpc(conversableNpc);
+	characterSubsystem->StartConversation(conversableNpc);
 	playerCharacter->EnterFocusedConvoMode();
 
 	return EStateTreeRunStatus::Running;
 }
 void FFocusedConversationTask::ExitState(FStateTreeExecutionContext& context, const FStateTreeTransitionResult& transitions) const
 {
+	UCharacterSubsystem* characterSubsystem = context.GetExternalDataPtr(m_CharacterSubsystemHandle);
 	AFirstPersonCharacter* playerCharacter = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	const FInstanceDataType& instanceData = context.GetInstanceData(*this);
 	AConversableNPC* conversableNpc = instanceData.m_ConversableNpc;
@@ -53,10 +51,9 @@ void FFocusedConversationTask::ExitState(FStateTreeExecutionContext& context, co
 		playerCharacter->TryUnbindContextData(conversableNpc);
 	}
 
-	const UWorld* world = context.GetWorld();
-	if (UConversationSubsystem* conversationSubsystem = world ? world->GetSubsystem<UConversationSubsystem>() : nullptr)
+	if (characterSubsystem)
 	{
-		conversationSubsystem->SetCurrentConversableNpc(nullptr);
+		characterSubsystem->StartConversation(nullptr);
 	}
 
 	if (playerCharacter)

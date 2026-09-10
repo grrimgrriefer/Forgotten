@@ -10,7 +10,6 @@
 #include "Engine/World.h"
 #include "Forgotten/CustomGameplayTags.h"
 #include "Forgotten/Character/ConversableNPC.h"
-#include "Forgotten/SubSystems/ConversationSubsystem.h"
 #include "Forgotten/SubSystems/MainStateTreeSubsystem.h"
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Forgotten/Widgets/ConversationWidget.h"
@@ -18,6 +17,7 @@
 #include "Forgotten/StateTree/Tasks/Player/FocusedConversationTask.h"
 #include "Forgotten/StateTree/Tasks/Player/Inspect3dTask.h"
 #include "Forgotten/StateTree/Tasks/Player/SeatedTask.h"
+#include "SubSystems/CharacterSubsystem.h"
 
 AFirstPersonCharacter::AFirstPersonCharacter()
 {
@@ -53,11 +53,12 @@ void AFirstPersonCharacter::BeginPlay()
 	m_chatWidget->AddToViewport();
 	m_chatWidget->m_OnChatFocusLost.AddUObject(this, &AFirstPersonCharacter::OnChatFocusLost);
 
-	UConversationSubsystem* conversationSubSystem = GetConversationSubsystem();
-	m_chatWidget->m_OnTextSubmitted.AddUObject(conversationSubSystem, &UConversationSubsystem::SubmitMessageFromPlayer);
-	conversationSubSystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
+	UCharacterSubsystem* characterSubsystem = GetCharacterSubsystem();
+	m_chatWidget->m_OnTextSubmitted.AddUObject(characterSubsystem, &UCharacterSubsystem::SubmitMessageFromPlayer);
+	characterSubsystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
 
 	TryBindContextData(this);
+	TryBindContextData(characterSubsystem);
 
 	ASSERT_CHECK(m_stateTreeAsset);
 	FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_stateTreeInstanceData);
@@ -84,10 +85,10 @@ void AFirstPersonCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 
 	if (m_chatWidget)
 	{
-		if (UConversationSubsystem* conversationSubSystem = GetConversationSubsystem(true))
+		if (UCharacterSubsystem* characterSubsystem = GetCharacterSubsystem(true))
 		{
-			conversationSubSystem->m_OnTranscriptEntryAdded.RemoveAll(m_chatWidget.Get());
-			m_chatWidget->m_OnTextSubmitted.RemoveAll(conversationSubSystem);
+			characterSubsystem->m_OnTranscriptEntryAdded.RemoveAll(m_chatWidget.Get());
+			m_chatWidget->m_OnTextSubmitted.RemoveAll(characterSubsystem);
 		}
 
 		m_chatWidget->RemoveFromParent();
@@ -179,6 +180,23 @@ void AFirstPersonCharacter::Inspect3dInteractable(ASodaCanInteractable* sodaCanI
 		context.SendEvent(TAG_State_Start_Inspect3d, FConstStructView::Make(payload));
 	}
 }
+bool AFirstPersonCharacter::IsPlayerInRangeForChat()
+{
+	const UCharacterSubsystem* characterSubsystem = GetCharacterSubsystem();
+	const AConversableNPC* npc = Cast<AConversableNPC>(characterSubsystem->GetCurrentConversationNpc());
+
+	if (!IsValid(npc))
+	{
+		npc = Cast<AConversableNPC>(characterSubsystem->TryGetNearestNPC(this));
+	}
+
+	if (IsValid(npc))
+	{
+		return npc->IsInRangeForChat(this);
+	}
+
+	return false;
+}
 bool AFirstPersonCharacter::TryBindContextData(UObject* data)
 {
 	return m_contextBinder.TryBindContextData(data);
@@ -245,9 +263,7 @@ void AFirstPersonCharacter::TriggerChatUi()
 {
 	ASSERT_CHECK(m_chatWidget);
 
-	const UConversationSubsystem* conversationSubsystem = GetConversationSubsystem();
-	ASSERT_CHECK(conversationSubsystem);
-	const bool inRange = conversationSubsystem && conversationSubsystem->IsPlayerInRangeForChat(this);
+	const bool inRange = IsPlayerInRangeForChat();
 
 	m_chatWidget->SetOutOfRangeFeedbackVisibility(!inRange);
 	if (inRange)
@@ -263,9 +279,7 @@ void AFirstPersonCharacter::FocusChat()
 		return;
 	}
 
-	const UConversationSubsystem* conversationSubsystem = GetConversationSubsystem();
-	ASSERT_CHECK(conversationSubsystem);
-	const bool inRange = conversationSubsystem && conversationSubsystem->IsPlayerInRangeForChat(this);
+	const bool inRange = IsPlayerInRangeForChat();
 
 	if (!inRange)
 	{
@@ -311,7 +325,7 @@ void AFirstPersonCharacter::UpdateInputState() const
 	const bool isChatFocused = IsValid(m_chatWidget) && m_chatWidget->IsInputFocused();
 
 	// TODO refactor this away, the Task should take care of its own input blocking
-	const bool inFocusedConvo = GetConversationSubsystem()->HasCurrentConversableNpc();
+	const bool inFocusedConvo = GetCharacterSubsystem()->IsInOngoingConversation();
 
 	if (isChatFocused || inFocusedConvo)
 	{
@@ -334,7 +348,7 @@ void AFirstPersonCharacter::UpdateInputState() const
 		playerController->SetInputMode(gameMode);
 	}
 }
-UConversationSubsystem* AFirstPersonCharacter::GetConversationSubsystem(const bool allowNullptr) const
+UCharacterSubsystem* AFirstPersonCharacter::GetCharacterSubsystem(const bool allowNullptr) const
 {
 	const UWorld* world = GetWorld();
 	if (allowNullptr && !IsValid(world))
@@ -342,7 +356,7 @@ UConversationSubsystem* AFirstPersonCharacter::GetConversationSubsystem(const bo
 		return nullptr;
 	}
 	ASSERT_CHECK_RETURN(world, nullptr);
-	UConversationSubsystem* conversationSubSystem = world->GetSubsystem<UConversationSubsystem>();
+	UCharacterSubsystem* conversationSubSystem = world->GetSubsystem<UCharacterSubsystem>();
 	if (allowNullptr && !IsValid(conversationSubSystem))
 	{
 		return nullptr;

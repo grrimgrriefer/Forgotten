@@ -11,7 +11,7 @@
 #include "Forgotten/Interactables/Implementations/SodaCanInteractable.h"
 #include "FirstPersonCharacter.generated.h"
 
-class UConversationSubsystem;
+class UCharacterSubsystem;
 class AConversableNPC;
 class UCameraComponent;
 class UInputMappingContext;
@@ -78,6 +78,7 @@ protected:
 private:
 	void EnterFocusedConvoMode();
 	void ExitFocusedConvoMode();
+	bool IsPlayerInRangeForChat();
 
 	bool TryBindContextData(UObject* data);
 	bool TryUnbindContextData(UObject* data);
@@ -91,7 +92,7 @@ private:
 	void ExitCurrentActivity();
 	void UpdateInputState() const;
 
-	UConversationSubsystem* GetConversationSubsystem(const bool allowNullptr = false) const;
+	UCharacterSubsystem* GetCharacterSubsystem(const bool allowNullptr = false) const;
 
 	UPROPERTY()
 	FStateTreeInstanceData m_stateTreeInstanceData;
