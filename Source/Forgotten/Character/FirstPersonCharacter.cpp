@@ -134,6 +134,10 @@ UCameraComponent* AFirstPersonCharacter::GetCameraComponent() const
 {
 	return m_cameraComponent;
 }
+float AFirstPersonCharacter::GetCameraInterpSpeed() const
+{
+	return m_cameraInterpSpeed;
+}
 void AFirstPersonCharacter::StartFocusedConversation(AConversableNPC* conversableNpc)
 {
 	if (!m_isStateTreeRunning || !IsValid(conversableNpc))
@@ -164,9 +168,9 @@ void AFirstPersonCharacter::SitDown(AChairInteractable* chairInteractable)
 		context.SendEvent(TAG_State_Start_Seated, FConstStructView::Make(payload));
 	}
 }
-void AFirstPersonCharacter::Inspect3dInteractable(ASodaCanInteractable* sodaCanInteractable)
+void AFirstPersonCharacter::Inspect3dInteractable(AGenericInspectable* genericInspectable)
 {
-	if (!m_isStateTreeRunning || !IsValid(sodaCanInteractable))
+	if (!m_isStateTreeRunning || !IsValid(genericInspectable))
 	{
 		return;
 	}
@@ -175,7 +179,7 @@ void AFirstPersonCharacter::Inspect3dInteractable(ASodaCanInteractable* sodaCanI
 	if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
 	{
 		FInspect3dPayload payload;
-		payload.m_Inspectable = sodaCanInteractable;
+		payload.m_Inspectable = genericInspectable;
 		payload.m_PreviewOffset = FVector(45.0f, 0.0f, -8.0f);
 		context.SendEvent(TAG_State_Start_Inspect3d, FConstStructView::Make(payload));
 	}

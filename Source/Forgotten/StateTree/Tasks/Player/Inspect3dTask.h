@@ -6,7 +6,7 @@
 #include "StateTreeTaskBase.h"
 #include "Inspect3dTask.generated.h"
 
-class ASodaCanInteractable;
+class AGenericInspectable;
 class UStaticMesh;
 class AFirstPersonCharacter;
 class UStaticMeshComponent;
@@ -17,7 +17,7 @@ struct FInspect3dPayload
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inspect3d")
-	TObjectPtr<ASodaCanInteractable> m_Inspectable = nullptr;
+	TObjectPtr<AGenericInspectable> m_Inspectable = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inspect3d")
 	FVector m_PreviewOffset = FVector(50.0f, 0.0f, -10.0f);
 
@@ -29,7 +29,7 @@ struct FInspect3dTaskInstanceData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<ASodaCanInteractable> m_Inspectable = nullptr;
+	TObjectPtr<AGenericInspectable> m_Inspectable = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	FVector m_PreviewOffset = FVector(50.0f, 0.0f, -10.0f);
 

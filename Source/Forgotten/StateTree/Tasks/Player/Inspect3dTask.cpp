@@ -26,7 +26,7 @@ EStateTreeRunStatus FInspect3dTask::EnterState(FStateTreeExecutionContext& conte
 {
 	AFirstPersonCharacter* player = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
-	ASodaCanInteractable* interactable = instanceData.m_Inspectable;
+	AGenericInspectable* interactable = instanceData.m_Inspectable;
 
 	ASSERT_CHECK_RETURN(player, EStateTreeRunStatus::Failed);
 	ASSERT_CHECK_RETURN(interactable, EStateTreeRunStatus::Failed);
@@ -63,7 +63,7 @@ void FInspect3dTask::ExitState(FStateTreeExecutionContext& context, const FState
 {
 	const AFirstPersonCharacter* player = context.GetExternalDataPtr(m_PlayerCharacterHandle);
 	FInstanceDataType& instanceData = context.GetInstanceData(*this);
-	ASodaCanInteractable* interactable = instanceData.m_Inspectable;
+	AGenericInspectable* interactable = instanceData.m_Inspectable;
 
 	if (instanceData.m_PreviewMeshComp)
 	{

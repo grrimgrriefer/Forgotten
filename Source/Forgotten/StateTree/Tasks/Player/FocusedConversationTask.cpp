@@ -80,7 +80,7 @@ EStateTreeRunStatus FFocusedConversationTask::Tick(FStateTreeExecutionContext& c
 				currentRotation,
 				targetRotation,
 				deltaTime,
-				player->m_cameraInterpSpeed);
+				player->GetCameraInterpSpeed());
 
 			playerController->SetControlRotation(newRotation);
 		}

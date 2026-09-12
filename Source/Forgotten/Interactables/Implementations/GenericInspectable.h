@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Forgotten/Interactables/Interactable.h"
-#include "SodaCanInteractable.generated.h"
+#include "GenericInspectable.generated.h"
 
 /**
- * Soda Can
+ * Generic 3d inspectable object
  */
 UCLASS()
-class FORGOTTEN_API ASodaCanInteractable : public AInteractable
+class FORGOTTEN_API AGenericInspectable : public AInteractable
 {
 	GENERATED_BODY()
 
 public:
-	ASodaCanInteractable();
+	AGenericInspectable();
 	virtual bool CanInteract(ACharacter* instigator) const override;
 	void SetIsBeingInspected(const bool isBeingInspected);
 	UStaticMesh* GetInspectMesh() const;

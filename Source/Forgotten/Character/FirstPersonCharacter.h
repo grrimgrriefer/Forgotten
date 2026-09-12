@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
-#include "Forgotten/StateTree/StateTreeContextBinder.h"
 #include "StateTreeInstanceData.h"
 #include "Forgotten/Interactables/Implementations/ChairInteractable.h"
-#include "Forgotten/Interactables/Implementations/SodaCanInteractable.h"
+#include "Forgotten/Interactables/Implementations/GenericInspectable.h"
+#include "StateTree/StateTreeContextBinder.h"
 #include "FirstPersonCharacter.generated.h"
 
 class UCharacterSubsystem;
@@ -27,8 +27,6 @@ class FORGOTTEN_API AFirstPersonCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	friend struct FFocusedConversationTask;
-
 public:
 	AFirstPersonCharacter();
 
@@ -37,10 +35,17 @@ public:
 	virtual void Tick(const float deltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
 
+	bool TryBindContextData(UObject* data);
+	bool TryUnbindContextData(UObject* data);
+
+	void EnterFocusedConvoMode();
+	void ExitFocusedConvoMode();
+
 	UCameraComponent* GetCameraComponent() const;
+	float GetCameraInterpSpeed() const;
 	void StartFocusedConversation(AConversableNPC* conversableNpc);
 	void SitDown(AChairInteractable* chairInteractable);
-	void Inspect3dInteractable(ASodaCanInteractable* sodaCanInteractable);
+	void Inspect3dInteractable(AGenericInspectable* genericInspectable);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "StateTree", meta = (RequiredAssetDataTags = "Schema=UPlayerStateTreeSchema"))
@@ -76,12 +81,7 @@ protected:
 	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;
 
 private:
-	void EnterFocusedConvoMode();
-	void ExitFocusedConvoMode();
 	bool IsPlayerInRangeForChat();
-
-	bool TryBindContextData(UObject* data);
-	bool TryUnbindContextData(UObject* data);
 
 	void Move(const FInputActionValue& value);
 	void Look(const FInputActionValue& value);
