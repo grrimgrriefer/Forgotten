@@ -215,9 +215,12 @@ void AFirstPersonCharacter::ExitFocusedConvoMode()
 }
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
 {
-	const FVector2D movementVector = value.Get<FVector2D>();
-	ASSERT_CHECK(Controller);
+	if (!Controller)
+	{
+		return;
+	}
 
+	const FVector2D movementVector = value.Get<FVector2D>();
 	const FRotator yawRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
 	const FVector forwardDirection = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::X);
 	const FVector rightDirection = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::Y);
@@ -227,9 +230,12 @@ void AFirstPersonCharacter::Move(const FInputActionValue& value)
 }
 void AFirstPersonCharacter::Look(const FInputActionValue& value)
 {
-	const FVector2D lookAxisVector = value.Get<FVector2D>();
-	ASSERT_CHECK(Controller);
+	if (!Controller)
+	{
+		return;
+	}
 
+	const FVector2D lookAxisVector = value.Get<FVector2D>();
 	AddControllerYawInput(lookAxisVector.X);
 	AddControllerPitchInput(lookAxisVector.Y);
 }

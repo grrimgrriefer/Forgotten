@@ -7,7 +7,7 @@
 AChairInteractable::AChairInteractable()
 {
 	m_sitUserPrompt = NSLOCTEXT("Chair", "SitPrompt", "Sit");
-	m_standUserPrompt = NSLOCTEXT("Chair", "StandPrompt", "Stand Up");
+	m_OccupiedPrompt = NSLOCTEXT("Chair", "OccupiedPrompt", "Occupied");
 	m_interactionPrompt = m_sitUserPrompt;
 }
 bool AChairInteractable::CanInteract(ACharacter* instigator) const
@@ -16,7 +16,7 @@ bool AChairInteractable::CanInteract(ACharacter* instigator) const
 }
 FText AChairInteractable::GetInteractionUiMessage(ACharacter* instigator) const
 {
-	return m_isOccupied ? m_standUserPrompt : m_sitUserPrompt;
+	return m_isOccupied ? m_OccupiedPrompt : m_sitUserPrompt;
 }
 void AChairInteractable::OnPlayerInteract(AFirstPersonCharacter* player)
 {

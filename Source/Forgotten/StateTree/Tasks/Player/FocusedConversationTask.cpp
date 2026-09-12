@@ -53,7 +53,7 @@ void FFocusedConversationTask::ExitState(FStateTreeExecutionContext& context, co
 
 	if (characterSubsystem)
 	{
-		characterSubsystem->StartConversation(nullptr);
+		characterSubsystem->StopConversation();
 	}
 
 	if (playerCharacter)

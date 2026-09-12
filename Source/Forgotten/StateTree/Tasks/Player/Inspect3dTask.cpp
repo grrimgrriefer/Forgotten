@@ -46,10 +46,10 @@ EStateTreeRunStatus FInspect3dTask::EnterState(FStateTreeExecutionContext& conte
 	UStaticMeshComponent* previewComp = NewObject<UStaticMeshComponent>(player, TEXT("InspectPreviewMesh"));
 	ASSERT_CHECK_RETURN(previewComp, EStateTreeRunStatus::Failed);
 
-	previewComp->RegisterComponent();
 	previewComp->SetStaticMesh(inspectMesh);
 	previewComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	previewComp->AttachToComponent(player->GetCameraComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	previewComp->RegisterComponent();
 
 	previewComp->SetRelativeLocation(instanceData.m_PreviewOffset);
 	previewComp->SetRelativeRotation(FRotator::ZeroRotator);
