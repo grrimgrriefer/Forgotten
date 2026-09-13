@@ -26,6 +26,15 @@ struct FConversationTaskInstanceData
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<AConversableNPC> m_ConversableNpc = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Settings", meta = (ClampMin = "0.0", ClampMax = "180.0"))
+	float m_MaxYawAngle = 55.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings", meta = (ClampMin = "0.0", ClampMax = "90.0"))
+	float m_MaxPitchAngle = 35.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings", meta = (ClampMin = "0.1", ClampMax = "20.0"))
+	float m_ReturnInterpSpeed = 2.0f;
 };
 
 /**

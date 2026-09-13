@@ -52,6 +52,10 @@ void UConversationWidget::SetTranscriptVisibility(const bool isVisible)
 }
 void UConversationWidget::FocusInput()
 {
+	if (IsInputFocused())
+	{
+		return;
+	}
 	SetOutOfRangeFeedbackVisibility(false);
 
 	SetVisibility(m_visibleValue);
@@ -66,6 +70,10 @@ void UConversationWidget::FocusInput()
 }
 void UConversationWidget::UnfocusInput()
 {
+	if (!IsInputFocused())
+	{
+		return;
+	}
 	ClearInputFieldAndSetLowOpacity();
 
 	if (FSlateApplication::IsInitialized())

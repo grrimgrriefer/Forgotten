@@ -38,11 +38,10 @@ public:
 	bool TryBindContextData(UObject* data);
 	bool TryUnbindContextData(UObject* data);
 
-	void EnterFocusedConvoMode();
-	void ExitFocusedConvoMode();
+	void FocusChatInput();
+	void UnfocusChatInput();
 
 	UCameraComponent* GetCameraComponent() const;
-	float GetCameraInterpSpeed() const;
 	void StartFocusedConversation(AConversableNPC* conversableNpc);
 	void SitDown(AChairInteractable* chairInteractable);
 	void Inspect3dInteractable(AGenericInspectable* genericInspectable);
@@ -74,8 +73,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	float m_interactionDistance = 250.0f;
-	UPROPERTY(EditAnywhere, Category = "Interaction")
-	float m_cameraInterpSpeed = 5.0f;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UConversationWidget> m_chatWidget = nullptr;
@@ -87,10 +84,8 @@ private:
 	void Look(const FInputActionValue& value);
 	void AttemptInteraction();
 	void TriggerChatUi();
-	void FocusChat();
 	void OnChatFocusLost();
 	void ExitCurrentActivity();
-	void UpdateInputState() const;
 
 	UCharacterSubsystem* GetCharacterSubsystem(const bool allowNullptr = false) const;
 

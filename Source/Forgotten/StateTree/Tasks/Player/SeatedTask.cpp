@@ -31,11 +31,15 @@ EStateTreeRunStatus FSeatedTask::EnterState(FStateTreeExecutionContext& context,
 	ASSERT_CHECK_RETURN(player, EStateTreeRunStatus::Failed);
 	ASSERT_CHECK_RETURN(chair, EStateTreeRunStatus::Failed);
 
-	chair->SetIsOccupied(true);
+	APlayerController* playerController = Cast<APlayerController>(player->GetController());
+	ASSERT_CHECK_RETURN(playerController, EStateTreeRunStatus::Failed);
 
 	UCharacterMovementComponent* moveComp = player->GetCharacterMovement();
 	ASSERT_CHECK_RETURN(moveComp, EStateTreeRunStatus::Failed);
+
+	chair->SetIsOccupied(true);
 	moveComp->SetMovementMode(MOVE_None);
+	playerController->SetIgnoreMoveInput(true);
 
 	player->GetCapsuleComponent()->IgnoreActorWhenMoving(chair, true);
 
@@ -49,6 +53,11 @@ void FSeatedTask::ExitState(FStateTreeExecutionContext& context, const FStateTre
 
 	if (player)
 	{
+		if (APlayerController* playerController = Cast<APlayerController>(player->GetController()))
+		{
+			playerController->SetIgnoreMoveInput(false);
+		}
+
 		if (UCharacterMovementComponent* moveComp = player->GetCharacterMovement())
 		{
 			moveComp->SetMovementMode(MOVE_Walking);

@@ -31,12 +31,14 @@ EStateTreeRunStatus FInspect3dTask::EnterState(FStateTreeExecutionContext& conte
 	ASSERT_CHECK_RETURN(player, EStateTreeRunStatus::Failed);
 	ASSERT_CHECK_RETURN(interactable, EStateTreeRunStatus::Failed);
 
-	UCharacterMovementComponent* moveComp = player->GetCharacterMovement();
-	ASSERT_CHECK_RETURN(moveComp, EStateTreeRunStatus::Failed);
-	moveComp->SetMovementMode(MOVE_None);
-
 	APlayerController* playerController = Cast<APlayerController>(player->GetController());
 	ASSERT_CHECK_RETURN(playerController, EStateTreeRunStatus::Failed);
+
+	UCharacterMovementComponent* moveComp = player->GetCharacterMovement();
+	ASSERT_CHECK_RETURN(moveComp, EStateTreeRunStatus::Failed);
+
+	moveComp->SetMovementMode(MOVE_None);
+	playerController->SetIgnoreMoveInput(true);
 	playerController->SetIgnoreLookInput(true);
 
 	interactable->SetIsBeingInspected(true);
@@ -78,14 +80,15 @@ void FInspect3dTask::ExitState(FStateTreeExecutionContext& context, const FState
 
 	if (player)
 	{
+		if (APlayerController* playerController = Cast<APlayerController>(player->GetController()))
+		{
+			playerController->SetIgnoreMoveInput(false);
+			playerController->ResetIgnoreLookInput();
+		}
+
 		if (UCharacterMovementComponent* moveComp = player->GetCharacterMovement())
 		{
 			moveComp->SetMovementMode(MOVE_Walking);
-		}
-
-		if (APlayerController* playerController = Cast<APlayerController>(player->GetController()))
-		{
-			playerController->ResetIgnoreLookInput();
 		}
 	}
 }

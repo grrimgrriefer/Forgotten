@@ -42,6 +42,9 @@ void AFirstPersonCharacter::BeginPlay()
 
 	UEnhancedInputLocalPlayerSubsystem* inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer());
 	ASSERT_CHECK(inputSubsystem);
+	const FInputModeGameOnly inputMode;
+	playerController->SetInputMode(inputMode);
+	playerController->SetShowMouseCursor(false);
 
 	ASSERT_CHECK(m_defaultMappingContext);
 	inputSubsystem->AddMappingContext(m_defaultMappingContext, 0);
@@ -126,17 +129,13 @@ void AFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* playerInp
 	ASSERT_CHECK(m_triggerChatUiAction);
 	enhancedInputComponent->BindAction(m_triggerChatUiAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::TriggerChatUi);
 	ASSERT_CHECK(m_focusChatAction);
-	enhancedInputComponent->BindAction(m_focusChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::FocusChat);
+	enhancedInputComponent->BindAction(m_focusChatAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::FocusChatInput);
 	ASSERT_CHECK(m_exitAction);
 	enhancedInputComponent->BindAction(m_exitAction, ETriggerEvent::Started, this, &AFirstPersonCharacter::ExitCurrentActivity);
 }
 UCameraComponent* AFirstPersonCharacter::GetCameraComponent() const
 {
 	return m_cameraComponent;
-}
-float AFirstPersonCharacter::GetCameraInterpSpeed() const
-{
-	return m_cameraInterpSpeed;
 }
 void AFirstPersonCharacter::StartFocusedConversation(AConversableNPC* conversableNpc)
 {
@@ -209,17 +208,51 @@ bool AFirstPersonCharacter::TryUnbindContextData(UObject* data)
 {
 	return m_contextBinder.TryUnbindContextData(data);
 }
-void AFirstPersonCharacter::EnterFocusedConvoMode()
+void AFirstPersonCharacter::FocusChatInput()
 {
-	FocusChat();
+	ASSERT_CHECK(m_chatWidget);
+	if (m_chatWidget->IsInputFocused())
+	{
+		return;
+	}
+
+	const bool inRange = IsPlayerInRangeForChat();
+
+	if (!inRange)
+	{
+		m_chatWidget->SetOutOfRangeFeedbackVisibility(true);
+		return;
+	}
+
+	m_chatWidget->FocusInput();
+
+	if (APlayerController* playerController = Cast<APlayerController>(GetController()))
+	{
+		FInputModeUIOnly inputMode;
+		inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		playerController->SetInputMode(inputMode);
+		playerController->SetShowMouseCursor(true);
+	}
 }
-void AFirstPersonCharacter::ExitFocusedConvoMode()
+void AFirstPersonCharacter::UnfocusChatInput()
 {
+	if (!m_chatWidget || !m_chatWidget->IsInputFocused())
+	{
+		return;
+	}
+
 	m_chatWidget->UnfocusInput();
+
+	if (APlayerController* playerController = Cast<APlayerController>(GetController()))
+	{
+		const FInputModeGameOnly inputMode;
+		playerController->SetInputMode(inputMode);
+		playerController->SetShowMouseCursor(false);
+	}
 }
 void AFirstPersonCharacter::Move(const FInputActionValue& value)
 {
-	if (!Controller)
+	if (!Controller || Controller->IsMoveInputIgnored())
 	{
 		return;
 	}
@@ -234,7 +267,7 @@ void AFirstPersonCharacter::Move(const FInputActionValue& value)
 }
 void AFirstPersonCharacter::Look(const FInputActionValue& value)
 {
-	if (!Controller)
+	if (!Controller || Controller->IsLookInputIgnored())
 	{
 		return;
 	}
@@ -271,38 +304,32 @@ void AFirstPersonCharacter::AttemptInteraction()
 }
 void AFirstPersonCharacter::TriggerChatUi()
 {
-	ASSERT_CHECK(m_chatWidget);
-
-	const bool inRange = IsPlayerInRangeForChat();
-
-	m_chatWidget->SetOutOfRangeFeedbackVisibility(!inRange);
-	if (inRange)
+	if (!m_chatWidget)
 	{
-		m_chatWidget->SetTranscriptVisibility(true);
+		return;
 	}
-}
-void AFirstPersonCharacter::FocusChat()
-{
-	ASSERT_CHECK(m_chatWidget);
+
 	if (m_chatWidget->IsInputFocused())
 	{
-		return;
+		UnfocusChatInput();
 	}
-
-	const bool inRange = IsPlayerInRangeForChat();
-
-	if (!inRange)
+	else if (IsPlayerInRangeForChat())
+	{
+		FocusChatInput();
+	}
+	else
 	{
 		m_chatWidget->SetOutOfRangeFeedbackVisibility(true);
-		return;
 	}
-
-	m_chatWidget->FocusInput();
-	UpdateInputState();
 }
 void AFirstPersonCharacter::OnChatFocusLost()
 {
-	UpdateInputState();
+	if (APlayerController* playerController = Cast<APlayerController>(GetController()))
+	{
+		const FInputModeGameOnly inputMode;
+		playerController->SetInputMode(inputMode);
+		playerController->SetShowMouseCursor(false);
+	}
 }
 void AFirstPersonCharacter::ExitCurrentActivity()
 {
@@ -321,43 +348,6 @@ void AFirstPersonCharacter::ExitCurrentActivity()
 		}
 	}
 }
-void AFirstPersonCharacter::UpdateInputState() const
-{
-	APlayerController* playerController = Cast<APlayerController>(GetController());
-	if (!playerController)
-	{
-		return;
-	}
-
-	playerController->ResetIgnoreMoveInput();
-	playerController->ResetIgnoreLookInput();
-
-	const bool isChatFocused = IsValid(m_chatWidget) && m_chatWidget->IsInputFocused();
-
-	// TODO refactor this away, the Task should take care of its own input blocking
-	const bool inFocusedConvo = GetCharacterSubsystem()->IsInOngoingConversation();
-
-	if (isChatFocused || inFocusedConvo)
-	{
-		playerController->SetIgnoreMoveInput(true);
-	}
-	if (isChatFocused)
-	{
-		playerController->SetIgnoreLookInput(true);
-	}
-
-	if (isChatFocused)
-	{
-		FInputModeGameAndUI inputMode;
-		inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		playerController->SetInputMode(inputMode);
-	}
-	else
-	{
-		const FInputModeGameOnly gameMode;
-		playerController->SetInputMode(gameMode);
-	}
-}
 UCharacterSubsystem* AFirstPersonCharacter::GetCharacterSubsystem(const bool allowNullptr) const
 {
 	const UWorld* world = GetWorld();
@@ -366,11 +356,11 @@ UCharacterSubsystem* AFirstPersonCharacter::GetCharacterSubsystem(const bool all
 		return nullptr;
 	}
 	ASSERT_CHECK_RETURN(world, nullptr);
-	UCharacterSubsystem* conversationSubSystem = world->GetSubsystem<UCharacterSubsystem>();
-	if (allowNullptr && !IsValid(conversationSubSystem))
+	UCharacterSubsystem* characterSubsystem = world->GetSubsystem<UCharacterSubsystem>();
+	if (allowNullptr && !IsValid(characterSubsystem))
 	{
 		return nullptr;
 	}
-	ASSERT_CHECK_RETURN(conversationSubSystem, nullptr);
-	return conversationSubSystem;
+	ASSERT_CHECK_RETURN(characterSubsystem, nullptr);
+	return characterSubsystem;
 }
