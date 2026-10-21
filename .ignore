@@ -1,4 +1,8 @@
 /Content
 /.vscode
+/.git
 /Saved
+/DerivedDataCache
 /Intermediate
+/Plugins/UnrealVoxta/Content
+/Plugins/UnrealVoxta/Intermediate

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Globals.h"
 
 #if WITH_EDITOR
 #include "Misc/MessageDialog.h"
@@ -23,7 +24,7 @@ inline void HandleAssertFailed(const TCHAR* checkExpression, const TCHAR* fileNa
 		errorMessage += FString::Printf(TEXT("\nMessage: %s"), *customMessage);
 	}
 
-	UE_LOG(LogTemp, Error, TEXT("%s"), *errorMessage);
+	UE_LOGFMT(ForgottenLog, Error, "[{0}] {1}", StaticClass()->GetName(), errorMessage);
 
 #if WITH_EDITOR
 	if (GIsEditor && GEditor)
