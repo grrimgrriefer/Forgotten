@@ -24,7 +24,7 @@ inline void HandleAssertFailed(const TCHAR* checkExpression, const TCHAR* fileNa
 		errorMessage += FString::Printf(TEXT("\nMessage: %s"), *customMessage);
 	}
 
-	UE_LOGFMT(ForgottenLog, Error, "[{0}] {1}", StaticClass()->GetName(), errorMessage);
+	UE_LOGFMT(ForgottenLog, Error, "[AssertMacros] {1}", errorMessage);
 
 #if WITH_EDITOR
 	if (GIsEditor && GEditor)

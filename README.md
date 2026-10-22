@@ -137,19 +137,33 @@ stateDiagram-v2
     }
     
     state Voxta_StateTree {
-        Voxta_Disconnected --> Voxta_AttemptingToConnect : Start handshake
-        Voxta_AttemptingToConnect --> Voxta_Idle : Handshake successful
-        Voxta_Idle --> Voxta_Chatting : User or NPC initiated chat
-        Voxta_Chatting --> Voxta_Idle : User or NPC ended chat
-        Voxta_Chatting --> Voxta_Disconnected : Error or connection loss
-        Voxta_Idle --> Voxta_Disconnected : Error or connection loss
 
-        state Voxta_Chatting {
-            Voxta_GeneratingReply --> Voxta_AudioPlayback : Audio generated and imported into UE
-            Voxta_AudioPlayback --> Voxta_WaitingForUserResponse : Audio finished & Mic is activated
-            Voxta_GeneratingReply --> Voxta_WaitingForUserResponse : Reply was text-only
-            Voxta_WaitingForUserResponse --> Voxta_GeneratingReply : Speech started & completed events triggered
+        state Voxta_Disconnected {
+            [*] --> Voxta_AttemptingToConnect : Open socket connection
         }
+      
+        state Voxta_Connected {
+            [*] --> Voxta_AttemptingToAuthenticate : Start handshake
+
+            state Voxta_Authenticated {
+                Voxta_Idle --> Voxta_StartingChat : User or NPC initiated chat
+
+                state Voxta_Chatting {
+                    Voxta_GeneratingReply --> Voxta_AudioPlayback : Audio generated and imported into UE
+                    Voxta_AudioPlayback --> Voxta_WaitingForUserResponse : Audio finished & Mic is activated
+                    Voxta_GeneratingReply --> Voxta_WaitingForUserResponse : Reply was text-only
+                    Voxta_WaitingForUserResponse --> Voxta_GeneratingReply : Speech started & completed events triggered
+                }
+                
+                Voxta_StartingChat --> Voxta_Chatting : Sever is ready for chat
+                Voxta_Chatting --> Voxta_Idle : User or NPC ended chat
+            }
+
+            Voxta_AttemptingToAuthenticate --> Voxta_Authenticated : Handshake successful
+        }    
+
+        Voxta_Disconnected --> Voxta_Connected : Socket creating successful
+        Voxta_Connected --> Voxta_Disconnected : Socket closed / connection loss
     }
     
     state Narrative_StateTree {
