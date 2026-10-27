@@ -45,7 +45,7 @@ EStateTreeRunStatus FFocusedConversationTask::EnterState(FStateTreeExecutionCont
 	playerController->SetIgnoreMoveInput(true);
 
 	playerCharacter->TryBindContextData(conversableNpc);
-	characterSubsystem->StartConversation(conversableNpc);
+	characterSubsystem->TryStartConversation(conversableNpc);
 	playerCharacter->FocusChatInput();
 
 	return EStateTreeRunStatus::Running;

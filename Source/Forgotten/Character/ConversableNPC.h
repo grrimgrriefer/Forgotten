@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Forgotten/Interactables/InteractableInterface.h"
+#include "Interfaces/VoxtaCharacter.h"
 #include "ConversableNPC.generated.h"
 
 class USphereComponent;
@@ -14,7 +15,7 @@ class UStaticMeshComponent;
  * Base class for all conversable characters (Rain, Zannah, etc)
  */
 UCLASS()
-class FORGOTTEN_API AConversableNPC : public ACharacter, public IInteractableInterface
+class FORGOTTEN_API AConversableNPC : public ACharacter, public IInteractableInterface, public IVoxtaCharacter
 {
 	GENERATED_BODY()
 
@@ -32,6 +33,11 @@ public:
 	virtual FText GetInteractionUiMessage(ACharacter* instigator) const override;
 	virtual USceneComponent* GetInteractionPoint() const override;
 #pragma endregion IInteractableInterface
+
+#pragma region IVoxtaCharacter
+	virtual void OnRegistered(const FVoxtaCharacterData& VoxtaCharData) override;
+#pragma endregion IVoxtaCharacter
+
 
 	bool IsInRangeForChat(const ACharacter* other) const;
 	float GetMaxChatDistance() const;
@@ -52,6 +58,8 @@ protected:
 	TObjectPtr<USphereComponent> m_chatRangeSphere;
 
 private:
+	void RegisterCharacter(const FVoxtaCharacterData& voxtaCharData);
+
 	UFUNCTION()
 	void OnChatRangeBeginOverlap(
 		UPrimitiveComponent* overlappedComp,

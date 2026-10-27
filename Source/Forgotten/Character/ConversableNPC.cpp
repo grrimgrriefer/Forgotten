@@ -34,12 +34,9 @@ void AConversableNPC::BeginPlay()
 	m_chatRangeSphere->SetSphereRadius(m_maxChatDistance);
 	m_chatRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AConversableNPC::OnChatRangeBeginOverlap);
 
-	const UWorld* world = GetWorld();
-	ASSERT_CHECK(world);
-
-	UCharacterSubsystem* characterSubsystem = world->GetSubsystem<UCharacterSubsystem>();
-	ASSERT_CHECK(characterSubsystem);
-	characterSubsystem->RegisterNPC(this);
+	// TODO: Check the VoxtaClient to see if the VoxtaCharacters are already available.
+	// Register this one to the correct one if so, if not, subscribe to the event and register it for whenever they do get loaded.
+	// RegisterCharacter()
 }
 void AConversableNPC::EndPlay(const EEndPlayReason::Type endPlayReason)
 {
@@ -84,6 +81,14 @@ USceneComponent* AConversableNPC::GetInteractionPoint() const
 #pragma endregion IInteractableInterface
 
 
+#pragma region IVoxtaCharacter
+void AConversableNPC::OnRegistered(const FVoxtaCharacterData& VoxtaCharData)
+{
+	// TODO: something? idk what yet
+}
+#pragma endregion IVoxtaCharacter
+
+
 bool AConversableNPC::IsInRangeForChat(const ACharacter* other) const
 {
 	if (!IsValid(other))
@@ -102,6 +107,15 @@ const FText& AConversableNPC::GetCharacterName() const
 {
 	return m_characterName;
 }
+void AConversableNPC::RegisterCharacter(const FVoxtaCharacterData& voxtaCharData)
+{
+	const UWorld* world = GetWorld();
+	ASSERT_CHECK(world);
+
+	UCharacterSubsystem* characterSubsystem = world->GetSubsystem<UCharacterSubsystem>();
+	ASSERT_CHECK(characterSubsystem);
+	characterSubsystem->TryRegisterNPC(this, voxtaCharData);
+}
 void AConversableNPC::OnChatRangeBeginOverlap(
 	UPrimitiveComponent* overlappedComp,
 	AActor* otherActor,
@@ -117,6 +131,6 @@ void AConversableNPC::OnChatRangeBeginOverlap(
 
 		UCharacterSubsystem* characterSubsystem = world->GetSubsystem<UCharacterSubsystem>();
 		ASSERT_CHECK(characterSubsystem);
-		characterSubsystem->StartConversation(this);
+		characterSubsystem->TryStartConversation(this);
 	}
 }
