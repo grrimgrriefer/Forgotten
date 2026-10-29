@@ -87,3 +87,4 @@ DerivedDataCache/*
 /Makefile
 /.idea/
 *.DotSettings.user
+/flatten-and-inject.sh

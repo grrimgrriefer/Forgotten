@@ -5,16 +5,18 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Forgotten/Interactables/InteractableInterface.h"
+#include "Interfaces/VoxtaCharacter.h"
 #include "ConversableNPC.generated.h"
 
 class USphereComponent;
 class UStaticMeshComponent;
+struct FVoxtaCharacterData;
 
 /**
  * Base class for all conversable characters (Rain, Zannah, etc)
  */
 UCLASS()
-class FORGOTTEN_API AConversableNPC : public ACharacter, public IInteractableInterface
+class FORGOTTEN_API AConversableNPC : public ACharacter, public IInteractableInterface, public IVoxtaCharacter
 {
 	GENERATED_BODY()
 
@@ -33,16 +35,20 @@ public:
 	virtual USceneComponent* GetInteractionPoint() const override;
 #pragma endregion IInteractableInterface
 
+#pragma region IVoxtaCharacter
+	virtual void OnRegistered(const FVoxtaCharacterData& voxtaCharData) override;
+#pragma endregion IVoxtaCharacter
+
 	bool IsInRangeForChat(const ACharacter* other) const;
 	float GetMaxChatDistance() const;
-	const FText& GetCharacterName() const;
+	const FString& GetCharacterId() const;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> m_placeholderMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CharacterInfo")
-	FText m_characterName;
+	FString m_characterId;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CharacterInfo")
 	FText m_interactionUiMessage;
 
@@ -52,6 +58,10 @@ protected:
 	TObjectPtr<USphereComponent> m_chatRangeSphere;
 
 private:
+	void RegisterCharacter(const FVoxtaCharacterData& voxtaCharData);
+	void OnVoxtaCharactersLoaded(const TConstArrayView<FVoxtaCharacterData>& loadedCharacters);
+	void UnsubscribeFromVoxtaClient();
+
 	UFUNCTION()
 	void OnChatRangeBeginOverlap(
 		UPrimitiveComponent* overlappedComp,
@@ -60,4 +70,6 @@ private:
 		int32 otherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& sweepResult);
+
+	FDelegateHandle m_charactersLoadedHandle;
 };

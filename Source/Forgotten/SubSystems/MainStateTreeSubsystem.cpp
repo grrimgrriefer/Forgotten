@@ -27,7 +27,7 @@ void UMainStateTreeSubsystem::Deinitialize()
 			context.Stop();
 		}
 		m_isRunning = false;
-		UE_LOG(LogTemp, Log, TEXT("%s: StateTree stopped."), *GetNameSafe(this));
+		UE_LOGFMT(ForgottenLog, Log, "[{0}] {1}: StateTree stopped.", StaticClass()->GetName(), GetNameSafe(this));
 	}
 	Super::Deinitialize();
 }
@@ -131,7 +131,7 @@ void UMainStateTreeSubsystem::OnGameModePostLoginEvent(AGameModeBase* gameMode, 
 		if (context.Start() == EStateTreeRunStatus::Running)
 		{
 			m_isRunning = true;
-			UE_LOG(LogTemp, Log, TEXT("%s: StateTree started."), *GetNameSafe(this));
+			UE_LOGFMT(ForgottenLog, Log, "[{0}] {1}: StateTree started.", StaticClass()->GetName(), GetNameSafe(this));
 		}
 	}
 }
