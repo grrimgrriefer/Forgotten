@@ -7,6 +7,7 @@
 #include "Engine/World.h"
 #include "Forgotten/Character/FirstPersonCharacter.h"
 #include "Forgotten/Utils/AssertMacros.h"
+#include "Interfaces/VoxtaClient.h"
 #include "SubSystems/CharacterSubsystem.h"
 
 AConversableNPC::AConversableNPC()
@@ -34,17 +35,38 @@ void AConversableNPC::BeginPlay()
 	m_chatRangeSphere->SetSphereRadius(m_maxChatDistance);
 	m_chatRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AConversableNPC::OnChatRangeBeginOverlap);
 
-	// TODO: Check the VoxtaClient to see if the VoxtaCharacters are already available.
-	// Register this one to the correct one if so, if not, subscribe to the event and register it for whenever they do get loaded.
-	// RegisterCharacter()
+	ASSERT_CHECK(!m_characterId.IsEmpty(), TEXT("Conversable NPC has no character ID assigned."));
+
+	IVoxtaClient* voxtaClient = IVoxtaClient::Get(GetWorld());
+	ASSERT_CHECK(voxtaClient);
+
+	const TConstArrayView<FVoxtaCharacterData> availableCharacters = voxtaClient->GetAvailableCharacters();
+	if (availableCharacters.IsEmpty())
+	{
+		m_charactersLoadedHandle = voxtaClient->OnCharactersLoaded().AddUObject(
+			this,
+			&AConversableNPC::OnVoxtaCharactersLoaded
+		);
+	}
+	else
+	{
+		const FVoxtaCharacterData* charData = voxtaClient->TryGetCharacterById(m_characterId);
+		ASSERT_CHECK(charData, TEXT("Configured character ID was not found in available VoxtaServer characters."));
+		RegisterCharacter(*charData);
+	}
 }
 void AConversableNPC::EndPlay(const EEndPlayReason::Type endPlayReason)
 {
+	UnsubscribeFromVoxtaClient();
+
 	if (const UWorld* world = GetWorld())
 	{
 		if (UCharacterSubsystem* characterSubsystem = world->GetSubsystem<UCharacterSubsystem>())
 		{
-			characterSubsystem->UnregisterNPC(this);
+			if (characterSubsystem->IsNpcRegistered(this))
+			{
+				characterSubsystem->UnregisterNPC(this);
+			}
 		}
 	}
 
@@ -82,7 +104,7 @@ USceneComponent* AConversableNPC::GetInteractionPoint() const
 
 
 #pragma region IVoxtaCharacter
-void AConversableNPC::OnRegistered(const FVoxtaCharacterData& VoxtaCharData)
+void AConversableNPC::OnRegistered(const FVoxtaCharacterData& voxtaCharData)
 {
 	// TODO: something? idk what yet
 }
@@ -103,9 +125,9 @@ float AConversableNPC::GetMaxChatDistance() const
 {
 	return m_maxChatDistance;
 }
-const FText& AConversableNPC::GetCharacterName() const
+const FString& AConversableNPC::GetCharacterId() const
 {
-	return m_characterName;
+	return m_characterId;
 }
 void AConversableNPC::RegisterCharacter(const FVoxtaCharacterData& voxtaCharData)
 {
@@ -115,6 +137,27 @@ void AConversableNPC::RegisterCharacter(const FVoxtaCharacterData& voxtaCharData
 	UCharacterSubsystem* characterSubsystem = world->GetSubsystem<UCharacterSubsystem>();
 	ASSERT_CHECK(characterSubsystem);
 	characterSubsystem->TryRegisterNPC(this, voxtaCharData);
+}
+void AConversableNPC::OnVoxtaCharactersLoaded(const TConstArrayView<FVoxtaCharacterData>& loadedCharacters)
+{
+	UnsubscribeFromVoxtaClient();
+
+	IVoxtaClient* voxtaClient = IVoxtaClient::Get(GetWorld());
+	ASSERT_CHECK(voxtaClient);
+	const FVoxtaCharacterData* charData = voxtaClient->TryGetCharacterById(m_characterId);
+	ASSERT_CHECK(charData, TEXT("Configured character ID was not found in loaded Voxta characters."));
+	RegisterCharacter(*charData);
+}
+void AConversableNPC::UnsubscribeFromVoxtaClient()
+{
+	if (m_charactersLoadedHandle.IsValid())
+	{
+		if (IVoxtaClient* voxtaClient = IVoxtaClient::Get(GetWorld()))
+		{
+			voxtaClient->OnCharactersLoaded().Remove(m_charactersLoadedHandle);
+		}
+		m_charactersLoadedHandle.Reset();
+	}
 }
 void AConversableNPC::OnChatRangeBeginOverlap(
 	UPrimitiveComponent* overlappedComp,
