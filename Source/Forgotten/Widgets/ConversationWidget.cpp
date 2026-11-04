@@ -9,7 +9,34 @@
 #include "Forgotten/Utils/AssertMacros.h"
 #include "Framework/Application/SlateApplication.h"
 #include "TimerManager.h"
+#include "Components/ProgressBar.h"
 
+void UConversationWidget::UpdateLoadingProgress(const FText& statusText, float progress)
+{
+	SetTranscriptVisibility(true);
+
+	if (m_loadingStatusTextBlock)
+	{
+		m_loadingStatusTextBlock->SetText(statusText);
+		m_loadingStatusTextBlock->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	if (m_loadingProgressBar)
+	{
+		m_loadingProgressBar->SetPercent(progress / 100.0f);
+		m_loadingProgressBar->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+}
+void UConversationWidget::OnChatSessionStarted() const
+{
+	if (m_loadingStatusTextBlock)
+	{
+		m_loadingStatusTextBlock->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	if (m_loadingProgressBar)
+	{
+		m_loadingProgressBar->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
 void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FText& messageText)
 {
 	const FText formattedText = FText::Format(NSLOCTEXT("Conversation", "TranscriptFormat", "{0}: {1}"), speakerName, messageText);
