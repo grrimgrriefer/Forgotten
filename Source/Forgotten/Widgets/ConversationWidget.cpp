@@ -57,9 +57,15 @@ void UConversationWidget::SetTranscriptVisibility(const bool isVisible)
 {
 	if (isVisible)
 	{
-		SetVisibility(m_visibleValue);
-		ASSERT_CHECK(m_fadeInAnimation);
-		PlayAnimation(m_fadeInAnimation);
+		if (GetVisibility() != m_visibleValue)
+		{
+			SetVisibility(m_visibleValue);
+			ASSERT_CHECK(m_fadeInAnimation);
+			if (m_fadeInAnimation && !IsAnimationPlaying(m_fadeInAnimation))
+			{
+				PlayAnimation(m_fadeInAnimation);
+			}
+		}
 
 		if (IsInputFocused())
 		{
