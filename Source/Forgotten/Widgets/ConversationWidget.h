@@ -7,6 +7,7 @@
 #include "Types/SlateEnums.h"
 #include "ConversationWidget.generated.h"
 
+class UProgressBar;
 class UButton;
 class UEditableTextBox;
 class UScrollBox;
@@ -29,7 +30,10 @@ public:
 	FOnConversationTextSubmitted m_OnTextSubmitted;
 	FOnChatFocusLost m_OnChatFocusLost;
 
+	void UpdateLoadingProgress(const FText& statusText, float progress);
+	void OnChatSessionStarted() const;
 	void AddTranscriptEntry(const FText& speakerName, const FText& messageText);
+
 	void SetTranscriptVisibility(bool isVisible);
 	void FocusInput();
 	void UnfocusInput();
@@ -40,6 +44,11 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 	virtual void OnAnimationFinished_Implementation(const UWidgetAnimation* animation) override;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> m_loadingStatusTextBlock;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> m_loadingProgressBar;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UScrollBox> m_transcriptScrollBox;
