@@ -39,7 +39,9 @@ void UConversationWidget::OnChatSessionStarted() const
 }
 void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FText& messageText)
 {
-	const FText formattedText = FText::Format(NSLOCTEXT("Conversation", "TranscriptFormat", "{0}: {1}"), speakerName, messageText);
+	ResetStreamingState();
+
+	const FText formattedText = FText::Format(NSLOCTEXT("Conversation", "TranscriptFormat", "{0}: {1}"),speakerName, messageText);
 
 	UTextBlock* newEntry = WidgetTree->ConstructWidget<UTextBlock>();
 
@@ -52,6 +54,48 @@ void UConversationWidget::AddTranscriptEntry(const FText& speakerName, const FTe
 	m_transcriptScrollBox->ScrollToEnd();
 
 	SetTranscriptVisibility(true);
+}
+void UConversationWidget::AppendTranscriptChunk(const FText& speakerName, const FString& messageId, const FString& chunkText)
+{
+	if (chunkText.IsEmpty())
+	{
+		return;
+	}
+
+	if (!m_activeStreamingTextBlock || m_activeStreamingMessageId != messageId)
+	{
+		ResetStreamingState();
+
+		UTextBlock* newEntry = WidgetTree->ConstructWidget<UTextBlock>();
+		ASSERT_CHECK(newEntry);
+		newEntry->SetAutoWrapText(true);
+
+		ASSERT_CHECK(m_transcriptScrollBox);
+		m_transcriptScrollBox->AddChild(newEntry);
+
+		m_activeStreamingTextBlock = newEntry;
+		m_activeStreamingMessageId = messageId;
+		m_activeStreamingAccumulatedText = chunkText;
+	}
+	else
+	{
+		m_activeStreamingAccumulatedText += chunkText;
+	}
+
+	const FText formattedText = FText::Format(NSLOCTEXT("Conversation", "TranscriptFormat", "{0}: {1}"), speakerName,	FText::FromString(m_activeStreamingAccumulatedText));
+	m_activeStreamingTextBlock->SetText(formattedText);
+
+	ASSERT_CHECK(m_transcriptScrollBox);
+	m_transcriptScrollBox->ScrollToEnd();
+
+	SetTranscriptVisibility(true);
+}
+void UConversationWidget::FinalizeTranscriptEntry(const FString& messageId)
+{
+	if (m_activeStreamingMessageId == messageId)
+	{
+		ResetStreamingState();
+	}
 }
 void UConversationWidget::SetTranscriptVisibility(const bool isVisible)
 {
@@ -159,6 +203,7 @@ void UConversationWidget::NativeConstruct()
 void UConversationWidget::NativeDestruct()
 {
 	ClearFadeTimer();
+	ResetStreamingState();
 
 	if (m_inputTextBox)
 	{
@@ -214,6 +259,12 @@ void UConversationWidget::ClearInputFieldAndSetLowOpacity() const
 	ASSERT_CHECK(m_inputTextBox);
 	m_inputTextBox->SetText(FText::GetEmpty());
 	m_inputTextBox->SetRenderOpacity(m_unfocusedInputOpacity);
+}
+void UConversationWidget::ResetStreamingState()
+{
+	m_activeStreamingTextBlock = nullptr;
+	m_activeStreamingMessageId.Empty();
+	m_activeStreamingAccumulatedText.Empty();
 }
 void UConversationWidget::OnInputTextCommitted(const FText& text, ETextCommit::Type commitMethod)
 {

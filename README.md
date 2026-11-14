@@ -149,10 +149,10 @@ stateDiagram-v2
                 Voxta_Idle --> Voxta_StartingChat : User or NPC initiated chat
 
                 state Voxta_Chatting {
-                    Voxta_GeneratingReply --> Voxta_AudioPlayback : Audio generated and imported into UE
-                    Voxta_AudioPlayback --> Voxta_WaitingForUserResponse : Audio finished & Mic is activated
-                    Voxta_GeneratingReply --> Voxta_WaitingForUserResponse : Reply was text-only
-                    Voxta_WaitingForUserResponse --> Voxta_GeneratingReply : Speech started & completed events triggered
+                    Voxta_WaitingForUserResponse --> Voxta_StreamingReply : User message sent
+                    Voxta_StreamingReply --> Voxta_WaitingForUserResponse : last chunk received & playback finished
+                    Voxta_StreamingReply --> Voxta_WaitingForUserResponse : User interruption
+                    Voxta_StreamingReply --> Voxta_StreamingReply : recieving chunks
                 }
                 
                 Voxta_StartingChat --> Voxta_Chatting : Sever is ready for chat

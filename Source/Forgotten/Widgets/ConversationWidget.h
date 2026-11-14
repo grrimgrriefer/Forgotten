@@ -33,6 +33,8 @@ public:
 	void UpdateLoadingProgress(const FText& statusText, float progress);
 	void OnChatSessionStarted() const;
 	void AddTranscriptEntry(const FText& speakerName, const FText& messageText);
+	void AppendTranscriptChunk(const FText& speakerName, const FString& messageId, const FString& chunkText);
+	void FinalizeTranscriptEntry(const FString& messageId);
 
 	void SetTranscriptVisibility(bool isVisible);
 	void FocusInput();
@@ -79,9 +81,15 @@ private:
 	void OnFadeTimerExpired();
 	void SubmitCurrentInputText(const FText& text);
 	void ClearInputFieldAndSetLowOpacity() const;
+	void ResetStreamingState();
 
 	UFUNCTION()
 	void OnInputTextCommitted(const FText& text, ETextCommit::Type commitMethod);
 
 	FTimerHandle m_fadeTimerHandle;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> m_activeStreamingTextBlock = nullptr;
+	FString m_activeStreamingMessageId;
+	FString m_activeStreamingAccumulatedText;
 };

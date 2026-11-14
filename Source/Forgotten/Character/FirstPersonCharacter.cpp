@@ -61,6 +61,8 @@ void AFirstPersonCharacter::BeginPlay()
 	characterSubsystem->m_OnChatLoadingProgress.AddUObject(m_chatWidget.Get(), &UConversationWidget::UpdateLoadingProgress);
 	characterSubsystem->m_OnChatStarted.AddUObject(m_chatWidget.Get(),	&UConversationWidget::OnChatSessionStarted);
 	characterSubsystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
+	characterSubsystem->m_OnTranscriptChunkAdded.AddUObject( m_chatWidget.Get(), &UConversationWidget::AppendTranscriptChunk);
+	characterSubsystem->m_OnTranscriptEntryFinalized.AddUObject( m_chatWidget.Get(), &UConversationWidget::FinalizeTranscriptEntry);
 
 	TryBindContextData(this);
 	TryBindContextData(characterSubsystem);
@@ -95,6 +97,8 @@ void AFirstPersonCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 			characterSubsystem->m_OnChatLoadingProgress.RemoveAll(m_chatWidget.Get());
 			characterSubsystem->m_OnChatStarted.RemoveAll(m_chatWidget.Get());
 			characterSubsystem->m_OnTranscriptEntryAdded.RemoveAll(m_chatWidget.Get());
+			characterSubsystem->m_OnTranscriptChunkAdded.RemoveAll(m_chatWidget.Get());
+			characterSubsystem->m_OnTranscriptEntryFinalized.RemoveAll(m_chatWidget.Get());
 			m_chatWidget->m_OnTextSubmitted.RemoveAll(characterSubsystem);
 		}
 
