@@ -95,11 +95,8 @@ bool UMainStateTreeSubsystem::TrySendFlowEvent(const FGameplayTag tag)
 	if (m_isRunning && world && !world->IsPreparingMapChange() && IsValid(m_stateTreeAsset))
 	{
 		FStateTreeExecutionContext context(*this, *m_stateTreeAsset, m_instanceData);
-		if (m_contextBinder.SetContextRequirements(context, m_stateTreeAsset, this))
-		{
-			context.SendEvent(tag);
-			return true;
-		}
+		m_instanceData.GetMutableEventQueue().SendEvent(this, tag);
+		return true;
 	}
 	return false;
 }
