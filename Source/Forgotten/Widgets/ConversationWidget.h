@@ -15,6 +15,7 @@ class UTextBlock;
 class UWidgetAnimation;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnConversationTextSubmitted, const FText&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnTranscriptEntryCompleted, const FString&);
 DECLARE_MULTICAST_DELEGATE(FOnChatFocusLost);
 
 /**
@@ -28,6 +29,7 @@ class FORGOTTEN_API UConversationWidget : public UUserWidget
 
 public:
 	FOnConversationTextSubmitted m_OnTextSubmitted;
+	FOnTranscriptEntryCompleted m_OnTranscriptEntryCompleted;
 	FOnChatFocusLost m_OnChatFocusLost;
 
 	void UpdateLoadingProgress(const FText& statusText, float progress);
