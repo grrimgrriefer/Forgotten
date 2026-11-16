@@ -58,6 +58,7 @@ void AFirstPersonCharacter::BeginPlay()
 
 	UCharacterSubsystem* characterSubsystem = GetCharacterSubsystem();
 	m_chatWidget->m_OnTextSubmitted.AddUObject(characterSubsystem, &UCharacterSubsystem::SubmitMessageFromPlayer);
+	m_chatWidget->m_OnTranscriptEntryCompleted.AddUObject(characterSubsystem, &UCharacterSubsystem::NotifyPlaybackComplete);
 	characterSubsystem->m_OnChatLoadingProgress.AddUObject(m_chatWidget.Get(), &UConversationWidget::UpdateLoadingProgress);
 	characterSubsystem->m_OnChatStarted.AddUObject(m_chatWidget.Get(),	&UConversationWidget::OnChatSessionStarted);
 	characterSubsystem->m_OnTranscriptEntryAdded.AddUObject(m_chatWidget.Get(), &UConversationWidget::AddTranscriptEntry);
@@ -100,6 +101,7 @@ void AFirstPersonCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 			characterSubsystem->m_OnTranscriptChunkAdded.RemoveAll(m_chatWidget.Get());
 			characterSubsystem->m_OnTranscriptEntryFinalized.RemoveAll(m_chatWidget.Get());
 			m_chatWidget->m_OnTextSubmitted.RemoveAll(characterSubsystem);
+			m_chatWidget->m_OnTranscriptEntryCompleted.RemoveAll(characterSubsystem);
 		}
 
 		m_chatWidget->RemoveFromParent();

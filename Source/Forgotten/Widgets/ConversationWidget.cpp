@@ -96,6 +96,11 @@ void UConversationWidget::FinalizeTranscriptEntry(const FString& messageId)
 	{
 		ResetStreamingState();
 	}
+
+	if (!messageId.IsEmpty())
+	{
+		m_OnTranscriptEntryCompleted.Broadcast(messageId);
+	}
 }
 void UConversationWidget::SetTranscriptVisibility(const bool isVisible)
 {
